@@ -163,11 +163,12 @@ article {
 #comentarios {
     border: 1px solid;
     padding: 20px;
+    background-color: lightgray;
 }
 
 #pie-de-pagina {
     color: white;
-    background-color: gray;
+    background-color: black;
     border: 1px solid;
     text-align: center;
 }

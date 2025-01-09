@@ -172,3 +172,13 @@ article {
     border: 1px solid;
     text-align: center;
 }
+
+input[type=text] {
+    border: 2px solid aquamarine;
+    background-color: lightyellow;
+}
+
+input[type=password] {
+    border: 2px solid aquamarine;
+    background-color: lightyellow;
+}

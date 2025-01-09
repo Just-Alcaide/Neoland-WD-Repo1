@@ -96,14 +96,12 @@ article {
 
 #valorar {
     display: inline;
-    
 }
 
 #noticias-relacionadas {
     
     display: inline;
     margin-left: 30px;
-    
 
     #lista2 {
         display: flex;

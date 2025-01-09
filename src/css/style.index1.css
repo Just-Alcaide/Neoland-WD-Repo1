@@ -3,12 +3,25 @@ body {
     background-color: lightyellow;
 }
 
+@media screen and (max-width: 600px) {
+    #cabecera {
+        grid-template-columns: 1fr;
+        padding-bottom: 10px;
+    }
+}
+
+@media screen and (min-width: 601px) {
+    #cabecera {
+        grid-template-columns: 2fr 1fr;
+        padding-bottom: 20px;
+    }
+}
+
 #cabecera  {
     background: aquamarine;
     display: grid;
-    grid-template-columns: 2fr 1fr;
     justify-content: space-evenly;
-    padding-bottom: 20px;
+    
 
     #login {
         background-color: lightgray;
@@ -17,7 +30,7 @@ body {
         color: blue;
 
         #legend-login {
-            display: inline;
+            display: inline-block;
             border-style: dotted;
             background-color: lightyellow;
         }
@@ -30,7 +43,7 @@ body {
         color: blue;
 
         #legend-subscribete {
-            display: inline;
+            display: inline-block;
             border-style: dotted;
             background-color: lightyellow;
         }
@@ -95,7 +108,7 @@ article {
 }
 
 #valorar {
-    display: inline;
+    
 }
 
 #noticias-relacionadas {

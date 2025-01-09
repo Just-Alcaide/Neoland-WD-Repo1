@@ -1,0 +1,125 @@
+body {
+    background-color: lightyellow;
+}
+
+#cabecera  {
+    background: aquamarine;
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    justify-content: space-evenly;
+    padding-bottom: 20px;
+
+    #login {
+        background-color: lightgray;
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        color: blue;
+
+        #legend-login {
+            display: inline;
+            border-style: dotted;
+            background-color: lightyellow;
+        }
+    }
+    
+    #subscribete {
+        background-color: lightgray;
+        display: grid;
+        grid-template-columns: 2fr 2fr 1fr;
+        color: blue;
+
+        #legend-subscribete {
+            display: inline;
+            border-style: dotted;
+            background-color: lightyellow;
+        }
+    }
+}
+
+
+#subcabecera {
+    background-color: aliceblue;
+    border-style: inset;
+    display: flex;
+    flex-direction: row;
+
+    #inicio {
+        margin-right: 25px;
+    }
+    
+    #tabla {
+        margin-right: 25px;
+    }
+    
+    #en-construccion {
+        margin-right: 25px;
+    }   
+}
+
+main {
+    text-align: center;
+    border-style: double;
+    padding-left: 100px;
+    padding-right: 100px;
+    background: aquamarine;
+
+}
+
+header {
+
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    background-color: lightyellow;
+    margin-top: 10px;
+}
+
+article {
+
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    background-color: lightyellow;
+    margin-top: 10px;
+
+    #imagen1 {
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        width: 50%;
+    }
+}
+
+#valorar {
+    display: inline;
+    
+}
+
+#noticias-relacionadas {
+    display: inline;
+    margin-left: 30px;
+
+    #lista2 {
+
+        display: flex;
+        
+        #imagen2 {
+
+        }
+
+        #imagen3 {
+
+        }
+    }
+
+   
+    
+  
+}
+
+#comentarios {
+    margin-left: 30px;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+}

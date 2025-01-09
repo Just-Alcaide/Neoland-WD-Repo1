@@ -5,26 +5,31 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
         <title>Se retiran los Reyes Magos</title>
+        <link rel="stylesheet" href="../css/style.index1.css"></link>
 
     </head>
 
     <body>
-        <section>
-            <fieldset>
-                <Legend>
+        <section id="cabecera">
+            <fieldset id="login">
+                <Legend id="legend-login">
             <h3>Login</h3>
                 </Legend>
             <form>
                 <form action="./informacion.html">
+                    
                     <label>Usuario:</label>
                     <input placeholder="Usuario" type="text" name="usuario" />
+                   
                     <label>Contraseña:</label>
                     <input placeholder="1234" type="password" name="pwd" />
+                    
                     <button type="submit">Login</button>
+                    
             </form>
             </fieldset>
-            <fieldset>
-                <Legend>
+            <fieldset id="subscribete">
+                <Legend id="legend-subscribete">
             <h3>Subscríbete a nuestro newsletter</h3>
                 </Legend>
             <form>
@@ -35,31 +40,38 @@
             </fieldset> 
         </section>
         <nav>
-            <ul>
-                <li><a href="./">Inicio</a></li>
-                <li><a href="./Tablas.html">Tabla</a></li>
-                <li>En Construcción</li>
+            <ul  id="subcabecera">
+                <li id="inicio"><a href="./">Inicio</a></li>
+                <li id="tabla"><a href="./Tablas.html">Tabla</a></li>
+                <li id="en-construccion">En Construcción</li>
             </ul>
         </nav>
+        
+        <hr>
 
+        <main>
+
+        <header>
         <h1>Se retiran los Reyes Magos</h1> 
 
         <h3><u>"Que os vaya bien": Despedida en Twitter de sus magicas majestades</u></h3>
 
         <h6>Jacinto Jacintez  -  Internacional</h6>
-        
+        </header>
+
         <hr>
-              
+
+        <article>     
         <p>El mundo entero se ha despertado este 8 de Enero con la noticia de la despedida de los reyes magos, apenas unos días después de su gran día.</p>
         
-        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT8UE1oN5RtPwcxKFm-GmgW4Pz28mz4NZUXLA&s" alt="niña llorando mucho junto a niña con mirada incrédula">
+        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT8UE1oN5RtPwcxKFm-GmgW4Pz28mz4NZUXLA&s" alt="niña llorando mucho junto a niña con mirada incrédula" id="imagen1">
 
         <p>Horas después del críptico tweet desde su cuenta oficial <a href="https://x.com/?lang=es&mx=2">Sus Mágicas majestades</a>, la portavoz del ministerio de misterios confirmó la triste noticia:</p>
 
         <blockquote><i>"Son mayores, llevan más de 2000 años repartiendo regalos y, la verdad, están un poco hasta las narices de nosotros y nosotras. Consideran que ha llegado el momento de pasar el mantón a las nuevas generaciones"</i></blockquote>
-
+        </article>
         
-        <section>
+        <section id="valorar">
             <h3>Valora esta noticia</h3>
             <form action="./informacion.html">
                 <select name="opcion">
@@ -72,17 +84,31 @@
                 <button type="submit">Valorar</button>
             </form>
         </section>
+        </main>
+
         <hr>
+
+        <section id="noticias-relacionadas">
 
         <h3>Noticias relacionadas</h3>
 
-        <ul>
+        <ul id="lista2">
             <li><u>
-                <a href="Noticia2.html">San Nicolás, detenido en una macroredada</a>
+                <a href="./Noticia2.html">San Nicolás, detenido en una macroredada</a>
+                <img src="../assets/claus-carcel.jpg" alt="Santa Claus detenido" id="imagen2">
             </u></li>
-            <li><u>Funko Pop de Luis XVI crea furor en Japón</u></li>
+
+            <li><u>
+                <a href="./Noticia2.html">Funko Pop de Luis XVI crea furor en Japón</a>
+                <img src="../assets/funkopop.jpg" alt="Estantería llena de Funko Pops" id="imagen3">
+            </u></li>
         </ul>
-        <section>
+        
+        
+        </section>
+
+        <section id="comentarios">
+            
             <h1>Comentarios</h1>
             <form action="./informacion.html">
                 <textarea name="texto"></textarea>

@@ -1,0 +1,64 @@
+body {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    background-color: aqua;
+    header {
+        grid-column-start: span 12;
+        background-color: blue;
+    }
+}
+main {
+    display: grid;
+    grid-column-start: span 12;
+    background-color: brown;
+    nav{
+        background-color: cornflowerblue;
+    }
+
+    section {
+        background-color: tomato;
+            article {
+                background-color: darkgoldenrod;
+            }
+        }
+    }
+
+footer{
+    display: grid;
+    grid-column-start: span 12;
+    background-color: purple;
+}
+
+@media screen and (max-width: 600px) {
+    body {
+
+        main {
+            nav {
+                grid-column-start: span 12;
+            }
+        }
+        section {
+            grid-column-start: span 12;
+            flex-direction: column;
+        }
+        article {
+            margin-top: 10px
+        }
+    }
+
+}
+
+@media screen and (min-width: 601px) {
+    body {
+        main {
+            nav {
+                grid-column-start: span 3;
+            }
+            section {
+                grid-column-start: span 9;
+                justify-content: space-around;
+            }
+        }
+    }
+
+}

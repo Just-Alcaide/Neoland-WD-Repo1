@@ -31,7 +31,8 @@ footer{
 
 @media screen and (max-width: 600px) {
     body {
-
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
         main {
             nav {
                 grid-column-start: span 12;
@@ -39,7 +40,6 @@ footer{
         }
         section {
             grid-column-start: span 12;
-            flex-direction: column;
         }
         article {
             margin-top: 10px
@@ -50,13 +50,18 @@ footer{
 
 @media screen and (min-width: 601px) {
     body {
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
         main {
             nav {
                 grid-column-start: span 3;
             }
             section {
-                grid-column-start: span 9;
-                justify-content: space-around;
+                display: grid;
+                grid-column: span 9;
+            }
+            article {
+                margin-top: 10px
             }
         }
     }

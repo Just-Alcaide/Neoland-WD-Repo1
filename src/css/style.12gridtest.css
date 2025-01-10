@@ -1,69 +1,70 @@
 body {
     display: grid;
     grid-template-columns: repeat(12, 1fr);
-    background-color: aqua;
-    header {
-        grid-column-start: span 12;
-        background-color: blue;
-    }
+    gap: 20px;
 }
+
+header {
+    display: grid;
+    grid-column-start: span 12;
+    border: 2px solid black;
+}
+h1 {
+    grid-column-start: span 12;
+    text-align: center;
+    padding: 20px 0;
+    border: 2px solid black;
+}
+nav {
+    grid-column: span 12;
+    border: 2px solid black;
+    padding: 10px;
+}
+nav ul {
+    display: flex;
+    list-style: none;
+    justify-content: space-around;
+}
+
 main {
+    grid-column-start: span 12;
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 20px;
+    justify-items: center;
+    border: 2px solid black;
+}
+
+section {
     display: grid;
     grid-column-start: span 12;
-    background-color: brown;
-    nav{
-        background-color: cornflowerblue;
-    }
+    padding: 20px;
+    border: 2px solid black;
+}
 
-    section {
-        background-color: tomato;
-            article {
-                background-color: darkgoldenrod;
-            }
-        }
-    }
-
-footer{
-    display: grid;
+h2 {
+    display:grid;
     grid-column-start: span 12;
-    background-color: purple;
+    justify-content: center;
+    border: 2px solid black;
 }
 
-@media screen and (max-width: 600px) {
-    body {
-        display: grid;
-        grid-template-columns: repeat(12, 1fr);
-        main {
-            nav {
-                grid-column-start: span 12;
-            }
-        }
-        section {
-            grid-column-start: span 12;
-        }
-        article {
-            margin-top: 10px
-        }
-    }
-
+#artículo1 {
+    display: grid;
+    grid-column-start: span 6;
+    border: 2px solid black;
 }
 
-@media screen and (min-width: 601px) {
-    body {
-        display: grid;
-        grid-template-columns: repeat(12, 1fr);
-        main {
-            nav {
-                grid-column-start: span 3;
-            }
-            section {
-                display: grid;
-                grid-column: span 9;
-            }
-            article {
-                margin-top: 10px
-            }
-        }
-    }
-
+#artículo2 {
+    display: grid;
+    grid-column-start: span 6;
+    border: 2px solid black;
 }
+
+footer {
+    display:grid;
+    grid-column-start: span 12;
+    justify-content: center;
+    border: 2px solid black;
+}
+

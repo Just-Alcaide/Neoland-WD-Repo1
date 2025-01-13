@@ -3,21 +3,21 @@ let shoppingList = []
 function addToShoppingList () {
     /*let newArticle = document.getElementById('articulo').value
     shoppingList.push(newArticle)*/
-    let newArticleName = document.getElementById('articulo').value
-    let newArticleQty = document.getElementById('qty').value
-    let newArticlePrice = document.getElementById('price').value
-    let newarticleObject = {
-        qty: newArticleQty,
-        name: newArticleName,
-        price: newArticlePrice,
+    let newProductName = document.getElementById('product').value
+    let newProductQty = document.getElementById('qty').value
+    let newProductPrice = document.getElementById('price').value
+    let newProductObject = {
+        name: newProductName,
+        qty: newProductQty,
+        price: newProductPrice,
     }
-    shoppingList.push(newarticleObject)
-    console.log('addToShoppingList', shoppingList)
+    shoppingList.push(newProductObject)
+    console.log('Añadido:', shoppingList)
 }
 
 function resetShoppingList (){
     shoppingList = []
-    console.log('resetShoppingList', shoppingList)
+    console.log('Lista eliminada', shoppingList)
 }
 
 function changeColor () {

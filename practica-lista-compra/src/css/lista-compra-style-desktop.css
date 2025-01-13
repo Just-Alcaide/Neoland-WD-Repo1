@@ -1,0 +1,19 @@
+header {
+    grid-column-start: span 12;
+}
+
+main{
+    grid-column-start: span 8;
+    flex-direction: row;
+}
+
+aside {
+    grid-column-start: span 4;
+    ul {
+        flex-direction: column;
+    }
+}
+
+footer {
+    grid-column-start: span 12;
+}

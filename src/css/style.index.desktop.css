@@ -57,6 +57,7 @@ main {
     padding: 0 5%;
     background-color: lightyellow;
     border: 1px solid black;
+    margin-bottom: 23px;
 }
 .titular {
     text-align: center;
@@ -78,7 +79,7 @@ aside {
     width: 39%;
     display: inline-block;
     text-align: center;
-    position: relative
+    position: absolute;
 }
 
 aside ul{

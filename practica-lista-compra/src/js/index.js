@@ -91,3 +91,8 @@ function resetShoppingList (){
     shoppingList = []
     console.log('resetShoppingList', shoppingList)
 }
+
+function changeColor () {
+    document.getElementsByTagName('body')[0].style.backgroundColor = 'silver'
+    
+}

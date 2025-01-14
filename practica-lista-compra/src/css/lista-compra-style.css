@@ -23,6 +23,11 @@ body {
         form {
             margin: 1em;
         }
+
+        #log {
+            margin-left: 10px;
+        }
+
         table {
             margin: 1em;
         }

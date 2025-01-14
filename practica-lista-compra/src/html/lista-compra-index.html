@@ -21,9 +21,12 @@
         <form>
             <fieldset>
                 <legend>Añadir a la lista</legend>
-                <input type="text" placeholder="nuevo articulo" id="articulo" name="articulo">
-                <button type="button" id="nuevoArticulo" onclick="addToShoppingList ()">Añadir</button>
-                <button type="reset" id="nuevaLista" onclick="resetShoppingList ()">Nueva lista</button>
+                <input type="text" placeholder="producto" id="product" name="product">
+                <input type="number" id="qty" placeholder="cantidad">
+                <input type="number" id="price"
+                placeholder="precio">
+                <button type="button" id="newArticle" onclick="addToShoppingList ()">Añadir</button>
+                <button type="newList" id="reset" onclick="resetShoppingList ()">Nueva lista</button>
                 
             </fieldset>
         </form>

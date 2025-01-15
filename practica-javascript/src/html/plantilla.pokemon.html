@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="../css/plantilla.pokemon.style.css" />
   <link rel="stylesheet" href="../css/plantilla.pokemon.mobile.css" media="screen and (max-width: 768px)" />
   <link rel="stylesheet" href="../css/plantilla.pokemon.desktop.css" media="screen and (min-width: 769px)" />
+  <script src="../js/repaso.pokemon.js"></script>
 </head>
 <body class="debug">
   <!-- Cabecera de la página -->
@@ -15,7 +16,7 @@
     <h1>Mi Pokedex - HOME</h1>
     <nav>
       <ol>
-        <li><a href="index.repaso.html" class="active">Home</a></li>
+        <li><a href="./plantilla.pokemon.html" class="active">Home</a></li>
         <li><a href="coleccion.html">Mi colección</a></li>
         <li><a href="mapa.html">Mapa</a></li>
       </ol>
@@ -31,103 +32,13 @@
       <button type="button" id="searchButton" title="Buscar">&#x1F50D;&#xfe0e;</button>
       <p>Busca un Pokémon por su nombre o usando su número de la Pokédex Nacional.</p>
     </form>
-    <!-- TODO: cambiar a una lista ordenada para poder aplicar responsive -->
+    <!-- Componente: galería de pokemons -->
     <ol class="pokemon-gallery">
       <li class="pokemon-card">
+        <!-- Componente: ficha de pokemon -->
         <a href="./ficha.html">
           <figure>
-            <img src="../assets/pokemon/256x256.svg">
-            <figcaption>Nº 0001</figcaption>
-          </figure>
-        </a>
-        <h1>NOMBRE POKEMON</h1>
-        <p class="taglist">
-          <em class="tag planta">Planta</em>
-          <em class="tag veneno">Veneno</em>
-        </p>
-      </li>
-      <li class="pokemon-card">
-        <a href="./ficha.html">
-          <figure>
-            <img src="../assets/pokemon/256x256.svg">
-            <figcaption>Nº 0001</figcaption>
-          </figure>
-        </a>
-        <h1>NOMBRE POKEMON</h1>
-        <p class="taglist">
-          <em class="tag planta">Planta</em>
-          <em class="tag veneno">Veneno</em>
-        </p>
-      </li>
-      <li class="pokemon-card">
-        <a href="./ficha.html">
-          <figure>
-            <img src="../assets/pokemon/256x256.svg">
-            <figcaption>Nº 0001</figcaption>
-          </figure>
-        </a>
-        <h1>NOMBRE POKEMON</h1>
-        <p class="taglist">
-          <em class="tag planta">Planta</em>
-          <em class="tag veneno">Veneno</em>
-        </p>
-      </li>
-      <li class="pokemon-card">
-        <a href="./ficha.html">
-          <figure>
-            <img src="../assets/pokemon/256x256.svg">
-            <figcaption>Nº 0001</figcaption>
-          </figure>
-        </a>
-        <h1>NOMBRE POKEMON</h1>
-        <p class="taglist">
-          <em class="tag planta">Planta</em>
-          <em class="tag veneno">Veneno</em>
-        </p>
-      </li>
-      <li class="pokemon-card">
-        <a href="./ficha.html">
-          <figure>
-            <img src="../assets/pokemon/256x256.svg">
-            <figcaption>Nº 0001</figcaption>
-          </figure>
-        </a>
-        <h1>NOMBRE POKEMON</h1>
-        <p class="taglist">
-          <em class="tag planta">Planta</em>
-          <em class="tag veneno">Veneno</em>
-        </p>
-      </li>
-      <li class="pokemon-card">
-        <a href="./ficha.html">
-          <figure>
-            <img src="../assets/pokemon/256x256.svg">
-            <figcaption>Nº 0001</figcaption>
-          </figure>
-        </a>
-        <h1>NOMBRE POKEMON</h1>
-        <p class="taglist">
-          <em class="tag planta">Planta</em>
-          <em class="tag veneno">Veneno</em>
-        </p>
-      </li>
-      <li class="pokemon-card">
-        <a href="./ficha.html">
-          <figure>
-            <img src="../assets/pokemon/256x256.svg">
-            <figcaption>Nº 0001</figcaption>
-          </figure>
-        </a>
-        <h1>NOMBRE POKEMON</h1>
-        <p class="taglist">
-          <em class="tag planta">Planta</em>
-          <em class="tag veneno">Veneno</em>
-        </p>
-      </li>
-      <li class="pokemon-card">
-        <a href="./ficha.html">
-          <figure>
-            <img src="../assets/pokemon/256x256.svg">
+            <img src="../pokemon/images/001.png" alt="NOMBRE POKEMON">
             <figcaption>Nº 0001</figcaption>
           </figure>
         </a>
@@ -138,229 +49,6 @@
         </p>
       </li>
     </ol>
-    <table hidden>
-      <caption>Lista de Pokemons</caption>
-      <thead></thead>
-      <tbody>
-        <tr>
-          <td class="pokemon-card">
-            <a href="./ficha.html">
-              <figure>
-                <img src="./assets/img/256x256.svg" alt="NOMBRE POKEMON">
-                <figcaption>Nº 0001</figcaption>
-              </figure>
-            </a>
-            <h1>NOMBRE POKEMON</h1>
-            <p class="taglist">
-              <em class="tag planta">Planta</em>
-              <em class="tag veneno">Veneno</em>
-            </p>
-          </td>
-          <td class="pokemon-card">
-            <a href="./ficha.html">
-              <figure>
-                <img src="./assets/img/256x256.svg" alt="NOMBRE POKEMON">
-                <figcaption>Nº 0001</figcaption>
-              </figure>
-            </a>
-            <h1>NOMBRE POKEMON</h1>
-            <p class="taglist">
-              <em class="tag planta">Planta</em>
-              <em class="tag veneno">Veneno</em>
-            </p>
-          </td>
-          <td class="pokemon-card">
-            <a href="./ficha.html">
-              <figure>
-                <img src="./assets/img/256x256.svg" alt="NOMBRE POKEMON">
-                <figcaption>Nº 0001</figcaption>
-              </figure>
-            </a>
-            <h1>NOMBRE POKEMON</h1>
-            <p class="taglist">
-              <em class="tag planta">Planta</em>
-              <em class="tag veneno">Veneno</em>
-            </p>
-          </td>
-          <td class="pokemon-card">
-            <a href="./ficha.html">
-              <figure>
-                <img src="./assets/img/256x256.svg" alt="NOMBRE POKEMON">
-                <figcaption>Nº 0001</figcaption>
-              </figure>
-            </a>
-            <h1>NOMBRE POKEMON</h1>
-            <p class="taglist">
-              <em class="tag planta">Planta</em>
-              <em class="tag veneno">Veneno</em>
-            </p>
-          </td>
-        </tr>
-        <tr>
-          <td class="pokemon-card">
-            <a href="./ficha.html">
-              <figure>
-                <img src="./assets/img/256x256.svg" alt="NOMBRE POKEMON">
-                <figcaption>Nº 0001</figcaption>
-              </figure>
-            </a>
-            <h1>NOMBRE POKEMON</h1>
-            <p class="taglist">
-              <em class="tag planta">Planta</em>
-              <em class="tag veneno">Veneno</em>
-            </p>
-          </td>
-          <td class="pokemon-card">
-            <a href="./ficha.html">
-              <figure>
-                <img src="./assets/img/256x256.svg" alt="NOMBRE POKEMON">
-                <figcaption>Nº 0001</figcaption>
-              </figure>
-            </a>
-            <h1>NOMBRE POKEMON</h1>
-            <p class="taglist">
-              <em class="tag planta">Planta</em>
-              <em class="tag veneno">Veneno</em>
-            </p>
-          </td>
-          <td class="pokemon-card">
-            <a href="./ficha.html">
-              <figure>
-                <img src="./assets/img/256x256.svg" alt="NOMBRE POKEMON">
-                <figcaption>Nº 0001</figcaption>
-              </figure>
-            </a>
-            <h1>NOMBRE POKEMON</h1>
-            <p class="taglist">
-              <em class="tag planta">Planta</em>
-              <em class="tag veneno">Veneno</em>
-            </p>
-          </td>
-          <td class="pokemon-card">
-            <a href="./ficha.html">
-              <figure>
-                <img src="./assets/img/256x256.svg" alt="NOMBRE POKEMON">
-                <figcaption>Nº 0001</figcaption>
-              </figure>
-            </a>
-            <h1>NOMBRE POKEMON</h1>
-            <p class="taglist">
-              <em class="tag planta">Planta</em>
-              <em class="tag veneno">Veneno</em>
-            </p>
-          </td>
-        </tr>
-        <tr>
-          <td class="pokemon-card">
-            <a href="./ficha.html">
-              <figure>
-                <img src="./assets/img/256x256.svg" alt="NOMBRE POKEMON">
-                <figcaption>Nº 0001</figcaption>
-              </figure>
-            </a>
-            <h1>NOMBRE POKEMON</h1>
-            <p class="taglist">
-              <em class="tag planta">Planta</em>
-              <em class="tag veneno">Veneno</em>
-            </p>
-          </td>
-          <td class="pokemon-card">
-            <a href="./ficha.html">
-              <figure>
-                <img src="./assets/img/256x256.svg" alt="NOMBRE POKEMON">
-                <figcaption>Nº 0001</figcaption>
-              </figure>
-            </a>
-            <h1>NOMBRE POKEMON</h1>
-            <p class="taglist">
-              <em class="tag planta">Planta</em>
-              <em class="tag veneno">Veneno</em>
-            </p>
-          </td>
-          <td class="pokemon-card">
-            <a href="./ficha.html">
-              <figure>
-                <img src="./assets/img/256x256.svg" alt="NOMBRE POKEMON">
-                <figcaption>Nº 0001</figcaption>
-              </figure>
-            </a>
-            <h1>NOMBRE POKEMON</h1>
-            <p class="taglist">
-              <em class="tag planta">Planta</em>
-              <em class="tag veneno">Veneno</em>
-            </p>
-          </td>
-          <td class="pokemon-card">
-            <a href="./ficha.html">
-              <figure>
-                <img src="./assets/img/256x256.svg" alt="NOMBRE POKEMON">
-                <figcaption>Nº 0001</figcaption>
-              </figure>
-            </a>
-            <h1>NOMBRE POKEMON</h1>
-            <p class="taglist">
-              <em class="tag planta">Planta</em>
-              <em class="tag veneno">Veneno</em>
-            </p>
-          </td>
-        </tr>
-        <tr>
-          <td class="pokemon-card">
-            <a href="./ficha.html">
-              <figure>
-                <img src="./assets/img/256x256.svg" alt="NOMBRE POKEMON">
-                <figcaption>Nº 0001</figcaption>
-              </figure>
-            </a>
-            <h1>NOMBRE POKEMON</h1>
-            <p class="taglist">
-              <em class="tag planta">Planta</em>
-              <em class="tag veneno">Veneno</em>
-            </p>
-          </td>
-          <td class="pokemon-card">
-            <a href="./ficha.html">
-              <figure>
-                <img src="./assets/img/256x256.svg" alt="NOMBRE POKEMON">
-                <figcaption>Nº 0001</figcaption>
-              </figure>
-            </a>
-            <h1>NOMBRE POKEMON</h1>
-            <p class="taglist">
-              <em class="tag planta">Planta</em>
-              <em class="tag veneno">Veneno</em>
-            </p>
-          </td>
-          <td class="pokemon-card">
-            <a href="./ficha.html">
-              <figure>
-                <img src="./assets/img/256x256.svg" alt="NOMBRE POKEMON">
-                <figcaption>Nº 0001</figcaption>
-              </figure>
-            </a>
-            <h1>NOMBRE POKEMON</h1>
-            <p class="taglist">
-              <em class="tag planta">Planta</em>
-              <em class="tag veneno">Veneno</em>
-            </p>
-          </td>
-          <td class="pokemon-card">
-            <a href="./ficha.html">
-              <figure>
-                <img src="./assets/img/256x256.svg" alt="NOMBRE POKEMON">
-                <figcaption>Nº 0001</figcaption>
-              </figure>
-            </a>
-            <h1>NOMBRE POKEMON</h1>
-            <p class="taglist">
-              <em class="tag planta">Planta</em>
-              <em class="tag veneno">Veneno</em>
-            </p>
-          </td>
-        </tr>
-      </tbody>
-      <tfoot></tfoot>
-    </table>
   </main>
 </body>
 </html>

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Repaso de HTML, CSS y JS - INDICE</title>
+  <link rel="stylesheet" href="../css/reset.css" />
+  <link rel="stylesheet" href="../css/plantilla.pokemon.style.css" />
+  <link rel="stylesheet" href="../css/plantilla.pokemon.mobile.css" media="screen and (max-width: 768px)" />
+  <link rel="stylesheet" href="../css/plantilla.pokemon.desktop.css" media="screen and (min-width: 769px)" />
+  <script type="module" src="../js/repaso.pokemon.js"></script>
+</head>
+<body class="debug">
+  <!-- Cabecera de la página -->
+  <header>
+    <h1>Mi Pokedex - HOME</h1>
+    <nav>
+      <ol>
+        <li><a href="./plantilla.pokemon.html" class="active">Home</a></li>
+        <li><a href="coleccion.html">Mi colección</a></li>
+        <li><a href="mapa.html">Mapa</a></li>
+      </ol>
+    </nav>
+  </header>
+  <!-- Componente: buscador de pokemons -->
+  <main>
+    <form>
+      <fieldset>
+        <label for="search">Nombre o número</label>
+        <input type="text" id="search" />
+      </fieldset>
+      <button type="button" id="searchButton" title="Buscar">&#x1F50D;&#xfe0e;</button>
+      <p>Busca un Pokémon por su nombre o usando su número de la Pokédex Nacional.</p>
+    </form>
+    <!-- Componente: galería de pokemons -->
+    <ol class="pokemon-gallery">
+      <li class="pokemon-card">
+        <!-- Componente: ficha de pokemon -->
+        <a href="./ficha.html">
+          <figure>
+            <img class="pokemon-img" src="../pokemon/images/001.png" alt="NOMBRE POKEMON">
+            <figcaption class="pokemonCaption">Nº 0001</figcaption>
+          </figure>
+        </a>
+        <h1>NOMBRE POKEMON</h1>
+        <p class="taglist">
+          <em class="tag planta">Planta</em>
+          <em class="tag veneno">Veneno</em>
+        </p>
+      </li>
+    </ol>
+  </main>
+</body>
+</html>

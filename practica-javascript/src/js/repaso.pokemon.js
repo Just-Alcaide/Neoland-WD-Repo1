@@ -82,9 +82,9 @@ function readPokemonList (){
         if (pokemonId === 662) {
             pokemonId = pokemonId + 'r'
           }
-          if (pokemonId === 740) {
-            pokemonId = pokemonId + 'le'
-          }
+        if (pokemonId === 740) {
+        pokemonId = pokemonId + 'le'
+        }
         const numeroImagen = String(pokemonId).padStart(3, 0)
         imgElement.src = '../pokemon/images/' + numeroImagen + '.png'
 
@@ -104,13 +104,26 @@ function readPokemonList (){
         h1Element.innerText = POKEMONS[i].name.english
         //añadir el nombre al li
         liElement.appendChild(h1Element)
-        
-
-
-
-        
+        // creamos el elemento p
+        let tagListElement = document.createElement('p')
         //crear lista de tags
+        tagListElement.className = 'taglist'
+        //creamos los tags con bucle for
+        for (let j = 0; j < POKEMONS[i].type.length; j++) {
+          let tagItemElement = document.createElement('em')
+          let pokemonType = POKEMONS[i].type[j]
+          // añadimos los tags
+          tagItemElement.className = 'tag ' + pokemonType.toLowerCase()
+          tagItemElement.innerText = pokemonType
+          tagListElement.appendChild(tagItemElement)
+        }
+        //añadimos la lista de tags al li
+        liElement.appendChild(tagListElement)
+
+
+        
         //tipos de pokemon
+        /*
         let typePokemon;
         for (let j = 0; j < POKEMONS[i].type.length; j++ ){
         typePokemon = document.createElement('em')
@@ -118,8 +131,8 @@ function readPokemonList (){
         //crear el p
         let pElement = document.createElement('p')
         pElement.appendChild(typePokemon)
-        }
-        // NO ENTIENDO NADA T_TS
+        }*/
+        // NO ENTIENDO NADA T_T
         
 
         
@@ -129,15 +142,17 @@ function readPokemonList (){
           //añadir la lista de tags
           //añadir el li a la lista
         
-       
-        
-
-
-        
-        
-
        LISTA.appendChild(liElement)
-
+      /*
+      for (let baseValue in POKEMONS[i].base) {
+        console.log(baseValue)
+      }
+      
+      for (let typeIndex in POKEMONS[i].type) {
+        let typeValue = POKEMONS[i].type[typeIndex]
+        console.log(typeIndex, typeValue)
+      }
+      */
 
     }
 }
@@ -160,3 +175,49 @@ LISTA.appendChild(liElement)
 padStart, metodo que a una cadena de texto le añade ceros por delante
 */
 //arreglamos problemas de pokemon mal definidos
+
+
+// CONTEXTO DE EJECUCIÓN
+/*
+cuando tenemos algo con {}, eso está dentro del contexto, solo se puede utilizar dentro del contexto.
+si declaramos una variable dentro de una función, no la vamos a poder usar fuera
+var se salta los contextos y da a errores. 
+let solo vive dentro del contexto, cuando te sales del bucle (por ej) no funciona, como pasó con typePokemon
+declaraciones al principio de la página
+en la función, al principio de la función
+en bucle, al principio del bucle
+
+*/
+/* BUCLES
+hemos visto el for
+para el while:
+let i = 0
+while (i < 20) {
+  i++
+}
+  la condición tiene que hacerse antes, la pregunta en la línea y luego el bucle
+  es fácil olvidar poner el i++ para parar el bucle, se puede hacerse un bucle infinito
+  es util para cuando la condición no es númerica
+
+  let condicion = ''
+  while (condicion !== 'he terminado') {
+    //lanzar peticion
+    condicion API.getCondicion('https://API_URL)
+  }
+
+dentro de la familia del bucle for, hay dos variantes
+for in for of
+ejemplo, en pokemons, base es un objeto
+for (let baseValue in POKEMONS[i].base]) {
+  console.log(baseValue)
+}
+
+for (let typeIndex in POKEMONS[i].type) {
+  let typeValue = POKEMONS[i].type[typeIndex]
+  console.log(typeIndex, typeValue)
+}
+TODO: REVISA LO DE ARRIBA QUE NO ESTÁ BIEN DEL TODO, ESTA BIEN EN LA DOCUMENTACION
+
+
+
+*/

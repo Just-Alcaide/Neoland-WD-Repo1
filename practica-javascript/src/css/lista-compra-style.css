@@ -3,54 +3,59 @@
 }
 
 body {
-    background-color: aliceblue;
-    grid-template-columns: repeat(12, 1fr);
     display: grid;
-    
+    grid-template-columns: repeat(12, 1fr);
+    font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    font-size: 18px;
+    background-color:#F9F9F9;
 
-    
-        header {
-        margin-top: 1em;
-        text-align: center;
-        color: white;
-        background-color: olive;
+    header {
+        background-color: #B0B0B0;
+        grid-column-start: span 12;
+        p {
+            text-align: center;
+            font-size: 1.5em;
+            background-color: #34495E;
+            color: #F9F9F9;
+         }
     }
 
-    main{
-        margin-top: 1em;
-        display: flex;
-        background-color: red;
+    main {
+        background-color: #A3D9B1;
         form {
-            margin: 1em;
-        }
+            fieldset {
+                div {
 
-        #log {
-            margin-left: 10px;
+                }
+            }
         }
 
         table {
-            margin: 1em;
+            caption {
+
+            }
         }
     }
 
     aside {
-    margin-top: 1em;
-    padding: 1em;
-    text-align: center;
-    background-color: green;
-    
-        ul {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+        background-color:#B0B0B0;
+        color: #34495E;
+        p {
+
+        }
+        nav {
+            ul {
+                li {
+
+                }
+            }
         }
     }
-
     footer {
-        margin-top: 1em;
+        grid-column-start: span 12;
+        font-size: 1em;
         text-align: center;
-        color: white;
-        background-color: black;
+        background-color: #34495E;
+        color: #F9F9F9;
     }
-    
 }

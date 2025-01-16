@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="../css/plantilla.pokemon.style.css" />
   <link rel="stylesheet" href="../css/plantilla.pokemon.mobile.css" media="screen and (max-width: 768px)" />
   <link rel="stylesheet" href="../css/plantilla.pokemon.desktop.css" media="screen and (min-width: 769px)" />
-  <script src="../js/repaso.pokemon.js"></script>
+  <script type="module" src="../js/repaso.pokemon.js"></script>
 </head>
 <body class="debug">
   <!-- Cabecera de la página -->
@@ -38,8 +38,8 @@
         <!-- Componente: ficha de pokemon -->
         <a href="./ficha.html">
           <figure>
-            <img src="../pokemon/images/001.png" alt="NOMBRE POKEMON">
-            <figcaption>Nº 0001</figcaption>
+            <img class="pokemon-img" src="../pokemon/images/001.png" alt="NOMBRE POKEMON">
+            <figcaption class="pokemonCaption">Nº 0001</figcaption>
           </figure>
         </a>
         <h1>NOMBRE POKEMON</h1>

@@ -60,7 +60,53 @@ import POKEMONS from '../pokemon/pokedex.json' with { type: 'json' }
 
 console.log('Datos de Pokemons', POKEMONS)
 
-readPokemonList()
+
+
+let pokemonEnBuscaYCaptura = buscarPokemon ('saur')
+console.log ('He encontrado: ', pokemonEnBuscaYCaptura)
+
+document.addEventListener('DOMContentLoaded', onDOMContentLoaded)
+
+
+//evento dom content load event controller
+//un evento es algo que un elemento de interfaz usa para avisar que algo ha pasado
+
+function onDOMContentLoaded(e) {
+  readPokemonList()
+  //codigo a ejecutar cuando carge la página
+  const searchButton = document.getElementById('searchButton')
+  //const pokemonType = document.getElementsByClassName('tag')
+  console.log('la pagina ha cargado', e)
+  //pokemonType[0].addEventListener('click', onPokemonTypeClick)
+  searchButton.addEventListener('click', onSearchClick)
+
+  const tagElementsList = document.getElementsByClassName('tag')
+  for (let tagElement of tagElementsList) {
+    tagElement.addEventListener('click', onTagClick)
+  }
+}
+/*
+function onPokemonTypeClick(e) {
+  const clickedPokemonType = e.target;
+  console.log(clickedPokemonType)
+
+}
+*/
+
+function onTagClick(e) {
+  const tagElement = e.target
+  console.log(tagElement.innerText)
+}
+
+
+
+function onSearchClick(e){
+  const searchInput = document.getElementById('search')
+  const query = searchInput.value
+  const listaDePokemonBuscados = buscarPokemon(query)
+  console.log('he clicado en busqueda', query)
+}
+
 
 function readPokemonList (){
     //Por cada elemento en la lista de pokemons, 
@@ -82,9 +128,9 @@ function readPokemonList (){
         if (pokemonId === 662) {
             pokemonId = pokemonId + 'r'
           }
-          if (pokemonId === 740) {
-            pokemonId = pokemonId + 'le'
-          }
+        if (pokemonId === 740) {
+        pokemonId = pokemonId + 'le'
+        }
         const numeroImagen = String(pokemonId).padStart(3, 0)
         imgElement.src = '../pokemon/images/' + numeroImagen + '.png'
 
@@ -104,13 +150,26 @@ function readPokemonList (){
         h1Element.innerText = POKEMONS[i].name.english
         //añadir el nombre al li
         liElement.appendChild(h1Element)
-        
-
-
-
-        
+        // creamos el elemento p
+        let tagListElement = document.createElement('p')
         //crear lista de tags
+        tagListElement.className = 'taglist'
+        //creamos los tags con bucle for
+        for (let j = 0; j < POKEMONS[i].type.length; j++) {
+          let tagItemElement = document.createElement('em')
+          let pokemonType = POKEMONS[i].type[j]
+          // añadimos los tags
+          tagItemElement.className = 'tag ' + pokemonType.toLowerCase()
+          tagItemElement.innerText = pokemonType
+          tagListElement.appendChild(tagItemElement)
+        }
+        //añadimos la lista de tags al li
+        liElement.appendChild(tagListElement)
+
+
+        
         //tipos de pokemon
+        /*
         let typePokemon;
         for (let j = 0; j < POKEMONS[i].type.length; j++ ){
         typePokemon = document.createElement('em')
@@ -118,8 +177,8 @@ function readPokemonList (){
         //crear el p
         let pElement = document.createElement('p')
         pElement.appendChild(typePokemon)
-        }
-        // NO ENTIENDO NADA T_TS
+        }*/
+        // NO ENTIENDO NADA T_T
         
 
         
@@ -129,15 +188,17 @@ function readPokemonList (){
           //añadir la lista de tags
           //añadir el li a la lista
         
-       
-        
-
-
-        
-        
-
        LISTA.appendChild(liElement)
-
+      /*
+      for (let baseValue in POKEMONS[i].base) {
+        console.log(baseValue)
+      }
+      
+      for (let typeIndex in POKEMONS[i].type) {
+        let typeValue = POKEMONS[i].type[typeIndex]
+        console.log(typeIndex, typeValue)
+      }
+      */
 
     }
 }
@@ -160,3 +221,123 @@ LISTA.appendChild(liElement)
 padStart, metodo que a una cadena de texto le añade ceros por delante
 */
 //arreglamos problemas de pokemon mal definidos
+
+
+// CONTEXTO DE EJECUCIÓN
+/*
+cuando tenemos algo con {}, eso está dentro del contexto, solo se puede utilizar dentro del contexto.
+si declaramos una variable dentro de una función, no la vamos a poder usar fuera
+var se salta los contextos y da a errores. 
+let solo vive dentro del contexto, cuando te sales del bucle (por ej) no funciona, como pasó con typePokemon
+declaraciones al principio de la página
+en la función, al principio de la función
+en bucle, al principio del bucle
+
+*/
+/* BUCLES
+hemos visto el for
+para el while:
+let i = 0
+while (i < 20) {
+  i++
+}
+  la condición tiene que hacerse antes, la pregunta en la línea y luego el bucle
+  es fácil olvidar poner el i++ para parar el bucle, se puede hacerse un bucle infinito
+  es util para cuando la condición no es númerica
+
+  let condicion = ''
+  while (condicion !== 'he terminado') {
+    //lanzar peticion
+    condicion API.getCondicion('https://API_URL)
+  }
+
+dentro de la familia del bucle for, hay dos variantes
+for in for of
+ejemplo, en pokemons, base es un objeto
+for (let baseValue in POKEMONS[i].base]) {
+  console.log(baseValue)
+}
+
+for (let typeIndex in POKEMONS[i].type) {
+  let typeValue = POKEMONS[i].type[typeIndex]
+  console.log(typeIndex, typeValue)
+}
+TODO: REVISA LO DE ARRIBA QUE NO ESTÁ BIEN DEL TODO, ESTA BIEN EN LA DOCUMENTACION
+*/
+
+/*
+FUNCIONES: (camelCase y que el nombre sea un verbo)
+sintaxis
+function nombreFunction () {}
+//barrita asterisco asterisco entramos al param
+*/
+/**
+ * 
+ * @param {string} query 
+ * 
+ * @returns {string}
+ */
+
+//sintaxis basica
+//buscarPokemon(3,3)
+function buscarPokemon(query) {
+  
+  let returnValue = []
+  
+  let numberQuery = Number(query)
+
+
+
+  query = Number(query)
+  console.log('buscarPokemon', query)
+  //buscar el pokemon por nombre o identificador
+  //usando POKEMONS, primero tenemos que saber si query es un id o un nombre
+
+  if (isNaN(query)) {
+    //console.log('query es una cadena de texto')
+    for (let pokemon of POKEMONS) {
+      //if (pokemon.name.english === query) {
+        //console.log(pokemon.name.english, 'existe')
+        if (pokemon.name.english.includes(query)) {
+        returnValue.push(pokemon.name.english)
+      }
+    }
+
+  } else {
+    console.log('query es un numero')
+    for (let pokemon of POKEMONS) {
+      if (pokemon.id === query) {
+        //console.log(pokemon.name.english, 'existe')
+        returnValue.push(pokemon.name.english)
+      }
+    }
+  }
+  //sabemos que según lo que llegue al metodo podemos buscar por id o nombre
+  //recorremos el array de pokemons
+  //for in para objetos, for of para iterables (array, mapa, set)
+  
+
+  return  returnValue
+}
+// la query es la cadena de texto que meteremos en el buscador
+
+// como variable normal y corriente
+// tiene que estar declarada al principio por hoisting
+//buscarPorTexto('hola')
+/*
+const buscarPorTexto = function (textoDeBusqueda) {
+  console.log ('buscarPorTexTO', textoDeBusqueda)
+}*/
+
+/*
+EVENTOS 
+mas arriba, suerte bro
+*/
+
+/*
+se pueden meter varias condiciones dentro de un if y esas cosas
+&& significa "y"
+|| significa "o"
+podemos poner varias agrupadas por paréntesis dentro de la condición del if
+
+*/

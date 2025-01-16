@@ -22,17 +22,31 @@ body {
 
     main {
         background-color: #A3D9B1;
+        padding: 1em;
+
         form {
             fieldset {
+                padding: 0.5em 0;
                 div {
+                    grid-row-start: span 1;
 
+                    input {
+                        border-color: #FFD972;
+                        background-color:#F9F9F9;
+                    }
                 }
             }
         }
-
+        p {
+            text-align: center;
+        }
         table {
+            width: 70vw;
+            margin: 1em auto;
+            background-color: #F9F9F9;
+            border-color: #FFD972;
             caption {
-
+                margin-bottom: 0.5em;
             }
         }
     }
@@ -41,12 +55,15 @@ body {
         background-color:#B0B0B0;
         color: #34495E;
         p {
-
+            border-bottom: 2px solid #FFD972;
         }
         nav {
             ul {
+                
                 li {
-
+                    margin: 0.5em;
+                    border-bottom: 2px solid #FFD972;
+                    
                 }
             }
         }

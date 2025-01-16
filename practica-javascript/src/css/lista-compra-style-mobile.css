@@ -4,7 +4,13 @@ body {
 
         form{
             fieldset {
-            
+                display: grid;
+                grid-template-rows: 4fr 1fr;
+                
+                .form-inputs * {
+                    display: block;
+                }
+               
             }
         }
         

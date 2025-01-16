@@ -1,6 +1,14 @@
 body {
     main {
         grid-column-start: span 12;
+
+        form {
+            fieldset {
+                display: grid;
+                grid-template-rows: 2fr 1fr;
+                
+            }
+        }
     }
 
     aside {

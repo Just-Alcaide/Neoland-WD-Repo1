@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lista de la Compra</title>
-    <script src="../js/index.js"></script>
+    <script src="../js/lista-compra.js"></script>
     <link rel="stylesheet" href="../css/reset.css">
     <link rel="stylesheet" href="../css/lista-compra-style.css">
     <link rel="stylesheet" href="../css/lista-compra-style-mobile.css" media="screen and (max-width: 768px)">
@@ -15,24 +15,26 @@
 <body>
     <header>
         <p>Lista de la Compra</p>
-        <button type="button" id="changeColour" onclick="changeColor ()" disabled>Cambiar Color</button>
     </header>
-    <main id=>
+    <main>
         <form>
             <fieldset>
+                <div class="form-inputs">
                 <legend>Añadir a la lista</legend>
                 <input type="text" placeholder="producto" id="product" name="product">
                 <input type="number" id="qty" placeholder="cantidad">
                 <input type="number" id="price"
                 placeholder="precio">
+                </div>
+                <div class="form-buttons">
                 <button type="button" id="newProduct" onclick="addToShoppingList ()">Añadir</button>
                 <button type="reset" id="newList" onclick="resetShoppingList ()">Nueva lista</button>
-                
+                </div>
             </fieldset>
         </form>
-        <p id="log"></p>
+        <p id="log">Añadido reciente:</p>
         <table id="shoppingListTable">
-            <caption>Tabla</caption>
+            <caption>Lista de la compra</caption>
             <thead>
                 <tr>
                     <th>Producto</th>
@@ -42,24 +44,6 @@
                 </tr>
             </thead>
             <tbody id="shoppingListTableBody">
-                <!--<tr>
-                    <td>Producto1</td>
-                    <td>Cantidad1</td>
-                    <td>Precio1</td>
-                    <td>Total1</td>
-                </tr>
-                <tr>
-                    <td>Producto2</td>
-                    <td>Cantidad2</td>
-                    <td>Precio1</td>
-                    <td>Total2</td>
-                </tr>
-                <tr>
-                    <td>Producto3</td>
-                    <td>Cantidad3</td>
-                    <td>Precio1</td>
-                    <td>Total3</td>
-                </tr>-->
             </tbody>
             <tfoot>
                 <tr>
@@ -70,7 +54,7 @@
         </table>
     </main>
     <aside>
-        <p>Barra Lateral</p>
+        <p>Menú</p>
         <nav>
         <ul>
             <li>Enlace1</li>

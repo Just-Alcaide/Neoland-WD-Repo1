@@ -60,7 +60,53 @@ import POKEMONS from '../pokemon/pokedex.json' with { type: 'json' }
 
 console.log('Datos de Pokemons', POKEMONS)
 
-readPokemonList()
+
+
+let pokemonEnBuscaYCaptura = buscarPokemon ('saur')
+console.log ('He encontrado: ', pokemonEnBuscaYCaptura)
+
+document.addEventListener('DOMContentLoaded', onDOMContentLoaded)
+
+
+//evento dom content load event controller
+//un evento es algo que un elemento de interfaz usa para avisar que algo ha pasado
+
+function onDOMContentLoaded(e) {
+  readPokemonList()
+  //codigo a ejecutar cuando carge la página
+  const searchButton = document.getElementById('searchButton')
+  //const pokemonType = document.getElementsByClassName('tag')
+  console.log('la pagina ha cargado', e)
+  //pokemonType[0].addEventListener('click', onPokemonTypeClick)
+  searchButton.addEventListener('click', onSearchClick)
+
+  const tagElementsList = document.getElementsByClassName('tag')
+  for (let tagElement of tagElementsList) {
+    tagElement.addEventListener('click', onTagClick)
+  }
+}
+/*
+function onPokemonTypeClick(e) {
+  const clickedPokemonType = e.target;
+  console.log(clickedPokemonType)
+
+}
+*/
+
+function onTagClick(e) {
+  const tagElement = e.target
+  console.log(tagElement.innerText)
+}
+
+
+
+function onSearchClick(e){
+  const searchInput = document.getElementById('search')
+  const query = searchInput.value
+  const listaDePokemonBuscados = buscarPokemon(query)
+  console.log('he clicado en busqueda', query)
+}
+
 
 function readPokemonList (){
     //Por cada elemento en la lista de pokemons, 
@@ -217,7 +263,81 @@ for (let typeIndex in POKEMONS[i].type) {
   console.log(typeIndex, typeValue)
 }
 TODO: REVISA LO DE ARRIBA QUE NO ESTÁ BIEN DEL TODO, ESTA BIEN EN LA DOCUMENTACION
+*/
+
+/*
+FUNCIONES: (camelCase y que el nombre sea un verbo)
+sintaxis
+function nombreFunction () {}
+//barrita asterisco asterisco entramos al param
+*/
+/**
+ * 
+ * @param {string} query 
+ * 
+ * @returns {string}
+ */
+
+//sintaxis basica
+//buscarPokemon(3,3)
+function buscarPokemon(query) {
+  
+  let returnValue = []
+  
+  let numberQuery = Number(query)
 
 
+
+  query = Number(query)
+  console.log('buscarPokemon', query)
+  //buscar el pokemon por nombre o identificador
+  //usando POKEMONS, primero tenemos que saber si query es un id o un nombre
+
+  if (isNaN(query)) {
+    //console.log('query es una cadena de texto')
+    for (let pokemon of POKEMONS) {
+      //if (pokemon.name.english === query) {
+        //console.log(pokemon.name.english, 'existe')
+        if (pokemon.name.english.includes(query)) {
+        returnValue.push(pokemon.name.english)
+      }
+    }
+
+  } else {
+    console.log('query es un numero')
+    for (let pokemon of POKEMONS) {
+      if (pokemon.id === query) {
+        //console.log(pokemon.name.english, 'existe')
+        returnValue.push(pokemon.name.english)
+      }
+    }
+  }
+  //sabemos que según lo que llegue al metodo podemos buscar por id o nombre
+  //recorremos el array de pokemons
+  //for in para objetos, for of para iterables (array, mapa, set)
+  
+
+  return  returnValue
+}
+// la query es la cadena de texto que meteremos en el buscador
+
+// como variable normal y corriente
+// tiene que estar declarada al principio por hoisting
+//buscarPorTexto('hola')
+/*
+const buscarPorTexto = function (textoDeBusqueda) {
+  console.log ('buscarPorTexTO', textoDeBusqueda)
+}*/
+
+/*
+EVENTOS 
+mas arriba, suerte bro
+*/
+
+/*
+se pueden meter varias condiciones dentro de un if y esas cosas
+&& significa "y"
+|| significa "o"
+podemos poner varias agrupadas por paréntesis dentro de la condición del if
 
 */

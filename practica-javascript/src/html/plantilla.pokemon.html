@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="../css/plantilla.pokemon.style.css" />
   <link rel="stylesheet" href="../css/plantilla.pokemon.mobile.css" media="screen and (max-width: 768px)" />
   <link rel="stylesheet" href="../css/plantilla.pokemon.desktop.css" media="screen and (min-width: 769px)" />
-  <script type="module" src="../js/repaso.pokemon.js"></script>
+  <script type="module" src="../js/plantilla.pokemon.js"></script>
 </head>
 <body class="debug">
   <!-- Cabecera de la página -->
@@ -24,10 +24,10 @@
   </header>
   <!-- Componente: buscador de pokemons -->
   <main>
-    <form>
+    <form id="searchForm">
       <fieldset>
         <label for="search">Nombre o número</label>
-        <input type="text" id="search" />
+        <input type="text" id="search" autocomplete="off" />
       </fieldset>
       <button type="button" id="searchButton" title="Buscar">&#x1F50D;&#xfe0e;</button>
       <p>Busca un Pokémon por su nombre o usando su número de la Pokédex Nacional.</p>

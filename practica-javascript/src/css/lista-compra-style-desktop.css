@@ -1,6 +1,6 @@
 body {
     main {
-        grid-column-start: span 12;
+        grid-column-start: span 9;
 
         form {
             fieldset {
@@ -12,16 +12,20 @@ body {
     }
 
     aside {
-        grid-column-start: span 12;
-        display: block;
-        p{
-            text-align: center;
+        grid-column-start: span 3;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        
+        p {
+            height: 2em;
+            align-self: center;
         }
-        nav{
-            ul{
-                display: flex;
-                flex-direction: row;
-                justify-content: space-evenly;
+        nav {
+            ul {
+                li {
+                    
+                }
             }
         }
     }

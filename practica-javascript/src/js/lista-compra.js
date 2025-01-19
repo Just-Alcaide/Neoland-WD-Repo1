@@ -129,16 +129,24 @@ function showNewProduct (newProduct) {
     const newProductQtyCell = document.createElement('td')
     const newProductPriceCell = document.createElement('td')
     const newProductSubtotalCell = document.createElement('td')
+    const newProductCheckboxCell = document.createElement('td')
+    const newProductCheckbox = document.createElement('input')
+    
 
     newProductNameCell.innerText = newProduct.name
     newProductQtyCell.innerText = newProduct.qty
     newProductPriceCell.innerText = newProduct.price
     newProductSubtotalCell.innerText = newProduct.subTotal
+    newProductCheckbox.type = 'checkbox'
 
+    newProductCheckboxCell.appendChild(newProductCheckbox)
+    
     newProductTableRow.appendChild(newProductNameCell)
     newProductTableRow.appendChild(newProductQtyCell)
     newProductTableRow.appendChild(newProductPriceCell)
     newProductTableRow.appendChild(newProductSubtotalCell)
+    newProductTableRow.appendChild(newProductCheckboxCell)
+    
 
     newProductTable.appendChild(newProductTableRow)
 }

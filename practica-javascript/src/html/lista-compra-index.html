@@ -21,14 +21,14 @@
             <fieldset>
                 <div class="form-inputs">
                 <legend>Añadir a la lista</legend>
-                <input type="text" placeholder="producto" id="product" name="product">
-                <input type="number" id="qty" placeholder="cantidad">
-                <input type="number" id="price"
+                <input type="text" placeholder="producto" id="productName" name="product">
+                <input type="number" id="productQty" placeholder="cantidad">
+                <input type="number" id="productPrice"
                 placeholder="precio">
                 </div>
                 <div class="form-buttons">
-                <button type="button" id="newProduct" onclick="addToShoppingList ()">Añadir</button>
-                <button type="reset" id="newList" onclick="resetShoppingList ()">Nueva lista</button>
+                <button type="button" id="addProductButton" >Añadir</button>
+                <button type="reset" id="newListButton" >Nueva lista</button>
                 </div>
             </fieldset>
         </form>
@@ -40,7 +40,7 @@
                     <th>Producto</th>
                     <th>Cantidad</th>
                     <th>Precio</th>
-                    <th>Total</th>
+                    <th>Subtotal</th>
                 </tr>
             </thead>
             <tbody id="shoppingListTableBody">

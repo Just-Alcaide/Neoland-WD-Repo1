@@ -53,9 +53,11 @@ document.addEventListener('DOMContentLoaded', onDomContentLoaded)
 function onDomContentLoaded(){
     const newProductButton = document.getElementById('addProductButton');
     const newListButton = document.getElementById('newListButton')
+    const productCheckbox = document.querySelectorAll('.productCheckbox')
 
     newProductButton.addEventListener('click', onNewProductClick)
     newListButton.addEventListener('click', onNewListClick)
+    productCheckbox.addEventListener('change', onProductCheckboxChecked)
 
     console.log('DOM completamente cargado y listo')
 }
@@ -71,6 +73,10 @@ function onNewListClick(e){
     resetList ()
     calculateTotal()
     resetForm()
+}
+
+function onProductCheckboxChecked(e){
+    
 }
 
 //Métodos
@@ -138,9 +144,10 @@ function showNewProduct (newProduct) {
     newProductPriceCell.innerText = newProduct.price
     newProductSubtotalCell.innerText = newProduct.subTotal
     newProductCheckbox.type = 'checkbox'
+    newProductCheckbox.classList.add('productCheckbox')
 
     newProductCheckboxCell.appendChild(newProductCheckbox)
-    
+
     newProductTableRow.appendChild(newProductNameCell)
     newProductTableRow.appendChild(newProductQtyCell)
     newProductTableRow.appendChild(newProductPriceCell)

@@ -53,7 +53,6 @@ document.addEventListener('DOMContentLoaded', onDomContentLoaded)
 function onDomContentLoaded(){
     const newProductButton = document.getElementById('addProductButton');
     const newListButton = document.getElementById('newListButton')
-    
 
     newProductButton.addEventListener('click', onNewProductClick)
     newListButton.addEventListener('click', onNewListClick)
@@ -64,14 +63,14 @@ function onDomContentLoaded(){
 
 function onNewProductClick(e) {
     createNewProduct()
-
-    console.log(shoppingList)
+    calculateTotal()
+    resetForm ()
 }
 
 function onNewListClick(e){
     resetList ()
-
-    console.log (shoppingList)
+    calculateTotal()
+    resetForm()
 }
 
 //Métodos
@@ -82,15 +81,18 @@ function onNewListClick(e){
 function createNewProduct () {
     const newProductName = document.getElementById('productName').value;
     const newProductQty = Number(document.getElementById('productQty').value);
-    const newProductPrice = Number(document.getElementById('productPrice').value)
+    const newProductPrice = Number(document.getElementById('productPrice').value);
+    const newProductSubtotal = newProductQty * newProductPrice;
     const newProduct = {
         name: newProductName,
         qty: newProductQty,
         price: newProductPrice,
+        subTotal: newProductSubtotal,
     }
+    
     showLogText (`Añadido ${newProduct.qty} unidades de ${newProduct.name} por valor de ${newProduct.price}€`)
+    showNewProduct(newProduct) //PREGUNTAR
     shoppingList.push(newProduct)
-    resetForm ()
 }
 /**
  * Delete list
@@ -98,19 +100,15 @@ function createNewProduct () {
 function resetList () {
     shoppingList.splice(0, shoppingList.length)
     showLogText('Nueva lista')
-    resetForm ()
+    const newListTable = document.getElementById('shoppingListTableBody')
+    newListTable.innerHTML = ''
 }
 /**
- * 
  * Show Log Text
  */
 function showLogText (logMessage) {
     const logText = document.getElementById('log')
     logText.innerText = logMessage
-}
-
-function showNewProduct () {
-    //Toa la pesca con el html
 }
 /**
  * Reset Form
@@ -120,4 +118,40 @@ function resetForm () {
     document.getElementById('productQty').value = ''
     document.getElementById('productPrice').value = ''
 }
-//calcular el total y esas cosas
+/**
+ * show products in interfaz
+ */
+function showNewProduct (newProduct) {
+    //Toa la pesca con el html
+    const newProductTable = document.getElementById('shoppingListTableBody')
+    const newProductTableRow = document.createElement('tr')
+    const newProductNameCell = document.createElement('td')
+    const newProductQtyCell = document.createElement('td')
+    const newProductPriceCell = document.createElement('td')
+    const newProductSubtotalCell = document.createElement('td')
+
+    newProductNameCell.innerText = newProduct.name
+    newProductQtyCell.innerText = newProduct.qty
+    newProductPriceCell.innerText = newProduct.price
+    newProductSubtotalCell.innerText = newProduct.subTotal
+
+    newProductTableRow.appendChild(newProductNameCell)
+    newProductTableRow.appendChild(newProductQtyCell)
+    newProductTableRow.appendChild(newProductPriceCell)
+    newProductTableRow.appendChild(newProductSubtotalCell)
+
+    newProductTable.appendChild(newProductTableRow)
+}
+
+/**
+ * Calculate total
+ */
+function calculateTotal () {
+    const totalAmount = document.getElementById('shoppingListTableTotal')
+    let total = 0
+    for (let product of shoppingList) {
+        total += product.subTotal
+    }
+    totalAmount.innerText = total
+}
+

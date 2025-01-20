@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lista de la Compra</title>
-    <script src="../js/lista-compra.js"></script>
+    <script type="module" src="../js/lista-compra.js"></script>
     <link rel="stylesheet" href="../css/reset.css">
     <link rel="stylesheet" href="../css/lista-compra-style.css">
     <link rel="stylesheet" href="../css/lista-compra-style-mobile.css" media="screen and (max-width: 768px)">
@@ -18,10 +18,11 @@
     </header>
     <main>
         <form>
+            <datalist id="usualProducts"></datalist>
             <fieldset>
                 <div class="form-inputs">
                 <legend>Añadir a la lista</legend>
-                <input type="text" placeholder="producto" id="productName" name="product">
+                <input type="text" placeholder="producto" id="productName" name="product" list="usualProducts">
                 <input type="number" id="productQty" placeholder="cantidad">
                 <input type="number" id="productPrice"
                 placeholder="precio">

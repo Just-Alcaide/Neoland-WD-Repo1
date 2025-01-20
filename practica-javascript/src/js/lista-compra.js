@@ -57,7 +57,16 @@ function onDomContentLoaded(){
 
     newProductButton.addEventListener('click', onNewProductClick)
     newListButton.addEventListener('click', onNewListClick)
-    productCheckbox.addEventListener('change', onProductCheckboxChecked)
+
+    for (let checkbox of productCheckbox) {
+        checkbox.addEventListener('change', onProductCheckboxChecked)
+    } 
+    // TODO: Repasar local storage
+    const storedData = JSON.parse(localStorage.getItem('shoppingList'))
+    storedData.forEach(savedArticle => {
+        shoppingList.push(savedArticle)
+        showNewProduct (savedArticle)
+    });
 
     console.log('DOM completamente cargado y listo')
 }
@@ -67,16 +76,24 @@ function onNewProductClick(e) {
     createNewProduct()
     calculateTotal()
     resetForm ()
+    localStorage.setItem('shoppingList', JSON.stringify(shoppingList))
 }
 
 function onNewListClick(e){
     resetList ()
     calculateTotal()
     resetForm()
+    localStorage.setItem('shoppingList', JSON.stringify(shoppingList))
 }
 
 function onProductCheckboxChecked(e){
-    
+    const checkbox = e.target;
+    const checkboxRow = checkbox.closest('tr')
+    if (checkbox.checked) {
+        checkboxRow.classList.add('product-checked')
+    } else {
+        checkboxRow.classList.remove('product-checked')
+    }
 }
 
 //Métodos
@@ -99,6 +116,8 @@ function createNewProduct () {
     showLogText (`Añadido ${newProduct.qty} unidades de ${newProduct.name} por valor de ${newProduct.price}€`)
     showNewProduct(newProduct) //PREGUNTAR
     shoppingList.push(newProduct)
+
+    
 }
 /**
  * Delete list
@@ -146,6 +165,8 @@ function showNewProduct (newProduct) {
     newProductCheckbox.type = 'checkbox'
     newProductCheckbox.classList.add('productCheckbox')
 
+    newProductCheckbox.addEventListener('change', onProductCheckboxChecked);
+
     newProductCheckboxCell.appendChild(newProductCheckbox)
 
     newProductTableRow.appendChild(newProductNameCell)
@@ -167,6 +188,9 @@ function calculateTotal () {
     for (let product of shoppingList) {
         total += product.subTotal
     }
-    totalAmount.innerText = total
+    totalAmount.innerText = total.toFixed(2)
 }
 
+// TODO: estilo de líneas de numeros (derecha y con € si procede)
+// TODO: boton para borrar tr del producto
+// TODO: productos habituales (?)

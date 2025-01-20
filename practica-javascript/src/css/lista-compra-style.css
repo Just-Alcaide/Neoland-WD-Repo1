@@ -4,6 +4,7 @@
 
 .product-checked {
     text-decoration: line-through;
+    background-color: lightgray;
 }
 
 body {

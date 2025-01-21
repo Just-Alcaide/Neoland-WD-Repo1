@@ -8,10 +8,12 @@
 //Tiene que estar en el js (importarlo de allí)
 
 export class Product {
+    productId
     productName
     productYear
     productGenre
-    constructor (productData) {
+    constructor (productId, productData) {
+        this.productId = productId + '_' + String(timestamp.getTime())
         this.productName = productData.productName
         this.productYear = productData.productYear
         this.productGenre = productData.productGenre
@@ -21,8 +23,8 @@ export class Product {
 export class Book extends Product { 
     productAuthor
     productPages
-    constructor (productData, productAuthor, productPages) {
-        super(productData)
+    constructor (productId, productData, productAuthor, productPages) {
+        super(productId, productData)
         this.productAuthor = productAuthor
         this.productPages = productPages
     }
@@ -31,8 +33,8 @@ export class Book extends Product {
 export class Movie extends Product {
     productDirector
     productMinutes
-    constructor (productData, productDirector, productMinutes) {
-        super(productData)
+    constructor (productId, productData, productDirector, productMinutes) {
+        super(productId, productData)
         this.productDirector = productDirector
         this.productMinutes = productMinutes
     }
@@ -44,12 +46,12 @@ export const PRODUCT_TYPE = {
 }
 
 export class ProductFactory {
-    createProduct(productType, productData, productAuthor, productPages, productDirector, productMinutes) {
+    createProduct(productType, productId, productData, productAuthor, productPages, productDirector, productMinutes) {
         switch(productType) {
             case PRODUCT_TYPE.BOOK:
-                return new Book (productData, productAuthor, productPages)
+                return new Book (productId, productData, productAuthor, productPages)
             case PRODUCT_TYPE.MOVIE:
-                return new Movie (productData, productDirector, productMinutes)
+                return new Movie (productId, productData, productDirector, productMinutes)
         } 
     }
 }

@@ -1,0 +1,19 @@
+{
+  "name": "neoland-wd-repo1",
+  "version": "1.0.0",
+  "description": "practicas proyecto",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Just-Alcaide/Neoland-WD-Repo1.git"
+  },
+  "author": "@Alberto",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Just-Alcaide/Neoland-WD-Repo1/issues"
+  },
+  "homepage": "https://github.com/Just-Alcaide/Neoland-WD-Repo1#readme"
+}

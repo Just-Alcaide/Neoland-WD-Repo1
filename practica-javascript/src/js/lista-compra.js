@@ -54,14 +54,16 @@ document.addEventListener('DOMContentLoaded', onDomContentLoaded)
 function onDomContentLoaded(){
     const newProductButton = document.getElementById('addProductButton');
     const newListButton = document.getElementById('newListButton')
-    const productCheckbox = document.querySelectorAll('.productCheckbox')
+    
 
     newProductButton.addEventListener('click', onNewProductClick)
     newListButton.addEventListener('click', onNewListClick)
 
-    for (let checkbox of productCheckbox) {
-        checkbox.addEventListener('change', onProductCheckboxChecked)
-    } 
+    //esto lo puedo comentar
+    // const productCheckbox = document.querySelectorAll('.productCheckbox')
+    // for (let checkbox of productCheckbox) {
+    //     checkbox.addEventListener('change', onProductCheckboxChecked)
+    // } 
 
     getUsualProducts()
 

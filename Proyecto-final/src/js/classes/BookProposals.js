@@ -16,4 +16,7 @@ export class BookProposal {
 }
 
 //TODO:
-//Ampliar con campos para votos y estados
+//Ampliar con campos para votos y estados (Extender con mixing, herencia o prototipe)
+
+//TODO: 
+//poner proposal como clase y factory para separar proposal de libro y proposal de pelicula

@@ -234,9 +234,23 @@ async function getAPIData () {
 }
 
 
-
-
-
 // TODO: estilo de celdas de con numeros (derecha)
 // TODO: boton para borrar tr del producto
 // TODO: lo del focus, y cosillas de calidad de vida
+
+
+/*
+trasteamos con programación orientada a objetos
+tenemos call, apply, bind, assign 
+BIND: crea una copia de una función con el this, y los parametros que le digamos (Será el que más usemos)
+
+check function deleteShoppingListItem (e, itemIdToDelete)
+
+deleteShoppingListItem.bind(this, e, newArticleObject.id)
+
+hay que inventarse el evento clickevent, con sus defaults y su target.
+
+se envía una copia, con el entorno, el evento y el parametro
+hemos parametrizado el metodo. hemos creado una copia y le hemos pasado las variables que necesitamos.
+
+*/

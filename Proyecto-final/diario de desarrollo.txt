@@ -1,0 +1,5 @@
+DIARIO DE DESARROLLO - APP CLUB DE LECTURA 
+
+20/01/2025
+
+Definidas clases (primera iteracion): Book, User, Group, BookProposal.

@@ -1,0 +1,32 @@
+[
+    {
+        "id": "leche_1",
+        "name": "leche",
+        "qty": "12",
+        "price": "24"
+    },
+    {
+        "id": "carne_2",
+        "name": "carne",
+        "qty": "3",
+        "price": "6"
+    },
+    {
+        "id": "cereales_3",
+        "name": "cereales",
+        "qty": "2",
+        "price": "3"
+    },
+    {
+        "id": "fruta_4",
+        "name": "fruta",
+        "qty": "10",
+        "price": "2"
+    },
+    {
+        "id": "verdura_5",
+        "name": "verdura",
+        "qty": "12",
+        "price": "1"
+    }
+]

@@ -45,6 +45,7 @@ FUNCIONALIDAD DE LA APP
 
 COMO *** TRADUZCO ESTO A PSUDOCÓDIGO Y LUEGO A CÓDIGO
 */
+// import USUAL_PRODUCTS from '../api/products.json' with { type: 'json'}
 
 const shoppingList = []
 
@@ -53,20 +54,26 @@ document.addEventListener('DOMContentLoaded', onDomContentLoaded)
 function onDomContentLoaded(){
     const newProductButton = document.getElementById('addProductButton');
     const newListButton = document.getElementById('newListButton')
-    const productCheckbox = document.querySelectorAll('.productCheckbox')
+    
 
     newProductButton.addEventListener('click', onNewProductClick)
     newListButton.addEventListener('click', onNewListClick)
 
-    for (let checkbox of productCheckbox) {
-        checkbox.addEventListener('change', onProductCheckboxChecked)
-    } 
+    //esto lo puedo comentar
+    // const productCheckbox = document.querySelectorAll('.productCheckbox')
+    // for (let checkbox of productCheckbox) {
+    //     checkbox.addEventListener('change', onProductCheckboxChecked)
+    // } 
+
+    getUsualProducts()
+
     // TODO: Repasar local storage
     const storedData = JSON.parse(localStorage.getItem('shoppingList'))
     storedData.forEach(savedArticle => {
         shoppingList.push(savedArticle)
         showNewProduct (savedArticle)
     });
+
 
     console.log('DOM completamente cargado y listo')
 }
@@ -161,7 +168,7 @@ function showNewProduct (newProduct) {
     newProductNameCell.innerText = newProduct.name
     newProductQtyCell.innerText = newProduct.qty
     newProductPriceCell.innerText = newProduct.price
-    newProductSubtotalCell.innerText = newProduct.subTotal
+    newProductSubtotalCell.innerText = newProduct.subTotal.toFixed(2) + ' €'
     newProductCheckbox.type = 'checkbox'
     newProductCheckbox.classList.add('productCheckbox')
 
@@ -191,6 +198,59 @@ function calculateTotal () {
     totalAmount.innerText = total.toFixed(2)
 }
 
-// TODO: estilo de líneas de numeros (derecha y con € si procede)
+//DE AQUI PABAJO TENGO QUE REPASAR PERO BIEN
+// TODO: productos habituales => esto va con datalist, apidata o json, fetches y promesas...
+
+/**
+ * Get Usual Products and show usual products
+ */
+async function getUsualProducts() {
+        const dataListElement = document.getElementById('usualProducts')
+    const apiData = await getAPIData()
+  
+    apiData.forEach((product) => {
+      const newOptionElement = document.createElement('option')
+      newOptionElement.value = product.name
+      dataListElement.appendChild(newOptionElement)
+    })
+  }
+
+//VAMOS A DEFINIR UN METODO QUE SEA GET API DATA Y QUE TRAIGA LA INFORMACION (el import ya no será necesario)
+/**
+ * 
+ * Get Api Data
+ */
+async function getAPIData () {
+    const API_USUAL_PRODUCTS_URL = '../api/products.json'
+
+    const apiData = await fetch(API_USUAL_PRODUCTS_URL)
+        .then((response) => {
+            if (!response.ok) {
+                showError(response.status)
+            }
+            return response.json()
+        })
+    return apiData
+}
+
+
+// TODO: estilo de celdas de con numeros (derecha)
 // TODO: boton para borrar tr del producto
-// TODO: productos habituales (?)
+// TODO: lo del focus, y cosillas de calidad de vida
+
+
+/*
+trasteamos con programación orientada a objetos
+tenemos call, apply, bind, assign 
+BIND: crea una copia de una función con el this, y los parametros que le digamos (Será el que más usemos)
+
+check function deleteShoppingListItem (e, itemIdToDelete)
+
+deleteShoppingListItem.bind(this, e, newArticleObject.id)
+
+hay que inventarse el evento clickevent, con sus defaults y su target.
+
+se envía una copia, con el entorno, el evento y el parametro
+hemos parametrizado el metodo. hemos creado una copia y le hemos pasado las variables que necesitamos.
+
+*/

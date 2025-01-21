@@ -14,3 +14,6 @@ export class BookProposal {
         this.proposalGroup = group
     }
 }
+
+//TODO:
+//Ampliar con campos para votos y estados

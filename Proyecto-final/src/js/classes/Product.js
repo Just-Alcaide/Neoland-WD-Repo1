@@ -55,6 +55,8 @@ export class ProductFactory {
 //TODO:______________________________
 //cambiar los nombres de productName a name??? (me gusta el orden,)
 // otra constante que sea details? como product data, con los detalles (autor, paginas, director, minutos)
+//IMPORTANTE: REDEFINIR EL PRODUCT DATA COMO OBJETO CON TODOS LOS PARAMETROS DENTRO, PONER EL PRODUCTO DATA (EN CORCHETES DENTRO DE CREATE PRODUCT PRODUCT FACTORY Y SUS CLASES) Y LOS PARAMETROS CON SU NOMBRE
+//ASI NO PASO LA POSICION DEL PARAMETRO SINO SU CLAVE-VALOR EN EL OBJETO
 //_______________________________
 
 //luego, en el código, a la hora de indicar el tipo de item a crear, basta con añadir el PRODUCT_TYPE.(lo que sea) y está localizado en un único lugar, para modificar o reutilizar

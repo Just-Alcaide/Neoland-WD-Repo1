@@ -60,7 +60,9 @@ async function processMovieData() {
             productGenre: product.genre,
         }
         const movieInstance = factory.createProduct(PRODUCT_TYPE.MOVIE, 
-            productData, 
+            productData,
+            undefined,
+            undefined, 
             product.director, 
             product.minutes
         );
@@ -68,7 +70,6 @@ async function processMovieData() {
         console.log(movieInstance)
     });
 }
-
 
 
 getAPIBookData()
@@ -81,15 +82,3 @@ processMovieData()
 
 console.log(store.get())
 
-// processBookData(apiBookData)
-
-// processMovieData(apiMovieData)
-
-
-
-// const  productData = {
-//     productId: product.id,
-//     productName: product.name,
-//     productYear: product.year,
-//     productGenre: product.genre,
-// }

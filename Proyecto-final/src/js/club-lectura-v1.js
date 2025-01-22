@@ -42,7 +42,9 @@ async function processBookData() {
         const bookInstance = factory.createProduct(PRODUCT_TYPE.BOOK, 
             productData, 
             product.author, 
-            product.pages
+            product.pages,
+            undefined,
+            undefined
         );
         store.get().products.push(bookInstance);
         console.log(bookInstance)

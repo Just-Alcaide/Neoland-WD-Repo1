@@ -16,7 +16,10 @@ function onDomContentLoaded() {
 
 //========METHODS========//
 
-
+/**
+ * 
+ * *get Data from Book API
+ */
 async function getAPIBookData () {
     const apiBookData = await fetch (API_BOOKS_URL)
     .then ((response) => {
@@ -27,7 +30,10 @@ async function getAPIBookData () {
     })
     return apiBookData
 }
-
+/**
+ * 
+ * *get Data from Movie API
+ */
 async function getAPIMovieData () {
     const apiMovieData = await fetch (API_MOVIES_URL)
     .then ((response) => {
@@ -38,7 +44,9 @@ async function getAPIMovieData () {
     })
     return apiMovieData
 }
-
+/**
+ * *process Book Data
+ */
 async function processBookData() {
     const apiBookData = await getAPIBookData();
     const factory = new ProductFactory();
@@ -57,10 +65,11 @@ async function processBookData() {
             undefined
         );
         store.get().products.push(bookInstance);
-        localStorage.setItem('storedData', JSON.stringify(store.get()))
-    });
+    }); localStorage.setItem('storedData', JSON.stringify(store.get()))
 }
-
+/**
+ * *process Movie Data
+ */
 async function processMovieData() {
     const apiMovieData = await getAPIMovieData();
     const factory = new ProductFactory();
@@ -79,20 +88,25 @@ async function processMovieData() {
             product.minutes
         );
         store.get().products.push(movieInstance);
-        localStorage.setItem('storedData', JSON.stringify(store.get()))
-    });
+    }); localStorage.setItem('storedData', JSON.stringify(store.get()))
 }
 
-
+/**
+ * process products Data
+ */
 function processData() {
     getAPIBookData()
     getAPIMovieData()
     processBookData()
     processMovieData()
+    
 }
-
+/**
+ * *read Stored Data
+ */
 function readStoredData() {
-    JSON.parse(localStorage.getItem('storedData'))
+    const storedData = JSON.parse(localStorage.getItem('storedData'))
+    console.log('Stored Data: ', storedData);
 }
 
 

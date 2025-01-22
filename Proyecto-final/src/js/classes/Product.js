@@ -1,10 +1,6 @@
 // arriba puedo meter los datos name, year y genre construyendo y deconstruyendo (cuando toca si toca)
 //OJO meterlos como objeto (Cuando?)
-// const  productData = {
-//     productName: productName.value,
-//     productYear: productYear.value,
-//     productGenre: productGenre.value
-// }
+
 //Tiene que estar en el js (importarlo de allí)
 
 export class Product {
@@ -12,8 +8,8 @@ export class Product {
     productName
     productYear
     productGenre
-    constructor (productId, productData) {
-        this.productId = productId + '_' + String(timestamp.getTime())
+    constructor (productData) {
+        this.productId = productData.productId
         this.productName = productData.productName
         this.productYear = productData.productYear
         this.productGenre = productData.productGenre
@@ -23,8 +19,8 @@ export class Product {
 export class Book extends Product { 
     productAuthor
     productPages
-    constructor (productId, productData, productAuthor, productPages) {
-        super(productId, productData)
+    constructor (productData, productAuthor, productPages) {
+        super(productData)
         this.productAuthor = productAuthor
         this.productPages = productPages
     }
@@ -33,8 +29,8 @@ export class Book extends Product {
 export class Movie extends Product {
     productDirector
     productMinutes
-    constructor (productId, productData, productDirector, productMinutes) {
-        super(productId, productData)
+    constructor (productData, productDirector, productMinutes) {
+        super(productData)
         this.productDirector = productDirector
         this.productMinutes = productMinutes
     }
@@ -46,12 +42,12 @@ export const PRODUCT_TYPE = {
 }
 
 export class ProductFactory {
-    createProduct(productType, productId, productData, productAuthor, productPages, productDirector, productMinutes) {
+    createProduct(productType, productData, productAuthor, productPages, productDirector, productMinutes) {
         switch(productType) {
             case PRODUCT_TYPE.BOOK:
-                return new Book (productId, productData, productAuthor, productPages)
+                return new Book (productData, productAuthor, productPages)
             case PRODUCT_TYPE.MOVIE:
-                return new Movie (productId, productData, productDirector, productMinutes)
+                return new Movie (productData, productDirector, productMinutes)
         } 
     }
 }
@@ -59,6 +55,8 @@ export class ProductFactory {
 //TODO:______________________________
 //cambiar los nombres de productName a name??? (me gusta el orden,)
 // otra constante que sea details? como product data, con los detalles (autor, paginas, director, minutos)
+//IMPORTANTE: REDEFINIR EL PRODUCT DATA COMO OBJETO CON TODOS LOS PARAMETROS DENTRO, PONER EL PRODUCTO DATA (EN CORCHETES DENTRO DE CREATE PRODUCT PRODUCT FACTORY Y SUS CLASES) Y LOS PARAMETROS CON SU NOMBRE
+//ASI NO PASO LA POSICION DEL PARAMETRO SINO SU CLAVE-VALOR EN EL OBJETO
 //_______________________________
 
 //luego, en el código, a la hora de indicar el tipo de item a crear, basta con añadir el PRODUCT_TYPE.(lo que sea) y está localizado en un único lugar, para modificar o reutilizar

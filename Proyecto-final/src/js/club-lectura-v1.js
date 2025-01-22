@@ -5,8 +5,21 @@ import {ProductFactory, PRODUCT_TYPE,} from "./classes/Product.js";
 const API_BOOKS_URL = './api/books.json'
 const API_MOVIES_URL = './api/movies.json'
 
+document.addEventListener('DOMContentLoaded', onDomContentLoaded)
 
+//========EVENTS========//
 
+function onDomContentLoaded() {
+    processData()
+    readStoredData()
+}
+
+//========METHODS========//
+
+/**
+ * 
+ * *get Data from Book API
+ */
 async function getAPIBookData () {
     const apiBookData = await fetch (API_BOOKS_URL)
     .then ((response) => {
@@ -17,7 +30,10 @@ async function getAPIBookData () {
     })
     return apiBookData
 }
-
+/**
+ * 
+ * *get Data from Movie API
+ */
 async function getAPIMovieData () {
     const apiMovieData = await fetch (API_MOVIES_URL)
     .then ((response) => {
@@ -28,7 +44,9 @@ async function getAPIMovieData () {
     })
     return apiMovieData
 }
-
+/**
+ * *process Book Data
+ */
 async function processBookData() {
     const apiBookData = await getAPIBookData();
     const factory = new ProductFactory();
@@ -47,10 +65,11 @@ async function processBookData() {
             undefined
         );
         store.get().products.push(bookInstance);
-        console.log(bookInstance)
-    });
+    }); localStorage.setItem('storedData', JSON.stringify(store.get()))
 }
-
+/**
+ * *process Movie Data
+ */
 async function processMovieData() {
     const apiMovieData = await getAPIMovieData();
     const factory = new ProductFactory();
@@ -69,18 +88,26 @@ async function processMovieData() {
             product.minutes
         );
         store.get().products.push(movieInstance);
-        console.log(movieInstance)
-    });
+    }); localStorage.setItem('storedData', JSON.stringify(store.get()))
+}
+
+/**
+ * process products Data
+ */
+function processData() {
+    getAPIBookData()
+    getAPIMovieData()
+    processBookData()
+    processMovieData()
+    
+}
+/**
+ * *read Stored Data
+ */
+function readStoredData() {
+    const storedData = JSON.parse(localStorage.getItem('storedData'))
+    console.log('Stored Data: ', storedData);
 }
 
 
-getAPIBookData()
-
-getAPIMovieData()
-
-processBookData()
-
-processMovieData()
-
-console.log(store.get())
 

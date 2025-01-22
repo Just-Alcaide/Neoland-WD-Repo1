@@ -9,22 +9,12 @@
 </head>
 <body>
     <form>
-        <fieldset>
-            <input type="text" placeholder="Nombre" id="productName">
-            <input type="text" placeholder="Año" id="productYear">
-            <input type="text" placeholder="Genero" id="productGenre">
-            <br>
-            <input type="radio" id="productType" name="productType">Libro
-            <input type="text" id="productAuthor" placeholder="autor">
-            <input type="text" id="productPages" placeholder="páginas">
-            <br>
-            <input type="radio" id="productType" name="productType">Pelicula
-            <input type="text" id="productDirector" placeholder="director">
-            <input type="text" id="productMinutes" placeholder="minutos">
-            <input type="text" id="userName" placeholder="Nombre de Usuario">
-            <input type="text" id="groupName" placeholder="Nombre de Grupo">
-            <button>Enviar Propuesta</button>
-        </fieldset>
+        <label for="productTypeBook">Propuesta de Libro</label>
+        <input type="radio" name="productType" id="productTypeBook">
+        <br>
+        <label for="productTypeMovie">Propuesta de Película</label>
+        <input type="radio" name="productType" id="productTypeMovie">
+        <fieldset id="formContainer"></fieldset>
     </form>
 
 </body>

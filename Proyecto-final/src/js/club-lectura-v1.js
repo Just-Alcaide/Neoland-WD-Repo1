@@ -5,6 +5,16 @@ import {ProductFactory, PRODUCT_TYPE,} from "./classes/Product.js";
 const API_BOOKS_URL = './api/books.json'
 const API_MOVIES_URL = './api/movies.json'
 
+document.addEventListener('DOMContentLoaded', onDomContentLoaded)
+
+//========EVENTS========//
+
+function onDomContentLoaded() {
+    processData()
+    readStoredData()
+}
+
+//========METHODS========//
 
 
 async function getAPIBookData () {
@@ -47,7 +57,7 @@ async function processBookData() {
             undefined
         );
         store.get().products.push(bookInstance);
-        console.log(bookInstance)
+        localStorage.setItem('storedData', JSON.stringify(store.get()))
     });
 }
 
@@ -69,18 +79,21 @@ async function processMovieData() {
             product.minutes
         );
         store.get().products.push(movieInstance);
-        console.log(movieInstance)
+        localStorage.setItem('storedData', JSON.stringify(store.get()))
     });
 }
 
 
-getAPIBookData()
+function processData() {
+    getAPIBookData()
+    getAPIMovieData()
+    processBookData()
+    processMovieData()
+}
 
-getAPIMovieData()
+function readStoredData() {
+    JSON.parse(localStorage.getItem('storedData'))
+}
 
-processBookData()
 
-processMovieData()
-
-console.log(store.get())
 

@@ -9,13 +9,15 @@
 </head>
 <body>
     <form>
-        <label for="productTypeBook">Propuesta de Libro</label>
-        <input type="radio" name="productType" id="productTypeBook">
+        <fieldset>
+        <label>Propuesta de Libro: <input type="radio" name="proposalType" id="bookProposal" value="bookProposal"></label>
         <br>
-        <label for="productTypeMovie">Propuesta de Película</label>
-        <input type="radio" name="productType" id="productTypeMovie">
-        <fieldset id="formContainer"></fieldset>
+        <label>Propuesta de Película: <input type="radio" name="proposalType" id="movieProposal" value="movieProposal"></label>
+        </fieldset>
     </form>
+    <fieldset id="formContainer">
+    </fieldset>
+    
 
 </body>
 </html>

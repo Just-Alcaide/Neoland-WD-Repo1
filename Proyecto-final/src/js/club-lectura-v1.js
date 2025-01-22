@@ -1,17 +1,59 @@
+/**
+ * *import singleton and classes
+ */
 import {store} from "./classes/store.js"
-
 import {ProductFactory, PRODUCT_TYPE,} from "./classes/Product.js";
 
+/**
+ * *import templates
+ */
+import { bookProposalTemplate } from "../templates/proposal-templates.js";
+import { movieProposalTemplate } from "../templates/proposal-templates.js";
+
+/**
+ * define API URLs
+ */
 const API_BOOKS_URL = './api/books.json'
 const API_MOVIES_URL = './api/movies.json'
+
+/**
+ * * DOM Content Loaded
+ */
 
 document.addEventListener('DOMContentLoaded', onDomContentLoaded)
 
 //========EVENTS========//
 
 function onDomContentLoaded() {
+    /**
+     * *load APIS and JSON
+     */
     processData()
+
+    /**
+     * *load stored data
+     */
     readStoredData()
+    //OJO que a veces tarda más en cargar que en leer ¬¬
+
+    /**
+     * *
+     */
+    const bookProposal = document.getElementById('bookProposal')
+    const movieProposal = document.getElementById('movieProposal')
+
+    bookProposal.addEventListener('change', onBookProposalChange)
+    movieProposal.addEventListener('change', onMovieProposalChange)
+}
+
+/**
+ * *show template on change
+ */
+function onBookProposalChange() {
+    formContainer.innerHTML = bookProposalTemplate;
+}
+function onMovieProposalChange() {
+    formContainer.innerHTML = movieProposalTemplate;
 }
 
 //========METHODS========//
@@ -108,6 +150,3 @@ function readStoredData() {
     const storedData = JSON.parse(localStorage.getItem('storedData'))
     console.log('Stored Data: ', storedData);
 }
-
-
-

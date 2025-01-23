@@ -6,6 +6,7 @@
 const store = (function() {
 
 
+
     let storeInstance
 
     return  {

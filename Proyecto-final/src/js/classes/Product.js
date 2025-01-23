@@ -1,45 +1,57 @@
 // @ts-check
 
+/**
+ * @typedef {Object} productData
+ * @property {string} id
+ * @property {string} name
+ * @property {number} year
+ * @property {string} genre
+ * @property {string} [author]
+ * @property {number} [pages]
+ * @property {string} [director]
+ * @property {number} [minutes]
+ */
 
 export class Product {
-    productId
-    productName
-    productYear
-    productGenre
+    id
+    name
+    year
+    genre
     /**
-     * @param {{ productId: string; productName: string; productYear: number; productGenre: string; }} productData
+     * 
+     * @param {productData} productData
      */
     constructor (productData) {
-        this.productId = productData.productId
-        this.productName = productData.productName
-        this.productYear = productData.productYear
-        this.productGenre = productData.productGenre
+        this.id = productData.id
+        this.name = productData.name
+        this.year = productData.year
+        this.genre = productData.genre
     }
 }
 
 export class Book extends Product {
-    productAuthor
-    productPages
+    author
+    pages
     /**
-     * @param {{ productAuthor: string; productPages: number; productId: string; productName: string; productYear: number; productGenre: string; }} productData
+     * @param {productData} productData
      */
     constructor (productData) {
         super(productData)
-        this.productAuthor = productData.productAuthor
-        this.productPages = productData.productPages
+        this.author = productData.author
+        this.pages = productData.pages
     }
 }
 
 export class Movie extends Product {
-    productDirector
-    productMinutes
+    director
+    minutes
     /**
-     * @param {{ productDirector: string; productMinutes: number; productId: string; productName: string; productYear: number; productGenre: string; }} productData
+     * @param {productData} productData
      */
     constructor (productData) {
         super(productData)
-        this.productDirector = productData.productDirector
-        this.productMinutes = productData.productMinutes
+        this.director = productData.director
+        this.minutes = productData.minutes
     }
 }
 
@@ -51,7 +63,7 @@ export const PRODUCT_TYPE = {
 export class ProductFactory {
     /**
      * @param {string} productType
-     * @param {{ productId: string; productName: string; productYear: number; productGenre: string; productAuthor: string; productPages: number; productDirector: string; productMinutes: number; }} productData
+     * @param {productData} productData
      */
     createProduct(productType, productData) {
         switch (productType) {

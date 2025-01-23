@@ -4,7 +4,8 @@
  * *import singleton and classes
  */
 import {store} from "./classes/store.js"
-import {ProductFactory, PRODUCT_TYPE,} from "./classes/Product.js";
+import {ProductFactory, PRODUCT_TYPE, Book, Product, Movie} from "./classes/Product.js";
+
 
 /**
  * *import templates
@@ -69,7 +70,6 @@ function onMovieProposalChange() {
 //========METHODS========//
 
 /**
- * 
  * *get Data from Book API
  */
 async function getAPIBookData () {
@@ -83,7 +83,6 @@ async function getAPIBookData () {
     return apiBookData
 }
 /**
- * 
  * *get Data from Movie API
  */
 async function getAPIMovieData () {
@@ -102,17 +101,15 @@ async function getAPIMovieData () {
 async function processBookData () {
     const apiBookData = await getAPIBookData ();
     const factory = new ProductFactory ();
-    apiBookData.forEach((/** @type {{ id: string; name: string; year: number; genre: string; author: string; pages: number; director: string; minutes: number; }} */ product) => {
+    apiBookData.forEach((/** @type {Book} */ product) => {
         const productData = {
-            productId: product.id,
-            productName: product.name,
-            productYear: product.year, 
-            productGenre: product.genre,
-            productAuthor: product.author,
-            productPages: product.pages,
-            productDirector: product.director,
-            productMinutes: product.minutes
-        }
+            id: product.id,
+            name: product.name,
+            year: product.year, 
+            genre: product.genre,
+            author: product.author,
+            pages: product.pages,
+}
 
         const bookInstance = factory.createProduct (PRODUCT_TYPE.BOOK, productData);
         if (bookInstance) {
@@ -126,16 +123,14 @@ async function processBookData () {
 async function processMovieData () {
     const apiMovieData = await getAPIMovieData();
     const factory = new ProductFactory();
-    apiMovieData.forEach((/** @type {{ id: string; name: string; year: number; genre: string; author: string; pages: number; director: string; minutes: number; }} */ product) => {
+    apiMovieData.forEach((/** @type {Movie} */ product) => {
         const productData = {
-            productId: product.id,
-            productName: product.name,
-            productYear: product.year, 
-            productGenre: product.genre,
-            productAuthor: product.author,
-            productPages: product.pages,
-            productDirector: product.director,
-            productMinutes: product.minutes
+            id: product.id,
+            name: product.name,
+            year: product.year, 
+            genre: product.genre,
+            director: product.director,
+            minutes: product.minutes
         }
 
         const movieInstance = factory.createProduct

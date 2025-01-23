@@ -1,3 +1,5 @@
+// @ts-check
+
 /**
  * *import singleton and classes
  */
@@ -39,21 +41,29 @@ function onDomContentLoaded() {
     /**
      * *
      */
+    
     const bookProposal = document.getElementById('bookProposal')
     const movieProposal = document.getElementById('movieProposal')
 
-    bookProposal.addEventListener('change', onBookProposalChange)
-    movieProposal.addEventListener('change', onMovieProposalChange)
+    bookProposal?.addEventListener('change', onBookProposalChange)
+    movieProposal?.addEventListener('change', onMovieProposalChange)
 }
 
 /**
  * *show template on change
  */
 function onBookProposalChange() {
+    const formContainer = document.getElementById('formContainer')
+    if (formContainer) {
     formContainer.innerHTML = bookProposalTemplate;
+    }
 }
+
 function onMovieProposalChange() {
+    const formContainer = document.getElementById('formContainer')
+    if (formContainer) {
     formContainer.innerHTML = movieProposalTemplate;
+    }
 }
 
 //========METHODS========//
@@ -89,46 +99,47 @@ async function getAPIMovieData () {
 /**
  * *process Book Data
  */
-async function processBookData() {
-    const apiBookData = await getAPIBookData();
-    const factory = new ProductFactory();
-    apiBookData.forEach((product) => {
-        const  productData = {
+async function processBookData () {
+    const apiBookData = await getAPIBookData ();
+    const factory = new ProductFactory ();
+    apiBookData.forEach((/** @type {{ id: string; name: string; year: number; genre: string; author: string; pages: number; director: string; minutes: number; }} */ product) => {
+        const productData = {
             productId: product.id,
             productName: product.name,
-            productYear: product.year,
+            productYear: product.year, 
             productGenre: product.genre,
+            productAuthor: product.author,
+            productPages: product.pages,
+            productDirector: product.director,
+            productMinutes: product.minutes
         }
-        const bookInstance = factory.createProduct(PRODUCT_TYPE.BOOK, 
-            productData, 
-            product.author, 
-            product.pages,
-            undefined,
-            undefined
-        );
-        store.get().products.push(bookInstance);
+
+        const bookInstance = factory.createProduct (PRODUCT_TYPE.BOOK, productData);
+        if (bookInstance) {
+            store.get().products.push(bookInstance);
+        }
     }); localStorage.setItem('storedData', JSON.stringify(store.get()))
 }
 /**
  * *process Movie Data
  */
-async function processMovieData() {
+async function processMovieData () {
     const apiMovieData = await getAPIMovieData();
     const factory = new ProductFactory();
-    apiMovieData.forEach((product) => {
-        const  productData = {
+    apiMovieData.forEach((/** @type {{ id: string; name: string; year: number; genre: string; author: string; pages: number; director: string; minutes: number; }} */ product) => {
+        const productData = {
             productId: product.id,
             productName: product.name,
-            productYear: product.year,
+            productYear: product.year, 
             productGenre: product.genre,
+            productAuthor: product.author,
+            productPages: product.pages,
+            productDirector: product.director,
+            productMinutes: product.minutes
         }
-        const movieInstance = factory.createProduct(PRODUCT_TYPE.MOVIE, 
-            productData,
-            undefined,
-            undefined, 
-            product.director, 
-            product.minutes
-        );
+
+        const movieInstance = factory.createProduct
+        (PRODUCT_TYPE.MOVIE, productData);
         store.get().products.push(movieInstance);
     }); localStorage.setItem('storedData', JSON.stringify(store.get()))
 }
@@ -150,3 +161,10 @@ function readStoredData() {
     const storedData = JSON.parse(localStorage.getItem('storedData'))
     console.log('Stored Data: ', storedData);
 }
+/**
+ * @param {number} status
+ */
+function showError(status) {
+    throw new Error("Function not implemented.");
+}
+

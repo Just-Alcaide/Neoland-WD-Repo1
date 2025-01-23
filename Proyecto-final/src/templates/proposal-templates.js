@@ -1,3 +1,5 @@
+// @ts-check
+
 export const bookProposalTemplate = `
 <form id="bookProposalForm">
 <fieldset>

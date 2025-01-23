@@ -1,14 +1,14 @@
 // @ts-check
 
 /**
- * *import singleton and classes
+ * import singleton and classes
  */
 import {store} from "./classes/store.js"
 import {ProductFactory, PRODUCT_TYPE, Book, Product, Movie} from "./classes/Product.js";
 
 
 /**
- * *import templates
+ * import templates
  */
 import { bookProposalTemplate } from "../templates/proposal-templates.js";
 import { movieProposalTemplate } from "../templates/proposal-templates.js";
@@ -20,7 +20,7 @@ const API_BOOKS_URL = './api/books.json'
 const API_MOVIES_URL = './api/movies.json'
 
 /**
- * * DOM Content Loaded
+ *  DOM Content Loaded
  */
 
 document.addEventListener('DOMContentLoaded', onDomContentLoaded)
@@ -29,18 +29,18 @@ document.addEventListener('DOMContentLoaded', onDomContentLoaded)
 
 function onDomContentLoaded() {
     /**
-     * *load APIS and JSON
+     * load APIS and JSON
      */
     processData()
 
     /**
-     * *load stored data
+     * load stored data
      */
     readStoredData()
     //OJO que a veces tarda más en cargar que en leer ¬¬
 
     /**
-     * *
+     * 
      */
     
     const bookProposal = document.getElementById('bookProposal')
@@ -51,7 +51,7 @@ function onDomContentLoaded() {
 }
 
 /**
- * *show template on change
+ * show template on change
  */
 function onBookProposalChange() {
     const formContainer = document.getElementById('formContainer')
@@ -70,7 +70,7 @@ function onMovieProposalChange() {
 //========METHODS========//
 
 /**
- * *get Data from Book API
+ * get Data from Book API
  */
 async function getAPIBookData () {
     const apiBookData = await fetch (API_BOOKS_URL)
@@ -83,7 +83,7 @@ async function getAPIBookData () {
     return apiBookData
 }
 /**
- * *get Data from Movie API
+ * get Data from Movie API
  */
 async function getAPIMovieData () {
     const apiMovieData = await fetch (API_MOVIES_URL)
@@ -96,7 +96,7 @@ async function getAPIMovieData () {
     return apiMovieData
 }
 /**
- * *process Book Data
+ * process Book Data
  */
 async function processBookData () {
     const apiBookData = await getAPIBookData ();
@@ -109,16 +109,14 @@ async function processBookData () {
             genre: product.genre,
             author: product.author,
             pages: product.pages,
-}
+        }
 
         const bookInstance = factory.createProduct (PRODUCT_TYPE.BOOK, productData);
-        if (bookInstance) {
-            store.get().products.push(bookInstance);
-        }
+        store.get().Product?.push(bookInstance);
     }); localStorage.setItem('storedData', JSON.stringify(store.get()))
 }
 /**
- * *process Movie Data
+ * process Movie Data
  */
 async function processMovieData () {
     const apiMovieData = await getAPIMovieData();
@@ -132,10 +130,9 @@ async function processMovieData () {
             director: product.director,
             minutes: product.minutes
         }
-
-        const movieInstance = factory.createProduct
-        (PRODUCT_TYPE.MOVIE, productData);
-        store.get().products.push(movieInstance);
+        
+        const movieInstance = factory.createProduct (PRODUCT_TYPE.MOVIE, productData);
+        store.get().Product?.push(movieInstance);
     }); localStorage.setItem('storedData', JSON.stringify(store.get()))
 }
 
@@ -150,11 +147,18 @@ function processData() {
     
 }
 /**
- * *read Stored Data
+ * read Stored Data
  */
 function readStoredData() {
-    const storedData = JSON.parse(localStorage.getItem('storedData'))
-    console.log('Stored Data: ', storedData);
+    
+    const storedData = localStorage.getItem('storedData');
+    if  (storedData !== null) {
+        const parsedData = JSON.parse(storedData);
+        console.log('Stored Data: ', parsedData);
+    } else {
+        console.log('No stored data');
+    }
+    
 }
 /**
  * @param {number} status

@@ -68,9 +68,10 @@ export class ProductFactory {
     createProduct(productType, productData) {
         switch (productType) {
             case PRODUCT_TYPE.BOOK:
-                return new Book (productData)
+                return new Book (productData);
             case PRODUCT_TYPE.MOVIE:
-                return new Movie (productData)
+                return new Movie (productData);
+            default: throw new Error (`Product type: ${productType} is not supported`);
         }
     }
 }

@@ -1,18 +1,25 @@
+//@ts-check
+
+/**
+ * @typedef {Object} proposalData
+ * @property {string} id
+ * @property {string} product
+ * @property {string} user
+ * @property {string} club
+ */
 export class Proposal {
-    proposalId
-    proposalProduct
-    proposalUser
-    proposalGroup
-    constructor (
-        proposalId,
-        product,
-        user,
-        group,
-    ) {
-        this.proposalId = `${productId}_${userId}_${groupId}`
-        this.proposalProduct = product
-        this.proposalUser = user
-        this.proposalGroup = group
+    id
+    product
+    user
+    club
+    /**
+     * @param {proposalData} proposalData 
+     */
+    constructor (proposalData) {
+        this.id = `${proposalData.product}_${proposalData.user}_${proposalData.club}`
+        this.product = proposalData.product
+        this.user = proposalData.user
+        this.club = proposalData.club
     }
 }
 
@@ -20,4 +27,5 @@ export class Proposal {
 //Ampliar con campos para votos y estados (Extender con mixing, herencia o prototipe)
 
 //poner proposal como clase y factory para separar proposal de libro y proposal de pelicula (¿?¿?¿?)
+//Que le den a las putas factories
 //______________________________

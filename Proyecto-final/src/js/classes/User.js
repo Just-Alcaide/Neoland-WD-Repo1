@@ -1,25 +1,36 @@
+//@ts-check
+
+/**
+ * @typedef {Object} userData
+ * @property {string} id
+ * @property {string} name
+ * @property {string} email
+ * @property {string} password
+ * @property {string[]=} [clubs]
+ * @property {string[]=} [books]
+ * @property {string[]=} [bookProposals]
+ * @property {string[]=} [bookVotes]
+ */
 export class User {
-    userId
-    userName
-    userEmail
-    userPassword
-    userGroups
-    userBooks
-    userBookProposals
-    userBookVotes
-    constructor (
-        userId,
-        userName,
-        userEmail,
-        userPassword,
-    ) {
-        this.userId = userName + '_' + String(timestamp.getTime())
-        this.userName = userName
-        this.userEmail = userEmail
-        this.userPassword = userPassword
-        this.userGroups = []
-        this.userBooks = []
-        this.userBookProposals = []
-        this.userBookVotes = []
+    id
+    name
+    email
+    password
+    clubs
+    books
+    bookProposals
+    bookVotes
+    /**
+     * @param {userData} userData 
+     */
+    constructor (userData) {
+        this.id = userData.id
+        this.name = userData.name
+        this.email = userData.email
+        this.password = userData.password
+        this.clubs = userData.clubs || []
+        this.books = userData.books || []
+        this.bookProposals = userData.bookProposals || []
+        this.bookVotes = userData.bookVotes || []
     }
 }

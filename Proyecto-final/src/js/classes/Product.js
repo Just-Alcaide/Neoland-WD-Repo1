@@ -18,7 +18,6 @@ export class Product {
     year
     genre
     /**
-     * 
      * @param {productData} productData
      */
     constructor (productData) {
@@ -75,9 +74,4 @@ export class ProductFactory {
         }
     }
 }
-
-//TODO:______________________________
-//cambiar los nombres de productName a name??? (me gusta el orden,)
-// otra constante que sea details? como product data, con los detalles (autor, paginas, director, minutos)
-//_______________________________
 

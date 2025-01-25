@@ -25,10 +25,3 @@ export class Proposal {
         this.votes = proposalData.votes
     }
 }
-
-//TODO:_________________________
-//Ampliar con campos para votos y estados (Extender con mixing, herencia o prototipe)
-
-//poner proposal como clase y factory para separar proposal de libro y proposal de pelicula (¿?¿?¿?)
-//Que le den a las putas factories
-//______________________________

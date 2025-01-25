@@ -3,3 +3,28 @@ DIARIO DE DESARROLLO - APP CLUB DE LECTURA
 20/01/2025
 
 Definidas clases (primera iteracion): Book, User, Group, BookProposal.
+
+21/01/2025
+
+Añadido package y otros modulos
+Añadidos Json para products 
+ 
+22/01/2025
+
+Añadidas plantillas para HTML propuestas
+Añadidas funciones para pillar datos de API (Json)
+Añadido guardado de datos en local storage
+
+23/01/2025
+
+Añadida validacion por TS 
+
+24/01/2025
+
+Añadido Redux
+Terminada segunda versión de clases
+
+25/01/2025
+
+Desarrolado Redux con sus acciones
+Limpiados errores de tipado del redux

@@ -1,42 +1,96 @@
+//@ts-check
 
-const bookProposalTemplate = `
-    <form id="bookProposalForm">
-    <fieldset>
-        <label>Nombre: <input type="text" name="name" id="name"></label>
-        <label>Año: <input type="text" name="year" id="year"></label>
-        <label>Género: <input type="text" name="genre" id="genre"> </label>
-        <label>Autor: <input type="text" name="author" id="author"></label>
-        <label>Páginas: <input type="text" name="pages" id="pages"></label>
-        <button type="submit">Enviar Propuesta</button>
-    </fieldset>
-    </form>
-`
 
-const movieProposalTemplate = `
-    <form id="movieProposalForm">
-    <fieldset>
-        <label>Nombre: <input type="text" name="name" id="name"></label>
-        <label>Año: <input type="text" name="year" id="year"></label>
-        <label>Género: <input type="text" name="genre" id="genre"></label>
-        <label>Director: <input type="text" name="director" id="director"></label>
-        <label>Minutos: <input type="text" name="minutes" id="minutes"></label>
-    </fieldset>
-    </form>
-`
-const bookProposal = document.getElementById('bookProposal')
-const movieProposal = document.getElementById('movieProposal')
 
-const formContainer = document.getElementById('formContainer')
 
-bookProposal.addEventListener('change', onBookProposalChange)
-movieProposal.addEventListener('change', onMovieProposalChange)
-
-function onBookProposalChange() {
-    formContainer.innerHTML = bookProposalTemplate;
+class Product {
+    productId
+    productName
+    productYear
+    productGenre
+    constructor (productData: productData) {
+        this.productId = productData.productId
+        this.productName = productData.productName
+        this.productYear = productData.productYear
+        this.productGenre = productData.productGenre
+    }
 }
 
-function onMovieProposalChange() {
-    formContainer.innerHTML = movieProposalTemplate;
+class Book extends Product {
+    productAuthor
+    productPages
+    constructor (productData: productData) {
+        super(productData)
+        this.productAuthor = productData.productAuthor
+        this.productPages = productData.productPages
+    }
 }
 
+class Movie extends Product {
+    productDirector
+    productMinutes
+    constructor (productData: productData) {
+        super(productData)
+        this.productDirector = productData.productDirector
+        this.productMinutes = productData.productMinutes
+    }
+}
 
+const PRODUCT_TYPE = {
+    BOOK: 'book',
+    MOVIE: 'movie'
+}
+
+class ProductFactory {
+    createProduct(productType: PRODUCT_TYPE, productData: productData) {
+        switch (productType) {
+            case PRODUCT_TYPE.BOOK:
+                return new Book (productData)
+            case PRODUCT_TYPE.MOVIE:
+                return new Movie (productData)
+        }
+    }
+}
+
+///////////////////////////////
+
+async function processBookData () {
+    const apiBookData = await getAPIBookData ();
+    const factory = new ProductFactory ();
+    apiBookData.forEach((product) => {
+        const productData = {
+            productId: product.id,
+            productName: product.name,
+            productYear: product.year, 
+            productGenre: product.genre,
+            productAuthor: product.author,
+            productPages: product.pages,
+            productDirector: product.director,
+            productMinutes: product.minutes
+        }
+
+        const bookInstance = factory.createProduct (PRODUCT_TYPE.BOOK, productData);
+        store.get().products.push(bookInstance);
+    }); localStorage.setItem('storedData', JSON.stringify(store.get()))
+}
+
+async function processMovieData () {
+    const apiMovieData = await getAPIMovieData();
+    const factory = new ProductFactory();
+    apiMovieData.forEach((product) => {
+        const productData = {
+            productId: product.id,
+            productName: product.name,
+            productYear: product.year, 
+            productGenre: product.genre,
+            productAuthor: product.author,
+            productPages: product.pages,
+            productDirector: product.director,
+            productMinutes: product.minutes
+        }
+
+        const movieInstance = factory.createProduct
+        (PRODUCT_TYPE.MOVIE, productData);
+        store.get().products.push(movieInstance);
+    }); localStorage.setItem('storedData', JSON.stringify(store.get()))
+}

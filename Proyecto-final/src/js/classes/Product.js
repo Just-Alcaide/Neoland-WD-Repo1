@@ -1,38 +1,56 @@
-// arriba puedo meter los datos name, year y genre construyendo y deconstruyendo (cuando toca si toca)
-//OJO meterlos como objeto (Cuando?)
+// @ts-check
 
-//Tiene que estar en el js (importarlo de allí)
+/**
+ * @typedef {Object} productData
+ * @property {string} id
+ * @property {string} name
+ * @property {number} year
+ * @property {string} genre
+ * @property {string} [author]
+ * @property {number} [pages]
+ * @property {string} [director]
+ * @property {number} [minutes]
+ */
 
 export class Product {
-    productId
-    productName
-    productYear
-    productGenre
+    id
+    name
+    year
+    genre
+    /**
+     * @param {productData} productData
+     */
     constructor (productData) {
-        this.productId = productData.productId
-        this.productName = productData.productName
-        this.productYear = productData.productYear
-        this.productGenre = productData.productGenre
+        this.id = productData.id
+        this.name = productData.name
+        this.year = productData.year
+        this.genre = productData.genre
     }
 }
 
-export class Book extends Product { 
-    productAuthor
-    productPages
-    constructor (productData, productAuthor, productPages) {
+export class Book extends Product {
+    author
+    pages
+    /**
+     * @param {productData} productData
+     */
+    constructor (productData) {
         super(productData)
-        this.productAuthor = productAuthor
-        this.productPages = productPages
+        this.author = productData.author
+        this.pages = productData.pages
     }
 }
 
 export class Movie extends Product {
-    productDirector
-    productMinutes
-    constructor (productData, productDirector, productMinutes) {
+    director
+    minutes
+    /**
+     * @param {productData} productData
+     */
+    constructor (productData) {
         super(productData)
-        this.productDirector = productDirector
-        this.productMinutes = productMinutes
+        this.director = productData.director
+        this.minutes = productData.minutes
     }
 }
 
@@ -42,28 +60,18 @@ export const PRODUCT_TYPE = {
 }
 
 export class ProductFactory {
-    createProduct(productType, productData, productAuthor, productPages, productDirector, productMinutes) {
-        switch(productType) {
+    /**
+     * @param {string} productType
+     * @param {productData} productData
+     */
+    createProduct(productType, productData) {
+        switch (productType) {
             case PRODUCT_TYPE.BOOK:
-                return new Book (productData, productAuthor, productPages)
+                return new Book (productData);
             case PRODUCT_TYPE.MOVIE:
-                return new Movie (productData, productDirector, productMinutes)
-        } 
+                return new Movie (productData);
+            default: throw new Error (`Product type: ${productType} is not supported`);
+        }
     }
 }
 
-//TODO:______________________________
-//cambiar los nombres de productName a name??? (me gusta el orden,)
-// otra constante que sea details? como product data, con los detalles (autor, paginas, director, minutos)
-//IMPORTANTE: REDEFINIR EL PRODUCT DATA COMO OBJETO CON TODOS LOS PARAMETROS DENTRO, PONER EL PRODUCTO DATA (EN CORCHETES DENTRO DE CREATE PRODUCT PRODUCT FACTORY Y SUS CLASES) Y LOS PARAMETROS CON SU NOMBRE
-//ASI NO PASO LA POSICION DEL PARAMETRO SINO SU CLAVE-VALOR EN EL OBJETO
-//_______________________________
-
-//luego, en el código, a la hora de indicar el tipo de item a crear, basta con añadir el PRODUCT_TYPE.(lo que sea) y está localizado en un único lugar, para modificar o reutilizar
-
-//se puede optimizar con un article data donde están definidos los parametros del articulo.
-//(name, author, director, year)
-// tres puntos significa desestructuración, es para comprimir y descomprimir un objeto en las diferentes valores. 
-// meto los valores en un objeto, mando el objeto entero, lo uso en la factoria y luego lo descomprimo en la clase final con lo que necesite
-//en este caso especifico no vale (autor y director no estarán en todos) pero vale para otras cosas 
-//OJO al super hay que mandarselo como objeto

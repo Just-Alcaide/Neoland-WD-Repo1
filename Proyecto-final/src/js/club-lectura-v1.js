@@ -1,11 +1,13 @@
 // @ts-check
 
 /**
- * import singleton and classes
+ * import store and classes
  */
-import {store} from "./classes/store.js"
+import {store} from "./store/redux.js";
 import {ProductFactory, PRODUCT_TYPE, Book, Product, Movie} from "./classes/Product.js";
-
+import {User} from "./classes/User.js";
+import {Club} from "./classes/Club.js";
+import {Proposal} from "./classes/Proposal.js";
 
 /**
  * import templates
@@ -36,7 +38,7 @@ function onDomContentLoaded() {
     /**
      * load stored data
      */
-    readStoredData()
+    // readStoredData()
     //OJO que a veces tarda más en cargar que en leer ¬¬
 
     /**
@@ -69,6 +71,7 @@ function onMovieProposalChange() {
 
 //========METHODS========//
 
+//TODO:==Cuando meta apis tochas, mirar si renta poner el simple fetch==//
 /**
  * get Data from Book API
  */
@@ -101,7 +104,7 @@ async function getAPIMovieData () {
 async function processBookData () {
     const apiBookData = await getAPIBookData ();
     const factory = new ProductFactory ();
-    apiBookData.forEach((/** @type {Book} */ product) => {
+    apiBookData.map(( /** @type {Book} */ product) => {
         const productData = {
             id: product.id,
             name: product.name,
@@ -112,8 +115,9 @@ async function processBookData () {
         }
 
         const bookInstance = factory.createProduct (PRODUCT_TYPE.BOOK, productData);
-        store.get().Product?.push(bookInstance);
-    }); localStorage.setItem('storedData', JSON.stringify(store.get()))
+        store.createProduct(bookInstance);
+
+    });
 }
 /**
  * process Movie Data
@@ -121,7 +125,7 @@ async function processBookData () {
 async function processMovieData () {
     const apiMovieData = await getAPIMovieData();
     const factory = new ProductFactory();
-    apiMovieData.forEach((/** @type {Movie} */ product) => {
+    apiMovieData.map(( /** @type {Movie} */ product) => {
         const productData = {
             id: product.id,
             name: product.name,
@@ -132,34 +136,31 @@ async function processMovieData () {
         }
         
         const movieInstance = factory.createProduct (PRODUCT_TYPE.MOVIE, productData);
-        store.get().Product?.push(movieInstance);
-    }); localStorage.setItem('storedData', JSON.stringify(store.get()))
+        store.createProduct(movieInstance);
+    }); 
 }
-
 /**
  * process products Data
  */
-function processData() {
-    getAPIBookData()
-    getAPIMovieData()
-    processBookData()
-    processMovieData()
-    
+async function processData() {
+    await processBookData()
+    await processMovieData()
+    console.log(store.getState())
 }
 /**
  * read Stored Data
  */
-function readStoredData() {
+// function readStoredData() {
     
-    const storedData = localStorage.getItem('storedData');
-    if  (storedData !== null) {
-        const parsedData = JSON.parse(storedData);
-        console.log('Stored Data: ', parsedData);
-    } else {
-        console.log('No stored data');
-    }
+//     const storedData = localStorage.getItem('storedData');
+//     if  (storedData !== null) {
+//         const parsedData = JSON.parse(storedData);
+//         console.log('Stored Data: ', parsedData);
+//     } else {
+//         console.log('No stored data');
+//     }
     
-}
+// }
 /**
  * @param {number} status
  */

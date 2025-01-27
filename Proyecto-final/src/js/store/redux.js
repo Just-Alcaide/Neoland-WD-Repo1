@@ -72,47 +72,48 @@ const INITIAL_STATE = {
  * @returns {State}
  */
   const appReducer = (state = INITIAL_STATE, action) => {
+    const actionWithProduct = /** @type {actionTypeProduct} */ (action);
+    const actionWithUser = /** @type {actionTypeUser} */ (action);
+    const actionWithClub = /** @type {actionTypeClub} */ (action);
+    const actionWithProposal = /** @type {actionTypeProposal} */ (action);
+
     switch (action.type) {
       case ACTION_TYPES.CREATE_PRODUCT:
-        if ('product' in action) {
         return {
           ...state,
           products: [
             ...state.products,
-            action.product
+            actionWithProduct.product
           ]
         };
-      }
+
 
       case ACTION_TYPES.READ_PRODUCT:
         return state
 
       case ACTION_TYPES.UPDATE_PRODUCT:
-        if ('product' in action)
         return {
           ...state,
           products: state.products.map((/** @type {Book | Movie} */ product) => {
-            if (product.id === action.product?.id) {
-              return action.product
+            if (product.id === actionWithProduct.product?.id) {
+              return actionWithProduct.product
             }
             return product
           })
         };
 
       case ACTION_TYPES.DELETE_PRODUCT:
-        if ('product' in action)
         return {
           ...state,
-          products: state.products.filter((/** @type {Book | Movie} */ product) => product.id !== action.product?.id)
+          products: state.products.filter((/** @type {Book | Movie} */ product) => product.id !== actionWithProduct.product?.id)
         };
 
       case ACTION_TYPES.CREATE_USER:
-        if ('user' in action)
         return {
           ...state,
           users: [
             ...state.users,
-            action.user
+            actionWithUser.user
           ]
         };
 
@@ -120,31 +121,28 @@ const INITIAL_STATE = {
         return state
 
       case ACTION_TYPES.UPDATE_USER:
-        if ('user' in action)
         return {
           ...state,
           users: state.users.map((/** @type {User} */ user) => {
-            if (user.id === action.user?.id) {
-              return action.user
+            if (user.id === actionWithUser.user?.id) {
+              return actionWithUser.user
             }
             return user
           })
         };
 
       case ACTION_TYPES.DELETE_USER:
-        if ('user' in action)
         return {
           ...state,
-          users: state.users.filter((/** @type {User}*/ user) => user.id !== action.user?.id)
+          users: state.users.filter((/** @type {User}*/ user) => user.id !== actionWithUser.user?.id)
         };
 
       case ACTION_TYPES.CREATE_CLUB:
-        if ('club' in action)
         return {
           ...state,
           clubs: [
             ...state.clubs,
-            action.club
+            actionWithClub.club
           ]
         };
 
@@ -152,31 +150,28 @@ const INITIAL_STATE = {
         return state
 
       case ACTION_TYPES.UPDATE_CLUB:
-        if ('club' in action)
         return {
           ...state,
           clubs: state.clubs.map((/** @type {User}*/ club) => {
-            if (club.id === action.club?.id) {
-              return action.club
+            if (club.id === actionWithClub.club?.id) {
+              return actionWithClub.club
             }
             return club
           })
         };
 
       case ACTION_TYPES.DELETE_CLUB:
-        if ('club' in action)
         return {
           ...state,
-          clubs: state.clubs.filter((/** @type {User}*/ club) => club.id !== action.club?.id)
+          clubs: state.clubs.filter((/** @type {User}*/ club) => club.id !== actionWithClub.club?.id)
         };
 
       case ACTION_TYPES.CREATE_PROPOSAL:
-        if ('proposal' in action)
         return {
           ...state,
           proposals: [
             ...state.proposals,
-            action.proposal
+            actionWithProposal.proposal
           ]
         };
 
@@ -184,22 +179,20 @@ const INITIAL_STATE = {
         return state
 
       case ACTION_TYPES.UPDATE_PROPOSAL:
-        if ('proposal' in action)
         return {
           ...state,
           proposals: state.proposals.map((/** @type {Proposal} */ proposal) => {
-            if (proposal.id === action.proposal?.id) {
-              return action.proposal
+            if (proposal.id === actionWithProposal.proposal?.id) {
+              return actionWithProposal.proposal
             }
             return proposal
           })
         };
 
       case ACTION_TYPES.DELETE_PROPOSAL:
-        if ('proposal' in action)
         return {
           ...state,
-          proposals: state.proposals.filter((/** @type {Proposal} */ proposal) => proposal.id !== action.proposal?.id)
+          proposals: state.proposals.filter((/** @type {Proposal} */ proposal) => proposal.id !== actionWithProposal.proposal?.id)
         };
 
       default:
@@ -210,6 +203,27 @@ const INITIAL_STATE = {
 //----------------------------------------No entiendo nada de esto----------------------------------------//
 /**
  * @typedef {Object} Store
+ * @property {function} createProduct
+ * @property {function} readProduct
+ * @property {function} updateProduct
+ * @property {function} deleteProduct
+ * @property {function} createUser
+ * @property {function} readUser
+ * @property {function} updateUser
+ * @property {function} deleteUser
+ * @property {function} createClub
+ * @property {function} readClub
+ * @property {function} updateClub
+ * @property {function} deleteClub
+ * @property {function} createProposal
+ * @property {function} readProposal
+ * @property {function} updateProposal
+ * @property {function} deleteProposal
+ * @property {function} getState
+ * @property {function} getProductById
+ * @property {function} getUserById
+ * @property {function} getClubById
+ * @property {function} getProposalById
  */
 
   /**

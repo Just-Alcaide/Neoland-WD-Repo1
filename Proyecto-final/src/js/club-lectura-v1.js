@@ -12,6 +12,7 @@ import {Proposal} from "./classes/Proposal.js";
 /**
  * import templates
  */
+import { clubPageTemplate } from "../templates/dinamic-content.templates.js";
 import { bookProposalTemplate } from "../templates/proposal-templates.js";
 import { movieProposalTemplate } from "../templates/proposal-templates.js";
 
@@ -40,11 +41,16 @@ function onDomContentLoaded() {
      */
     // readStoredData()
     //OJO que a veces tarda más en cargar que en leer ¬¬
-
-    /**
-     * 
-     */
     
+    // ==EVENT LISTENERS==//
+    /**
+     * show club template
+     */
+    const clubsPageLink = document.getElementById('clubsPageLink')
+
+    clubsPageLink?.addEventListener('click', onClubsPageLinkClick)
+
+
     const bookProposal = document.getElementById('bookProposal')
     const movieProposal = document.getElementById('movieProposal')
 
@@ -52,6 +58,88 @@ function onDomContentLoaded() {
     movieProposal?.addEventListener('change', onMovieProposalChange)
 }
 
+/**
+ * show club template
+ */
+/**
+ * 
+ * @param {MouseEvent} e 
+ */
+function onClubsPageLinkClick(e) {
+    e.preventDefault();
+    const dynamicContent = document.getElementById('dinamic-content');
+    if (dynamicContent) {
+    dynamicContent.innerHTML = clubPageTemplate
+
+    const createClubForm = document.getElementById('createClubForm');
+    createClubForm?.addEventListener('submit', onCreateClubFormSubmit);
+    }
+}
+
+/**
+ * on create club form submit
+*/
+/**
+ * @param {SubmitEvent} e
+ */
+function onCreateClubFormSubmit(e) {
+    e.preventDefault();
+    createNewClub();
+    cleanUpNewClubForm();
+    updateClubsList()
+}
+/**
+ * create new club
+ */
+function createNewClub() {
+    const clubName = /** @type {HTMLInputElement} */ (document.getElementById('clubName')).value;
+    const clubDescription = /** @type {HTMLTextAreaElement} */ (document.getElementById('clubDescription')).value;
+
+    const newClub = {
+        id: `club_${Date.now()}`,
+        name: clubName,
+        description: clubDescription,
+        members: [],
+        bookProposals: [],
+        bookCurrent: null,
+        deadlineCurrent: null,
+        bookVotes: [],
+        bookVotesAverage: []
+    };
+    store.club.create(new Club(newClub));
+    console.log(store.getState())
+}
+
+/**
+ * clean up new club form
+ */
+function cleanUpNewClubForm() {
+    const clubName = /** @type {HTMLInputElement} */ (document.getElementById('clubName'))
+    const clubDescription = /** @type {HTMLTextAreaElement} */ (document.getElementById('clubDescription'))
+    clubName.value = ''
+    clubDescription.value = ''
+}
+
+/**
+ * update clubs list
+ */
+function updateClubsList() {
+    console.log(store.getState().clubs)
+    const clubsList = document.getElementById('clubsList');
+    if (clubsList) {
+        clubsList.innerHTML = store.getState().clubs.map((/** @type {Club} */ club) => `
+         <li>
+            <h3>Nombre: ${club.name}</h3>
+            <p>Descripción: ${club.description}</p>
+            <p>Miembros: ${club.members.length || 0}</p>
+        </li>
+        `
+        ).join('');
+    } 
+}
+
+
+//==PROPOSALS==//
 /**
  * show template on change
  */
@@ -115,7 +203,7 @@ async function processBookData () {
         }
 
         const bookInstance = factory.createProduct (PRODUCT_TYPE.BOOK, productData);
-        store.createProduct(bookInstance);
+        store.product.create(bookInstance);
 
     });
 }
@@ -136,7 +224,7 @@ async function processMovieData () {
         }
         
         const movieInstance = factory.createProduct (PRODUCT_TYPE.MOVIE, productData);
-        store.createProduct(movieInstance);
+        store.product.create(movieInstance);
     }); 
 }
 /**
@@ -167,4 +255,3 @@ async function processData() {
 function showError(status) {
     throw new Error("Function not implemented.");
 }
-

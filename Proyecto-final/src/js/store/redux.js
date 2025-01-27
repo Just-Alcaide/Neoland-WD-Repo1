@@ -200,30 +200,25 @@ const INITIAL_STATE = {
     }
   }
   
-//----------------------------------------No entiendo nada de esto----------------------------------------//
+//----------------------------------------No entiendo nada de esto (vale, ya voy entendiendo algo)----------------------------------------//
+/**
+ * @typedef {Object} PublicMethods
+ * @property {function} create
+ * @property {function} read
+ * @property {function} update
+ * @property {function} delete
+ * @property {function} getById
+ */
+
+
+
 /**
  * @typedef {Object} Store
- * @property {function} createProduct
- * @property {function} readProduct
- * @property {function} updateProduct
- * @property {function} deleteProduct
- * @property {function} createUser
- * @property {function} readUser
- * @property {function} updateUser
- * @property {function} deleteUser
- * @property {function} createClub
- * @property {function} readClub
- * @property {function} updateClub
- * @property {function} deleteClub
- * @property {function} createProposal
- * @property {function} readProposal
- * @property {function} updateProposal
- * @property {function} deleteProposal
  * @property {function} getState
- * @property {function} getProductById
- * @property {function} getUserById
- * @property {function} getClubById
- * @property {function} getProposalById
+ * @property {PublicMethods} product
+ * @property {PublicMethods} user
+ * @property {PublicMethods} club
+ * @property {PublicMethods} proposal
  */
 
   /**
@@ -422,31 +417,48 @@ const INITIAL_STATE = {
       }, {});
     }
   
+    // namespaces actions
+    const product = {
+      create: createProduct,
+      read: readProduct,
+      update: updateProduct,
+      delete: deleteProduct,
+      getById: getProductById
+    }
+
+    const user = {
+      create: createUser,
+      read: readUser,
+      update: updateUser,
+      delete: deleteUser,
+      getById: getUserById
+    }
+
+    const club = {
+      create: createClub,
+      read: readClub,
+      update: updateClub,
+      delete: deleteClub,
+      getById: getClubById
+    }
+
+    const proposal = {
+      create: createProposal,
+      read: readProposal,
+      update: updateProposal,
+      delete: deleteProposal,
+      getById: getProposalById
+    }
+
     return {
       // Actions
-      createProduct,
-      readProduct,
-      updateProduct,
-      deleteProduct,
-      createUser,
-      readUser,
-      updateUser,
-      deleteUser,
-      createClub,
-      readClub,
-      updateClub,
-      deleteClub,
-      createProposal,
-      readProposal,
-      updateProposal,
-      deleteProposal,
+      product,
+      user,
+      club,
+      proposal,
 
       // Public methods
       getState,
-      getProductById,
-      getUserById,
-      getClubById,
-      getProposalById
     }
   }
   

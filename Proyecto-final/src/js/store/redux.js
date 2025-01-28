@@ -152,7 +152,7 @@ const INITIAL_STATE = {
       case ACTION_TYPES.UPDATE_CLUB:
         return {
           ...state,
-          clubs: state.clubs.map((/** @type {User}*/ club) => {
+          clubs: state.clubs.map((/** @type {Club}*/ club) => {
             if (club.id === actionWithClub.club?.id) {
               return actionWithClub.club
             }
@@ -163,7 +163,7 @@ const INITIAL_STATE = {
       case ACTION_TYPES.DELETE_CLUB:
         return {
           ...state,
-          clubs: state.clubs.filter((/** @type {User}*/ club) => club.id !== actionWithClub.club?.id)
+          clubs: state.clubs.filter((/** @type {Club}*/ club) => club.id !== actionWithClub.club?.id)
         };
 
       case ACTION_TYPES.CREATE_PROPOSAL:

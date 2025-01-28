@@ -43,20 +43,51 @@ function onDomContentLoaded() {
     //OJO que a veces tarda más en cargar que en leer ¬¬
     
     // ==EVENT LISTENERS==//
+
     /**
-     * show club template
+     * auth forms
+     */
+    const loginForm = document.getElementById('loginForm')
+    loginForm?.addEventListener('submit', onLoginFormSubmit)
+
+    const registerForm = document.getElementById('registerForm')
+    registerForm?.addEventListener('submit', onRegisterFormSubmit)
+    
+    /**
+     * show templates
      */
     const clubsPageLink = document.getElementById('clubsPageLink')
-
     clubsPageLink?.addEventListener('click', onClubsPageLinkClick)
 
 
     const bookProposal = document.getElementById('bookProposal')
-    const movieProposal = document.getElementById('movieProposal')
-
     bookProposal?.addEventListener('change', onBookProposalChange)
+    
+    const movieProposal = document.getElementById('movieProposal')
     movieProposal?.addEventListener('change', onMovieProposalChange)
 }
+
+//=======USER EVENTS=======//
+/**
+ * on login form submit
+ * @param {SubmitEvent} e
+ */
+function onLoginFormSubmit(e) {
+    e.preventDefault();
+    loginUser()
+}
+
+/**
+ * on register form submit
+ * @param {SubmitEvent} e
+ */
+function onRegisterFormSubmit(e) {
+    e.preventDefault();
+    createNewUser()
+    console.log(store.getState())
+}
+
+//=======CLUB EVENTS=======//
 
 /**
  * show club template
@@ -102,6 +133,48 @@ function onCreateClubFormSubmit(e) {
     cleanUpNewClubForm();
     updateClubsList()
 }
+
+//================USER METHODS================//
+
+/**
+ * login user
+ */
+function loginUser() {
+    const loginEmail = /** @type {HTMLInputElement} */ (document.getElementById('loginEmail')).value;
+    const loginPassword = /** @type {HTMLInputElement} */ (document.getElementById('loginPassword')).value
+
+    const users = store.getState().users;
+    const loginUser = users.find((/** @type {User} */ user) => user.email === loginEmail && user.password === loginPassword);
+
+    if (loginUser) {
+        //TODO: hide authForms, load user content, welcome... MONEY MONEY MONEY
+        console.log('logueado', loginUser)
+    }
+}
+
+/**
+ * create new user
+ */
+function createNewUser() {
+    const registerName = /** @type {HTMLInputElement} */ (document.getElementById('registerName')).value
+    const registerEmail = /** @type {HTMLInputElement} */ (document.getElementById('registerEmail')).value 
+    const registerPassword = /** @type {HTMLInputElement} */ (document.getElementById('registerPassword')).value 
+
+    const newUser = {
+        id: `user_${Date.now()}`,
+        name: registerName,
+        email: registerEmail,
+        password: registerPassword,
+        clubs: [],
+        books: [],
+        bookProposals: [],
+        bookVotes: [],
+    }
+    store.user.create(new User(newUser));
+}
+
+//================CLUB METHODS================//
+
 /**
  * create new club
  */
@@ -176,7 +249,7 @@ function deleteClub(clubId) {
 }
 
 
-//==PROPOSALS==//
+//==PROPOSALS EVENTS==//
 /**
  * show template on change
  */
@@ -194,7 +267,7 @@ function onMovieProposalChange() {
     }
 }
 
-//========METHODS========//
+
 
 //TODO:==Cuando meta apis tochas, mirar si renta poner el simple fetch==//
 /**

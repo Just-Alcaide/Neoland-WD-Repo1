@@ -1,7 +1,10 @@
 //@ts-check
 import {store} from "../js/store/redux.js";
 import {Club} from "../js/classes/Club.js";
+import { User } from "../js/classes/User.js";
+
 const clubs = store.getState()?.clubs || [];
+const user = store.getState()?.user || [];
 
 export const clubPageTemplate = `
     <section id="clubsPage">
@@ -28,3 +31,7 @@ export const clubPageTemplate = `
         </form>
     </section>
 `;
+
+export const userPageTemplate = `
+            
+`

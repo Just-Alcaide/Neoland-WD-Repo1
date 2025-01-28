@@ -70,9 +70,10 @@ function onClubsPageLinkClick(e) {
     const dynamicContent = document.getElementById('dinamic-content');
     if (dynamicContent) {
     dynamicContent.innerHTML = clubPageTemplate
+
         // event listener for create new club
-    const createClubForm = document.getElementById('createClubForm');
-    createClubForm?.addEventListener('submit', onCreateClubFormSubmit);
+        const createClubForm = document.getElementById('createClubForm');
+        createClubForm?.addEventListener('submit', onCreateClubFormSubmit);
 
         //event listener for delete club
         const deleteClubButtons = document.querySelectorAll('.deleteClubButton');

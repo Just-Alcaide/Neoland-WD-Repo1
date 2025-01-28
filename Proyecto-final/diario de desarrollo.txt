@@ -28,3 +28,22 @@ Terminada segunda versión de clases
 
 Desarrolado Redux con sus acciones
 Limpiados errores de tipado del redux
+
+27/01/2025
+
+action with en reducer
+definir public methods
+funcionalidades de club
+
+28/01/2025
+
+funcionalidades de User
+
+
+TODO: 
+-interfaz html y css
+-funcionalidades de proposal 
+-jsdoc
+-jest tests
+-import map poner rutas
+-local storage

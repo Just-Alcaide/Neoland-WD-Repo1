@@ -35,12 +35,6 @@ function onDomContentLoaded() {
      * load APIS and JSON
      */
     processData()
-
-    /**
-     * load stored data
-     */
-    // readStoredData()
-    //OJO que a veces tarda más en cargar que en leer ¬¬
     
     // ==EVENT LISTENERS==//
 
@@ -75,6 +69,7 @@ function onDomContentLoaded() {
 function onLoginFormSubmit(e) {
     e.preventDefault();
     loginUser()
+    cleanUpLoginForm();
 }
 
 /**
@@ -84,6 +79,8 @@ function onLoginFormSubmit(e) {
 function onRegisterFormSubmit(e) {
     e.preventDefault();
     createNewUser()
+    cleanUpRegisterForm()
+    saveStateToLocalStorage()
     console.log(store.getState())
 }
 
@@ -131,7 +128,8 @@ function onCreateClubFormSubmit(e) {
     e.preventDefault();
     createNewClub();
     cleanUpNewClubForm();
-    updateClubsList()
+    updateClubsList();
+    saveStateToLocalStorage()
 }
 
 //================USER METHODS================//
@@ -147,7 +145,11 @@ function loginUser() {
     const loginUser = users.find((/** @type {User} */ user) => user.email === loginEmail && user.password === loginPassword);
 
     if (loginUser) {
-        //TODO: hide authForms, load user content, welcome... MONEY MONEY MONEY
+        //TODO: load user content, welcome... MONEY MONEY MONEY
+        const authForms = document.getElementById('authForms');
+        if (authForms) {
+            authForms.classList.add('hidden');
+        }
         console.log('logueado', loginUser)
     }
 }
@@ -172,6 +174,30 @@ function createNewUser() {
     }
     store.user.create(new User(newUser));
 }
+
+/**
+ * clean up login form
+ */
+function cleanUpLoginForm() {
+    const loginEmail = /** @type {HTMLInputElement} */ (document.getElementById('loginEmail'))
+    const loginPassword = /** @type {HTMLInputElement} */ (document.getElementById('loginPassword'))
+
+    loginEmail.value = ''
+    loginPassword.value = ''
+}
+
+/**
+ * clean up register form
+ */
+function cleanUpRegisterForm() {
+    const registerName = /** @type {HTMLInputElement} */ (document.getElementById('registerName'))
+    const registerEmail = /** @type {HTMLInputElement} */ (document.getElementById('registerEmail'))
+    const registerPassword = /** @type {HTMLInputElement} */ (document.getElementById('registerPassword'))
+
+    registerName.value = ''
+    registerEmail.value = ''
+    registerPassword.value = ''
+} 
 
 //================CLUB METHODS================//
 
@@ -269,7 +295,13 @@ function onMovieProposalChange() {
 
 
 
+
 //TODO:==Cuando meta apis tochas, mirar si renta poner el simple fetch==//
+
+function saveStateToLocalStorage() {
+    localStorage.setItem('state', JSON.stringify(store.getState()));
+}
+
 /**
  * get Data from Book API
  */
@@ -343,22 +375,10 @@ async function processMovieData () {
 async function processData() {
     await processBookData()
     await processMovieData()
+    saveStateToLocalStorage()
     console.log(store.getState())
 }
-/**
- * read Stored Data
- */
-// function readStoredData() {
     
-//     const storedData = localStorage.getItem('storedData');
-//     if  (storedData !== null) {
-//         const parsedData = JSON.parse(storedData);
-//         console.log('Stored Data: ', parsedData);
-//     } else {
-//         console.log('No stored data');
-//     }
-    
-// }
 /**
  * @param {number} status
  */

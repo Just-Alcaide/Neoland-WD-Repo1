@@ -13,6 +13,7 @@ export const clubPageTemplate = `
                     <h3>Nombre: ${club.name}</h3>
                     <p>Descripción: ${club.description}</p>
                     <p>Miembros: ${club.members.length || 0}</p>
+                    <button class="deleteClubButton" data-id="${club.id}">Eliminar Club</button>
                 </li>
                 `
             ).join('')}

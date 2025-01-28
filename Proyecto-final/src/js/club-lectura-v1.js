@@ -70,9 +70,22 @@ function onClubsPageLinkClick(e) {
     const dynamicContent = document.getElementById('dinamic-content');
     if (dynamicContent) {
     dynamicContent.innerHTML = clubPageTemplate
-
+        // event listener for create new club
     const createClubForm = document.getElementById('createClubForm');
     createClubForm?.addEventListener('submit', onCreateClubFormSubmit);
+
+        //event listener for delete club
+        const deleteClubButtons = document.querySelectorAll('.deleteClubButton');
+        deleteClubButtons.forEach((button) => {
+        button.addEventListener('click', (e) => {
+            const target = /** @type {HTMLElement} */ (e.target)
+            if (target) { 
+            const clubId = target.getAttribute('data-id');
+            if (clubId) {
+                deleteClub(clubId);
+            }}
+        });
+    });
     }
 }
 
@@ -107,7 +120,6 @@ function createNewClub() {
         bookVotesAverage: []
     };
     store.club.create(new Club(newClub));
-    console.log(store.getState())
 }
 
 /**
@@ -124,7 +136,6 @@ function cleanUpNewClubForm() {
  * update clubs list
  */
 function updateClubsList() {
-    console.log(store.getState().clubs)
     const clubsList = document.getElementById('clubsList');
     if (clubsList) {
         clubsList.innerHTML = store.getState().clubs.map((/** @type {Club} */ club) => `
@@ -132,10 +143,35 @@ function updateClubsList() {
             <h3>Nombre: ${club.name}</h3>
             <p>Descripción: ${club.description}</p>
             <p>Miembros: ${club.members.length || 0}</p>
+            <button class="deleteClubButton" data-id="${club.id}">Eliminar Club</button>
         </li>
         `
         ).join('');
+        
+        const deleteClubButtons = document.querySelectorAll('.deleteClubButton');
+        deleteClubButtons.forEach((button) => {
+        button.addEventListener('click', (e) => {
+            const target = /** @type {HTMLElement} */ (e.target)
+            if (target) { 
+            const clubId = target.getAttribute('data-id');
+            if (clubId) {
+                deleteClub(clubId);
+            }}
+        });
+    });
     } 
+}
+
+/**
+ * delete club
+ * @param {string} clubId
+ */
+function deleteClub(clubId) {
+    const clubToDelete = store.getState().clubs.find((/** @type {Club} */ club) => club.id === clubId);
+    if (clubToDelete) {
+        store.club.delete(clubToDelete);
+        updateClubsList();
+    }
 }
 
 

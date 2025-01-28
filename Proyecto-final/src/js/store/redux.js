@@ -215,6 +215,8 @@ const INITIAL_STATE = {
 /**
  * @typedef {Object} Store
  * @property {function} getState
+ * @property {function} saveState
+ * @property {function} loadState 
  * @property {PublicMethods} product
  * @property {PublicMethods} user
  * @property {PublicMethods} club
@@ -376,6 +378,23 @@ const INITIAL_STATE = {
      */
     const getProposalById = (id) => { return currentState.proposals.find((/** @type {Proposal} */ proposal) => proposal.id === id) };
 
+    /**
+     * load state from local Storage and save in Store
+     */
+    const loadState = () => {
+      const state = localStorage.getItem('storedData');
+      if (state) {
+        currentState = JSON.parse(state);
+      }
+    }
+
+    /**
+     * save Store State to local Storage
+     */
+    const saveState = () => {
+      localStorage.setItem('storedData', JSON.stringify(currentState));
+    }
+
     // Private methods
 
     /**
@@ -459,6 +478,8 @@ const INITIAL_STATE = {
 
       // Public methods
       getState,
+      saveState, 
+      loadState
     }
   }
   

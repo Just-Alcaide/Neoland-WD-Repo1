@@ -31,10 +31,18 @@ document.addEventListener('DOMContentLoaded', onDomContentLoaded)
 //========EVENTS========//
 
 function onDomContentLoaded() {
+
     /**
-     * load APIS and JSON
+     * load state
+     */
+    store.loadState();
+
+    /**
+     * load APIS and JSON if not done previously
      */
     processData()
+    
+
     
     // ==EVENT LISTENERS==//
 
@@ -59,6 +67,8 @@ function onDomContentLoaded() {
     
     const movieProposal = document.getElementById('movieProposal')
     movieProposal?.addEventListener('change', onMovieProposalChange)
+
+    
 }
 
 //=======USER EVENTS=======//
@@ -80,7 +90,6 @@ function onRegisterFormSubmit(e) {
     e.preventDefault();
     createNewUser()
     cleanUpRegisterForm()
-    saveStateToLocalStorage()
     console.log(store.getState())
 }
 
@@ -98,23 +107,11 @@ function onClubsPageLinkClick(e) {
     const dynamicContent = document.getElementById('dinamic-content');
     if (dynamicContent) {
     dynamicContent.innerHTML = clubPageTemplate
+    updateClubsList()
 
-        // event listener for create new club
-        const createClubForm = document.getElementById('createClubForm');
-        createClubForm?.addEventListener('submit', onCreateClubFormSubmit);
-
-        //event listener for delete club
-        const deleteClubButtons = document.querySelectorAll('.deleteClubButton');
-        deleteClubButtons.forEach((button) => {
-        button.addEventListener('click', (e) => {
-            const target = /** @type {HTMLElement} */ (e.target)
-            if (target) { 
-            const clubId = target.getAttribute('data-id');
-            if (clubId) {
-                deleteClub(clubId);
-            }}
-        });
-    });
+    // event listener for create new club
+    const createClubForm = document.getElementById('createClubForm');
+    createClubForm?.addEventListener('submit', onCreateClubFormSubmit);
     }
 }
 
@@ -129,7 +126,7 @@ function onCreateClubFormSubmit(e) {
     createNewClub();
     cleanUpNewClubForm();
     updateClubsList();
-    saveStateToLocalStorage()
+    console.log(store.getState())
 }
 
 //================USER METHODS================//
@@ -145,13 +142,17 @@ function loginUser() {
     const loginUser = users.find((/** @type {User} */ user) => user.email === loginEmail && user.password === loginPassword);
 
     if (loginUser) {
-        //TODO: load user content, welcome... MONEY MONEY MONEY
+        //TODO: load user content... MONEY MONEY MONEY
+        const welcomeMessage = document.getElementById('welcomeMessage');
+        if (welcomeMessage) {
+            welcomeMessage.innerText = `Bienvenid@ ${loginUser.name} a Sophia Social, tu comuniad de lectura y cine.`;
+        }
         const authForms = document.getElementById('authForms');
         if (authForms) {
             authForms.classList.add('hidden');
         }
         console.log('logueado', loginUser)
-    }
+    } 
 }
 
 /**
@@ -173,6 +174,7 @@ function createNewUser() {
         bookVotes: [],
     }
     store.user.create(new User(newUser));
+    store.saveState();
 }
 
 /**
@@ -220,6 +222,7 @@ function createNewClub() {
         bookVotesAverage: []
     };
     store.club.create(new Club(newClub));
+    store.saveState();
 }
 
 /**
@@ -248,6 +251,7 @@ function updateClubsList() {
         `
         ).join('');
         
+        // event listener for delete club
         const deleteClubButtons = document.querySelectorAll('.deleteClubButton');
         deleteClubButtons.forEach((button) => {
         button.addEventListener('click', (e) => {
@@ -271,6 +275,7 @@ function deleteClub(clubId) {
     if (clubToDelete) {
         store.club.delete(clubToDelete);
         updateClubsList();
+        store.saveState();
     }
 }
 
@@ -293,14 +298,9 @@ function onMovieProposalChange() {
     }
 }
 
-
-
+//========APP METHODS========//
 
 //TODO:==Cuando meta apis tochas, mirar si renta poner el simple fetch==//
-
-function saveStateToLocalStorage() {
-    localStorage.setItem('state', JSON.stringify(store.getState()));
-}
 
 /**
  * get Data from Book API
@@ -373,9 +373,13 @@ async function processMovieData () {
  * process products Data
  */
 async function processData() {
-    await processBookData()
-    await processMovieData()
-    saveStateToLocalStorage()
+    const isApiDataProcessed = localStorage.getItem('isApiDataProcessed')
+    if (!isApiDataProcessed) {
+        await processBookData()
+        await processMovieData()
+        localStorage.setItem('isApiDataProcessed', 'true')
+        store.saveState()
+    }  
     console.log(store.getState())
 }
     

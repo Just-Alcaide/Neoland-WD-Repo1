@@ -2,10 +2,12 @@
 
 /**
  * import store and classes
- * @typedef {import('./classes/Product.js').Book} Book
- * @typedef {import('./classes/Product.js').Product} Product
- * @typedef {import('./classes/Product.js').Movie} Movie
- */
+ * /
+
+/** @typedef {import('./classes/Product.js').Book} Book */
+/** @typedef {import('./classes/Product.js').Product} Product */
+/** @typedef {import('./classes/Product.js').Movie} Movie */
+ 
 import {store} from "./store/redux.js";
 import {ProductFactory, PRODUCT_TYPE,} from "./classes/Product.js";
 import {User} from "./classes/User.js";

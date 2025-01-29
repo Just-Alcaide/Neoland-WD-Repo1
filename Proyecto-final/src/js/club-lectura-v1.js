@@ -2,12 +2,15 @@
 
 /**
  * import store and classes
+ * @typedef {import('./classes/Product.js').Book} Book
+ * @typedef {import('./classes/Product.js').Product} Product
+ * @typedef {import('./classes/Product.js').Movie} Movie
  */
 import {store} from "./store/redux.js";
-import {ProductFactory, PRODUCT_TYPE, Book, Product, Movie} from "./classes/Product.js";
+import {ProductFactory, PRODUCT_TYPE,} from "./classes/Product.js";
 import {User} from "./classes/User.js";
 import {Club} from "./classes/Club.js";
-import {Proposal} from "./classes/Proposal.js";
+// import {Proposal} from "./classes/Proposal.js";
 
 /**
  * import templates
@@ -15,6 +18,7 @@ import {Proposal} from "./classes/Proposal.js";
 import { clubPageTemplate } from "../templates/dinamic-content.templates.js";
 import { bookProposalTemplate } from "../templates/proposal-templates.js";
 import { movieProposalTemplate } from "../templates/proposal-templates.js";
+
 
 /**
  * define API URLs
@@ -387,5 +391,5 @@ async function processData() {
  * @param {number} status
  */
 function showError(status) {
-    throw new Error("Function not implemented.");
+    throw new Error(`Error ${status}: Function not implemented.`);
 }

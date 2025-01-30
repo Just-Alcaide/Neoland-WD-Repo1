@@ -15,6 +15,8 @@ export const clubPageTemplate = `
             <input type="text" name="clubName" id="clubName" required>
             <label for="clubDescription">Descripción del Club:</label>
             <textarea name="clubDescription" id="clubDescription" required></textarea>
+            <label>Privado<input type="radio" name="clubVisibility" value="private" required></label>
+            <label>Publico<input type="radio" name="clubVisibility" value="public" required></label>
             <button type="submit">Crear Club</button>
         </form>
     </section>

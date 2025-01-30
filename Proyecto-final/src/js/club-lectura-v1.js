@@ -81,6 +81,7 @@ function onLoginFormSubmit(e) {
     e.preventDefault();
     loginUser()
     cleanUpLoginForm();
+    updateClubsList()
     console.log(store.getState())
 }
 
@@ -113,8 +114,8 @@ function onLogoutButtonClick(e) {
 function ondeleteAccountButtonClick(e) {
     e.preventDefault();
     deleteAccountForm();
-
 }
+
 /**
  * on delete user button click
  * @param {MouseEvent} e 
@@ -310,9 +311,6 @@ function deleteUser() {
 
 /**
  * show club template
- */
-/**
- * 
  * @param {MouseEvent} e 
  */
 function onClubsPageLinkClick(e) {
@@ -330,8 +328,6 @@ function onClubsPageLinkClick(e) {
 
 /**
  * on create club form submit
-*/
-/**
  * @param {SubmitEvent} e
  */
 function onCreateClubFormSubmit(e) {
@@ -351,19 +347,40 @@ function onCreateClubFormSubmit(e) {
 function createNewClub() {
     const clubName = /** @type {HTMLInputElement} */ (document.getElementById('clubName')).value;
     const clubDescription = /** @type {HTMLTextAreaElement} */ (document.getElementById('clubDescription')).value;
+    const clubVisibility = /** @type {HTMLInputElement} */ (document.querySelector('input[name="clubVisibility"]:checked')).value;
+    const isPrivate = clubVisibility === 'private';
+
+    const loggedUser = getLoggedUserData();
+    if (!loggedUser) {
+        alert('Debes iniciar sesión para crear un club');
+        return;
+    }
 
     const newClub = {
         id: `club_${Date.now()}`,
         name: clubName,
         description: clubDescription,
-        members: [],
+        private: isPrivate,
+        admins: [loggedUser.id],
+        members: [loggedUser.id],
         bookProposals: [],
         bookCurrent: null,
         deadlineCurrent: null,
         bookVotes: [],
         bookVotesAverage: []
     };
+
     store.club.create(new Club(newClub));
+    const clubId = newClub.id
+
+    const updatedUser = {
+        ...loggedUser,
+        clubs: [...loggedUser.clubs, clubId]
+    }
+
+    store.user.update(updatedUser);
+    sessionStorage.setItem('loggedUser', JSON.stringify(updatedUser));
+
     store.saveState();
 }
 
@@ -373,8 +390,11 @@ function createNewClub() {
 function cleanUpNewClubForm() {
     const clubName = /** @type {HTMLInputElement} */ (document.getElementById('clubName'))
     const clubDescription = /** @type {HTMLTextAreaElement} */ (document.getElementById('clubDescription'))
+    const clubVisibility = /** @type {NodeListOf<HTMLInputElement>} */ (document.querySelectorAll('input[name="clubVisibility"]'))
+
     clubName.value = ''
     clubDescription.value = ''
+    clubVisibility.forEach((radio) => radio.checked = false)
 }
 
 /**
@@ -382,20 +402,46 @@ function cleanUpNewClubForm() {
  */
 function updateClubsList() {
     const clubsList = document.getElementById('clubsList');
+    const loggedUser = getLoggedUserData();
+    const clubs = store.getState().clubs;
+    const userClubs = clubs.filter((/** @type {Club} */ club) => {
+        return !loggedUser
+            ? !club.private
+            : !club.private || club.members.includes(loggedUser.id); 
+    });
+
     if (clubsList) {
-        clubsList.innerHTML = store.getState().clubs.map((/** @type {Club} */ club) => `
+        clubsList.innerHTML = userClubs.map((/** @type {Club} */ club) => 
+        `
          <li>
             <h3>Nombre: ${club.name}</h3>
             <p>Descripción: ${club.description}</p>
             <p>Miembros: ${club.members.length || 0}</p>
             <button class="visitClubButton" data-id="${club.id}">Visitar Club</button>
+
+            ${loggedUser && !club.private && !club.members.includes(loggedUser.id) ?
+            `
+            <button class="joinClubButton" data-id="${club.id}">Unirse al Club</button>
+            ` : ''}
+
+            ${loggedUser && club.members.includes(loggedUser.id) ?
+            `
+            <button class="leaveClubButton" data-id="${club.id}">Salir del Club</button>
+            `: ''}
+
+            ${loggedUser && club.admins.includes(loggedUser.id) ? 
+            `
+            <button class="editClubButton" data-id="${club.id}">Editar Club</button>
             <button class="deleteClubButton" data-id="${club.id}">Eliminar Club</button>
+            ` : ''}
         </li>
-        `
-        ).join('');
+        `).join('');
 
         // event listeners to clubs list
         addVisitListenerToClubsList()
+        addJoinListenerToClubsList()
+        addLeaveListenerToClubsList()
+        addEditListenerToClubsList()
         addDeleteListenerToClubsList()
     } 
 }
@@ -434,6 +480,134 @@ function visitClubPage(clubId) {
 
     // const addProposalButton = document.getElementById('addProposalButton');
     // addProposalButton?.addEventListener('click', onAddProposalButtonClick)
+}
+
+/**
+ * add join club event listener
+ */
+function addJoinListenerToClubsList() {
+    const joinClubButton = document.querySelectorAll('.joinClubButton');
+    joinClubButton.forEach((button) => {
+        button.addEventListener('click', (e) => {
+            const target = /** @type {HTMLElement} */ (e.target)
+            if (target) {
+                const clubId = target.getAttribute('data-id');
+                if (clubId) {
+                    joinClub(clubId);
+                }
+            }
+        })
+    }) 
+}
+
+/**
+ * join club
+ * @param {string} clubId 
+ */
+function joinClub(clubId) {
+    const loggedUser = getLoggedUserData();
+    if (!loggedUser) {
+        alert('Debes iniciar sesión para unirte a un club');
+        return;
+    }
+
+    const clubToJoin = store.getState().clubs.find((/** @type {Club} */ club) => club.id === clubId);
+    if (clubToJoin) {
+        const updatedClub = {
+            ...clubToJoin,
+            members: [...clubToJoin.members, loggedUser.id]
+        };
+
+        const updatedUser = {
+            ...loggedUser,
+            clubs: [...loggedUser.clubs, clubId]
+        }
+
+        store.club.update(updatedClub);
+        store.user.update(updatedUser);
+        sessionStorage.setItem('loggedUser', JSON.stringify(updatedUser));
+        store.saveState();
+        updateClubsList();
+    }
+    console.log(store.getState())
+}
+
+/**
+ * add leave club event listener
+ */
+function addLeaveListenerToClubsList() {
+    const leaveClubButton = document.querySelectorAll('.leaveClubButton');
+    leaveClubButton.forEach((button) => {
+        button.addEventListener('click', (e) => {
+            const target = /** @type {HTMLElement} */ (e.target)
+            if (target) {
+                const clubId = target.getAttribute('data-id');
+                if (clubId) {
+                    leaveClub(clubId);
+                }
+            }
+        })
+    });
+}
+
+/**
+ * leave club
+ * @param {string} clubId 
+ */
+function leaveClub(clubId) {
+    const loggedUser = getLoggedUserData();
+    if (!loggedUser) {
+        alert('Debes iniciar sesión para salir de un club');
+        return;
+    }
+
+    const clubToLeave = store.getState().clubs.find((/** @type {Club} */ club) => club.id === clubId);
+    if (clubToLeave) {
+        const updatedClub = {
+            ...clubToLeave,
+            members: clubToLeave.members.filter((/** @type {string} */ memberId) => memberId !== loggedUser.id)
+        };
+
+        const updatedUser = {
+            ...loggedUser,
+            clubs: loggedUser.clubs.filter((/** @type {string} */ clubId) => clubId !== clubId)
+        }
+
+        store.club.update(updatedClub);
+        store.user.update(updatedUser);
+        sessionStorage.setItem('loggedUser', JSON.stringify(updatedUser));
+        store.saveState();
+        updateClubsList();
+    }
+    console.log(store.getState())
+}
+
+/**
+ * add edit club event listener
+ */
+function addEditListenerToClubsList() {
+    const editClubButton = document.querySelectorAll('.editClubButton');
+    editClubButton.forEach((button) => {
+        button.addEventListener('click', (e) => {
+            const target = /** @type {HTMLElement} */ (e.target)
+            if (target) {
+                const clubId = target.getAttribute('data-id');
+                if (clubId) {
+                    editClub(clubId);
+                }
+            }
+        });
+    });
+}
+
+/**
+ * edit club
+ * @param {string} clubId 
+ */
+function editClub(clubId) {
+    if (clubId) {
+    alert('No tio, no me jodas. Dame un respiro, tronco. (No implementado)');
+    }
 }
 
 /**

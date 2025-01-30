@@ -6,7 +6,7 @@
  * @property {string} product
  * @property {string} user
  * @property {string} club
- * @property {string []=} votes
+ * @property {string []=} [votes]
  */
 export class Proposal {
     id
@@ -22,6 +22,6 @@ export class Proposal {
         this.product = proposalData.product
         this.user = proposalData.user
         this.club = proposalData.club
-        this.votes = proposalData.votes
+        this.votes = proposalData.votes || []
     }
 }

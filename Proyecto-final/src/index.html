@@ -26,7 +26,7 @@
         <section id="authForms">
             <h3>Inicia sesión o Resgistrate</h3>
             <form id="loginForm">
-                <h4>Iniciar Sesión</h4>
+                <h4>Iniciar Sesión: </h4>
                 <label for="loginEmail">Email: </label>
                 <input type="email" id="loginEmail" name="loginEmail" required>
                 <label for="loginPassword">Contraseña: </label>
@@ -35,7 +35,7 @@
             </form>
 
             <form id="registerForm">
-                <h4>Registrarse</h4>
+                <h4>Registrar Nuevo Usuario: </h4>
                 <label for="registerName">Nombre: </label>
                 <input type="text" id="registerName" name="registerName" required>
                 <label for="registerEmail">Email: </label>
@@ -45,13 +45,29 @@
                 <button type="submit">Registrarse</button>
             </form>
         </section>
+            <div id="userMenu"></div>
+            <dialog id="deleteAccountPopup">
+                <form id="deleteAccountForm">
+                    <h4>Eliminar Cuenta</h4>
+                    <p>¿Estas seguro que quieres eliminar tu cuenta? No hay vuelta atrás</p>
+                    <p>Para eliminar tu cuenta, verifica tus datos</p>
+                    <input type="text" id="deleteUserName" placeholder="Tu Nombre de Usuario" required>
+                    <input type="email" id="deleteUserEmail" placeholder="Tu Email" required>
+                    <input type="password" id="deleteUserPassword" placeholder="Tu Contraseña" required>
+                    <button type="submit" id="deleteUserButton">Eliminar Cuenta</button>
+                    <button type="button" id="cancelDeleteAccountButton">Cancelar</button>
+                </form>
+            </dialog>
         </header>
         <main>
             <h2 id="welcomeMessage">
                 Bienvenid@ a Sophia Social, tu comunidad de lectura y cine
             </h2>
+            
 
-            <section id="dinamic-content">
+            <section id="dynamic-content">
+
+
 
             </section>
         </main>

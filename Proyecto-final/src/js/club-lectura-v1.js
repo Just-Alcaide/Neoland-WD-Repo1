@@ -405,37 +405,44 @@ function updateClubsList() {
     const loggedUser = getLoggedUserData();
     const clubs = store.getState().clubs;
     const userClubs = clubs.filter((/** @type {Club} */ club) => {
-        return !loggedUser
-            ? !club.private
-            : !club.private || club.members.includes(loggedUser.id); 
+        if (!loggedUser) {
+            return !club.private;
+        } else {
+            return !club.private || club.members.includes(loggedUser.id);
+        }
     });
 
     if (clubsList) {
-        clubsList.innerHTML = userClubs.map((/** @type {Club} */ club) => 
-        `
-         <li>
-            <h3>Nombre: ${club.name}</h3>
-            <p>Descripción: ${club.description}</p>
-            <p>Miembros: ${club.members.length || 0}</p>
-            <button class="visitClubButton" data-id="${club.id}">Visitar Club</button>
+        clubsList.innerHTML = userClubs.map((/** @type {Club} */ club) => {
 
-            ${loggedUser && !club.private && !club.members.includes(loggedUser.id) ?
-            `
-            <button class="joinClubButton" data-id="${club.id}">Unirse al Club</button>
-            ` : ''}
+            let userButtons = '';
 
-            ${loggedUser && club.members.includes(loggedUser.id) ?
-            `
-            <button class="leaveClubButton" data-id="${club.id}">Salir del Club</button>
-            `: ''}
+            if (loggedUser && !club.private && !club.members.includes(loggedUser.id)) {
+                userButtons += `
+                <button class="joinClubButton" data-id="${club.id}">Unirse al Club</button>
+                `;}
 
-            ${loggedUser && club.admins.includes(loggedUser.id) ? 
-            `
-            <button class="editClubButton" data-id="${club.id}">Editar Club</button>
-            <button class="deleteClubButton" data-id="${club.id}">Eliminar Club</button>
-            ` : ''}
-        </li>
-        `).join('');
+            if (loggedUser && club.members.includes(loggedUser.id)) {
+                userButtons += `
+                <button class="leaveClubButton" data-id="${club.id}">Salir del Club</button>
+                `;}
+
+            if (loggedUser && club.admins.includes(loggedUser.id)) {
+                userButtons += `
+                <button class="editClubButton" data-id="${club.id}">Editar Club</button>
+                <button class="deleteClubButton" data-id="${club.id}">Eliminar Club</button>
+                `;}
+            
+        return `
+            <li>
+                <h3>Nombre: ${club.name}</h3>
+                <p>Descripción: ${club.description}</p>
+                <p>Miembros: ${club.members.length || 0}</p>
+                <button class="visitClubButton" data-id="${club.id}">Visitar Club</button>
+                ${userButtons}
+            </li>
+            `;
+        }).join('');
 
         // event listeners to clubs list
         addVisitListenerToClubsList()
@@ -513,6 +520,7 @@ function joinClub(clubId) {
 
     const clubToJoin = store.getState().clubs.find((/** @type {Club} */ club) => club.id === clubId);
     if (clubToJoin) {
+
         const updatedClub = {
             ...clubToJoin,
             members: [...clubToJoin.members, loggedUser.id]
@@ -563,6 +571,7 @@ function leaveClub(clubId) {
 
     const clubToLeave = store.getState().clubs.find((/** @type {Club} */ club) => club.id === clubId);
     if (clubToLeave) {
+
         const updatedClub = {
             ...clubToLeave,
             members: clubToLeave.members.filter((/** @type {string} */ memberId) => memberId !== loggedUser.id)

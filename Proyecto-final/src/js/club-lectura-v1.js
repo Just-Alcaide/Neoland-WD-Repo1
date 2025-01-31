@@ -6,12 +6,13 @@
 /** @typedef {import('./classes/Product.js').Book} Book */
 /** @typedef {import('./classes/Product.js').Product} Product */
 /** @typedef {import('./classes/Product.js').Movie} Movie */
+/** @typedef {import('./classes/Proposal.js').Proposal} Proposal } */
  
 import {store} from "./store/redux.js";
 import {ProductFactory, PRODUCT_TYPE,} from "./classes/Product.js";
 import {User} from "./classes/User.js";
 import {Club} from "./classes/Club.js";
-// import {Proposal} from "./classes/Proposal.js";
+
 
 /**
  * import templates
@@ -183,9 +184,9 @@ function createNewUser() {
         email: registerEmail,
         password: registerPassword,
         clubs: [],
-        books: [],
-        bookProposals: [],
-        bookVotes: [],
+        products: [],
+        productProposals: [],
+        proposalVotes: [],
     }
     store.user.create(new User(newUser));
     store.saveState();
@@ -340,6 +341,10 @@ function onCreateClubFormSubmit(e) {
 
 
 //=====CLUB METHODS=====//
+//TODO: QUE PASA SI UN ADMIN SE VA DEL GRUPO?
+//TODO: PONER QUE ADMIN NOMBRE OTROS ADMINS
+//TODO: PONER QUE CLUB SE ELIMINE SI ULTIMO USER SE VA
+//TODO: AVISO SI EL ULTIMO USER SE QUIERE IR, CONFIRMAR ELIMINAR EL CLUB
 
 /**
  * create new club
@@ -363,11 +368,9 @@ function createNewClub() {
         private: isPrivate,
         admins: [loggedUser.id],
         members: [loggedUser.id],
-        bookProposals: [],
-        bookCurrent: null,
+        productProposals: [],
+        productCurrent: null,
         deadlineCurrent: null,
-        bookVotes: [],
-        bookVotesAverage: []
     };
 
     store.club.create(new Club(newClub));
@@ -477,16 +480,98 @@ function addVisitListenerToClubsList(){
  * @param {string} clubId
  */
 function visitClubPage(clubId) {
-    const dynamicContent = document.getElementById ('dynamic-content');
-    const clubToVisit = store.getState().clubs.find((/** @type {Club} */ club) => club.id === clubId);
-
-    if (clubToVisit && dynamicContent) {
-        dynamicContent.innerHTML = clubDetailPageTemplate(clubToVisit);
-        // updateProposalsList(clubId)
+    const dynamicContent = document.getElementById('dynamic-content');
+    if (!dynamicContent) {
+        return;
     }
 
-    // const addProposalButton = document.getElementById('addProposalButton');
-    // addProposalButton?.addEventListener('click', onAddProposalButtonClick)
+    dynamicContent.innerHTML = clubDetailPageTemplate(clubId);
+
+    const club = getClubData(clubId);
+    if (!club) return;
+
+    renderClubDetails(club);
+    renderMemberDetails(club);
+    renderClubProposals(club);
+    setupClubButtons(club);
+}
+
+/**
+ * get club data
+ * @param {string} clubId 
+ */
+function getClubData(clubId) {
+    return store.getState().clubs.find((/** @type {Club} */ club) => club.id === clubId);
+}
+
+/**
+ * render club details
+ * @param {Club} club 
+ */
+function renderClubDetails(club) {
+    const clubDetailName = /** @type {HTMLElement} */ document.getElementById('clubDetailName')
+    const clubDetailDescription = /** @type {HTMLElement} */document.getElementById('clubDetailDescription')
+
+    if (clubDetailName) clubDetailName.textContent = club.name;
+    if (clubDetailDescription) clubDetailDescription.textContent = club.description;
+}
+
+/**
+ * render member details
+ * @param {Club} club 
+ */
+function renderMemberDetails(club) {
+    const membersList = document.getElementById('clubMembersList');
+    if (!membersList) {
+        return;
+    }
+
+    membersList.innerHTML = club.members.map((memberId) => {
+        const member = store.getState().users.find((/** @type {User} */ user) => user.id === memberId);
+        return `
+        <li>${member ? member.name : ''}</li>
+        `
+    }).join('');
+
+}
+
+/**
+ * render club proposals
+ * @param {Club} club 
+ */
+function renderClubProposals(club) {
+    const proposalsList = document.getElementById('clubProposalsList');
+    if (!proposalsList) {
+        return;
+    }
+
+    proposalsList.innerHTML = club.productProposals.map(proposalId => {
+        const proposal = store.getState().proposals.find((/** @type {Proposal} */ proposal) => proposal.id === proposalId);
+        return proposal ? `<li>${proposal.product} (Propuesta de: ${proposal.user})</li>` : '';
+    }).join('');
+}
+
+/**
+ * setup club buttons
+ * @param {Club} club 
+ */
+function setupClubButtons(club) {
+    const loggedUser = getLoggedUserData();
+
+    const addProposalButton = document.getElementById('addProposalButton');
+    const editClubButton = document.getElementById('editClubButton');
+    const deleteClubButton = document.getElementById('deleteClubButton');
+
+    if (!loggedUser) {
+        return;
+    }
+
+    const isMember = club.members.includes(loggedUser.id);
+    const isAdmin = club.admins.includes(loggedUser.id);
+
+    if (isMember && addProposalButton) addProposalButton.classList.remove('hidden');
+    if (isAdmin && editClubButton) editClubButton.classList.remove('hidden');
+    if (isAdmin && deleteClubButton) deleteClubButton.classList.remove('hidden');
 }
 
 /**
@@ -650,7 +735,7 @@ function deleteClub(clubId) {
     }
 }
 
-//TODO: PUES ESO, HACERLO
+//TODO: PUES ESO, HACERLO XD
 //=====PROPOSAL EVENTS=====//
 
 /**
@@ -743,6 +828,7 @@ function deleteClub(clubId) {
 // }
 
 
+//TODO: QUE LOS USER PUEDAN "CREAR PRODUCTOS" SI NO ESTÁN EN DB
 //=====PRODUCT EVENTS=====//
 
 

@@ -7,9 +7,9 @@
  * @property {string} email
  * @property {string} password
  * @property {string[]=} [clubs]
- * @property {string[]=} [books]
- * @property {string[]=} [bookProposals]
- * @property {string[]=} [bookVotes]
+ * @property {string[]=} [products]
+ * @property {string[]=} [productProposals]
+ * @property {string[]=} [proposalVotes]
  */
 export class User {
     id
@@ -17,9 +17,9 @@ export class User {
     email
     password
     clubs
-    books
-    bookProposals
-    bookVotes
+    products
+    productProposals
+    proposalVotes
     /**
      * @param {userData} userData 
      */
@@ -29,8 +29,8 @@ export class User {
         this.email = userData.email
         this.password = userData.password
         this.clubs = userData.clubs || []
-        this.books = userData.books || []
-        this.bookProposals = userData.bookProposals || []
-        this.bookVotes = userData.bookVotes || []
+        this.products = userData.products || []
+        this.productProposals = userData.productProposals || []
+        this.proposalVotes = userData.proposalVotes || []
     }
 }

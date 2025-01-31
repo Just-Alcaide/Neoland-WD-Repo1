@@ -1,8 +1,7 @@
 //@ts-check
-
-/** @typedef {import('../js/classes/Club').Club} Club */
-/** @typedef {import('../js/classes/Proposal').Proposal} Proposal */
-
+/**@typedef {import ('../js/classes/Club.js')} Club */
+/**@typedef {import ('../js/classes/Proposal.js')} Proposal */
+/**@typedef {import('../js/classes/User.js')} User */
 
 export const clubPageTemplate = `
     <section id="clubsPage">
@@ -22,22 +21,26 @@ export const clubPageTemplate = `
     </section>
 `;
 
-export const clubDetailPageTemplate = (/** @type {Club} */ club) => `
-    <section id="clubDetailPage">
-        <h3>${club.name}</h3>
-        <p>${club.description}</p>
-        <p>Miembros: ${club.members.length || 0}</p>
+export const clubDetailPageTemplate = (/** @type {string} */ clubId)  =>  `
+    <section id="clubDetailPage" data-id="${clubId}">
+        <h3 id=clubDetailName></h3>
+        <p id="clubDetailDescription"></p>
 
-        <h4>Propuestas de Libros o Películas</h4>
-        <ul id="proposalsList"> 
-        </ul>
+        <h4>Miembros del Club:</h4>
+        <ul id="clubMembersList"></ul>
 
-        <button id="addProposalButton" data-id="${club.id}">Añadir Propuesta</button>
+        <h4>Propuestas del Club:</h4>
+        <ul id="clubProposalsList"></ul>
 
-        <form class="hidden" id="addProposalTypeForm">
-            <input type="text" id="proposalUser" placeholder="Tu Nombre de Usuario" required>
-            <input type="text" id="proposalProduct" placeholder="Nombre de Libro o Película" required>
-            <button type="submit" id="createNewProposalButton">Confirmar Propuesta </button>
+        <button id="addProposalButton" class="hidden">Agregar Propuesta</button>
+
+        <form id="addProposalTypeForm" class="hidden">
+            <label><input type="radio" name="proposalType" value="bookProposal">Propuesta de Libro</label>
+            <label><input type="radio" name="proposalType" value="movieProposal">Propuesta de Película</label>
+            <button type="submit" id="createNewProposalButton">Confirmar Propuesta</button>
         </form>
+
+        <button id="editClubButton" class="hidden">Editar Club</button>
+        <button id="deleteClubButton" class="hidden">Eliminar Club</button>
     </section>
 `

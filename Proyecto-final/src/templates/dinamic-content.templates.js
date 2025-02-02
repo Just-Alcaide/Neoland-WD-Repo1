@@ -1,7 +1,5 @@
 //@ts-check
-/**@typedef {import ('../js/classes/Club.js')} Club */
-/**@typedef {import ('../js/classes/Proposal.js')} Proposal */
-/**@typedef {import('../js/classes/User.js')} User */
+
 
 export const clubPageTemplate = `
     <section id="clubsPage">
@@ -23,11 +21,18 @@ export const clubPageTemplate = `
 
 export const clubDetailPageTemplate = (/** @type {string} */ clubId)  =>  `
     <section id="clubDetailPage" data-id="${clubId}">
+    
+        <button id="backToClubsListButton">Volver a la Lista de Clubs</button>
+
         <h3 id=clubDetailName></h3>
         <p id="clubDetailDescription"></p>
 
         <h4>Miembros del Club:</h4>
         <ul id="clubMembersList"></ul>
+
+        <div id="clubActionButtonsContainer"></div>
+        
+
 
         <h4>Propuestas del Club:</h4>
         <ul id="clubProposalsList"></ul>
@@ -40,7 +45,5 @@ export const clubDetailPageTemplate = (/** @type {string} */ clubId)  =>  `
             <button type="submit" id="createNewProposalButton">Confirmar Propuesta</button>
         </form>
 
-        <button id="editClubButton" class="hidden">Editar Club</button>
-        <button id="deleteClubButton" class="hidden">Eliminar Club</button>
     </section>
 `

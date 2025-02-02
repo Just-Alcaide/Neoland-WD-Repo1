@@ -318,8 +318,7 @@ function onClubsPageLinkClick(e) {
     e.preventDefault();
     const dynamicContent = document.getElementById('dynamic-content');
     if (dynamicContent) {
-    dynamicContent.innerHTML = clubPageTemplate
-    updateClubsList()
+    loadClubsPage()
 
     // event listener for create new club
     const createClubForm = document.getElementById('createClubForm');
@@ -407,6 +406,7 @@ function updateClubsList() {
     const clubsList = document.getElementById('clubsList');
     const loggedUser = getLoggedUserData();
     const clubs = store.getState().clubs;
+
     const userClubs = clubs.filter((/** @type {Club} */ club) => {
         if (!loggedUser) {
             return !club.private;
@@ -416,36 +416,17 @@ function updateClubsList() {
     });
 
     if (clubsList) {
-        clubsList.innerHTML = userClubs.map((/** @type {Club} */ club) => {
-
-            let userButtons = '';
-
-            if (loggedUser && !club.private && !club.members.includes(loggedUser.id)) {
-                userButtons += `
-                <button class="joinClubButton" data-id="${club.id}">Unirse al Club</button>
-                `;}
-
-            if (loggedUser && club.members.includes(loggedUser.id)) {
-                userButtons += `
-                <button class="leaveClubButton" data-id="${club.id}">Salir del Club</button>
-                `;}
-
-            if (loggedUser && club.admins.includes(loggedUser.id)) {
-                userButtons += `
-                <button class="editClubButton" data-id="${club.id}">Editar Club</button>
-                <button class="deleteClubButton" data-id="${club.id}">Eliminar Club</button>
-                `;}
-            
-        return `
+        clubsList.innerHTML = userClubs.map((/** @type {Club} */ club) => 
+            `
             <li>
                 <h3>Nombre: ${club.name}</h3>
                 <p>Descripción: ${club.description}</p>
                 <p>Miembros: ${club.members.length || 0}</p>
                 <button class="visitClubButton" data-id="${club.id}">Visitar Club</button>
-                ${userButtons}
+                ${loggedUser ? generateClubActionButtons(club, loggedUser) : ''}
+                
             </li>
-            `;
-        }).join('');
+            `).join('');
 
         // event listeners to clubs list
         addVisitListenerToClubsList()
@@ -454,6 +435,33 @@ function updateClubsList() {
         addEditListenerToClubsList()
         addDeleteListenerToClubsList()
     } 
+}
+
+/**
+ * generate club action buttons
+ * @param {Club} club 
+ * @param {User} loggedUser 
+ */
+function generateClubActionButtons(club, loggedUser) {
+    let userButtons = '';
+
+    if (loggedUser && !club.private && !club.members.includes(loggedUser.id)) {
+        userButtons += `
+        <button class="joinClubButton" data-id="${club.id}">Unirse al Club</button>
+        `;}
+
+    if (loggedUser && club.members.includes(loggedUser.id)) {
+        userButtons += `
+        <button class="leaveClubButton" data-id="${club.id}">Salir del Club</button>
+        `;}
+    
+    if (loggedUser && club.admins.includes(loggedUser.id)) {
+        userButtons += `
+        <button class="editClubButton" data-id="${club.id}">Editar Club</button>
+        <button class="deleteClubButton" data-id="${club.id}">Eliminar Club</button>
+        `;}
+    
+    return userButtons;
 }
 
 /**
@@ -485,7 +493,29 @@ function visitClubPage(clubId) {
         return;
     }
 
-    dynamicContent.innerHTML = clubDetailPageTemplate(clubId);
+    const loggedUser = getLoggedUserData();
+    const clubToVisit = store.getState().clubs.find((/** @type {Club} */ club) => club.id === clubId);
+
+    if (clubToVisit && dynamicContent && loggedUser) {
+        dynamicContent.innerHTML = clubDetailPageTemplate(clubId);
+
+        const backToClubsListButton = document.getElementById('backToClubsListButton');
+        if (backToClubsListButton) {
+            backToClubsListButton.addEventListener('click', () => {
+                loadClubsPage();
+            });
+        }
+
+        const clubActionButtonsContainer = document.getElementById('clubActionButtonsContainer');
+        if (clubActionButtonsContainer) {
+            clubActionButtonsContainer.innerHTML = generateClubActionButtons(clubToVisit, loggedUser);
+
+            addJoinListenerToClubsList()
+            addLeaveListenerToClubsList()
+            addEditListenerToClubsList()
+            addDeleteListenerToClubsList()
+        }
+    }
 
     const club = getClubData(clubId);
     if (!club) return;
@@ -493,7 +523,14 @@ function visitClubPage(clubId) {
     renderClubDetails(club);
     renderMemberDetails(club);
     renderClubProposals(club);
-    setupClubButtons(club);
+}
+
+function loadClubsPage() {
+    const dynamicContent = document.getElementById('dynamic-content');
+    if (dynamicContent) {
+        dynamicContent.innerHTML = clubPageTemplate;
+        updateClubsList();
+    }
 }
 
 /**
@@ -528,11 +565,12 @@ function renderMemberDetails(club) {
 
     membersList.innerHTML = club.members.map((memberId) => {
         const member = store.getState().users.find((/** @type {User} */ user) => user.id === memberId);
+        const isAdmin = club.admins.includes(memberId);
+
         return `
-        <li>${member ? member.name : ''}</li>
+        <li>${member ? member.name : ''} ${isAdmin ? '(Administrador)' : '(Miembro)'}</li>
         `
     }).join('');
-
 }
 
 /**
@@ -549,29 +587,6 @@ function renderClubProposals(club) {
         const proposal = store.getState().proposals.find((/** @type {Proposal} */ proposal) => proposal.id === proposalId);
         return proposal ? `<li>${proposal.product} (Propuesta de: ${proposal.user})</li>` : '';
     }).join('');
-}
-
-/**
- * setup club buttons
- * @param {Club} club 
- */
-function setupClubButtons(club) {
-    const loggedUser = getLoggedUserData();
-
-    const addProposalButton = document.getElementById('addProposalButton');
-    const editClubButton = document.getElementById('editClubButton');
-    const deleteClubButton = document.getElementById('deleteClubButton');
-
-    if (!loggedUser) {
-        return;
-    }
-
-    const isMember = club.members.includes(loggedUser.id);
-    const isAdmin = club.admins.includes(loggedUser.id);
-
-    if (isMember && addProposalButton) addProposalButton.classList.remove('hidden');
-    if (isAdmin && editClubButton) editClubButton.classList.remove('hidden');
-    if (isAdmin && deleteClubButton) deleteClubButton.classList.remove('hidden');
 }
 
 /**
@@ -620,7 +635,7 @@ function joinClub(clubId) {
         store.user.update(updatedUser);
         sessionStorage.setItem('loggedUser', JSON.stringify(updatedUser));
         store.saveState();
-        updateClubsList();
+        visitClubPage(clubId)
     }
     console.log(store.getState())
 }
@@ -671,7 +686,13 @@ function leaveClub(clubId) {
         store.user.update(updatedUser);
         sessionStorage.setItem('loggedUser', JSON.stringify(updatedUser));
         store.saveState();
-        updateClubsList();
+
+        const dynamicContent = document.getElementById('dynamic-content');
+        if (dynamicContent) {
+            dynamicContent.innerHTML = clubPageTemplate;
+        }
+        loadClubsPage();
+        
     }
     console.log(store.getState())
 }
@@ -730,7 +751,7 @@ function deleteClub(clubId) {
     const clubToDelete = store.getState().clubs.find((/** @type {Club} */ club) => club.id === clubId);
     if (clubToDelete) {
         store.club.delete(clubToDelete);
-        updateClubsList();
+        loadClubsPage();
         store.saveState();
     }
 }

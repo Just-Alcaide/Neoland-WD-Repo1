@@ -33,8 +33,8 @@ import { clubPageTemplate, clubDetailPageTemplate, bookProposalTemplate, moviePr
 /**
  * define API URLs
  */
-const API_BOOKS_URL = `http://${location.hostname}:3333/api/books.json`
-const API_MOVIES_URL = `http://${location.hostname}:3333/api/movies.json`
+// const API_BOOKS_URL = `http://${location.hostname}:3333/api/books.json`
+// const API_MOVIES_URL = `http://${location.hostname}:3333/api/movies.json`
 
 
 /**
@@ -101,9 +101,9 @@ function onLoginFormSubmit(e) {
  * on register form submit
  * @param {SubmitEvent} e
  */
-function onRegisterFormSubmit(e) {
+async function onRegisterFormSubmit(e) {
     e.preventDefault();
-    createNewUser()
+    await createNewUser()
     loginNewUser()
     cleanUpRegisterForm()
     console.log(store.getState())
@@ -960,130 +960,15 @@ function createNewProduct(productData, productType) {
         return;
     }
 
-
-
     store.product.create(newProduct);
     store.saveState();
     console.log(store.getState());
 }
 
-
-
 //=====API METHODS=====//
 
-//TODO:==Cuando meta apis tochas, mirar si renta poner el simple fetch==//
-
 /**
- * get Data from Book API
- */
-async function getAPIBookData () {
-    const apiBookData = await fetch (API_BOOKS_URL, {
-        headers: {
-            'Content-Type': 'application/json',
-            // Add cross-origin header
-            'Access-Control-Allow-Origin': '*',
-        }
-    })
-    .then ((response) => {
-        if (!response.ok) {
-            showError(response.status)
-        }
-        return response.json();
-    })
-    return apiBookData
-}
-/**
- * get Data from Movie API
- */
-async function getAPIMovieData () {
-    const apiMovieData = await fetch (API_MOVIES_URL, {
-        headers: {
-            'Content-Type': 'application/json',
-            // Add cross-origin header
-            'Access-Control-Allow-Origin': '*',
-        }
-    })
-    .then ((response) => {
-        if(!response.ok) {
-            showError(response.status)
-        }
-        return response.json();
-    })
-    return apiMovieData
-}
-
-/**
- * @param {number} status
- */
-function showError(status) {
-    throw new Error(`Error ${status}: Function not implemented.`);
-}
-
-/**
- * process Book Data
- */
-async function processBookData () {
-    const apiBookData = await getAPIBookData ();
-    const factory = new ProductFactory ();
-    apiBookData.map(( /** @type {Book} */ product) => {
-        const productData = {
-            id: product.id,
-            name: product.name,
-            year: product.year, 
-            genre: product.genre,
-            author: product.author,
-            pages: product.pages,
-        }
-
-        const bookInstance = factory.createProduct (PRODUCT_TYPE.BOOK, productData);
-        store.product.create(bookInstance);
-
-    });
-}
-/**
- * process Movie Data
- */
-async function processMovieData () {
-    const apiMovieData = await getAPIMovieData();
-    const factory = new ProductFactory();
-    apiMovieData.map(( /** @type {Movie} */ product) => {
-        const productData = {
-            id: product.id,
-            name: product.name,
-            year: product.year, 
-            genre: product.genre,
-            director: product.director,
-            minutes: product.minutes
-        }
-        
-        const movieInstance = factory.createProduct (PRODUCT_TYPE.MOVIE, productData);
-        store.product.create(movieInstance);
-    }); 
-}
-/**
- * process products Data
- */
-async function processData() {
-    const isApiDataProcessed = localStorage.getItem('isApiDataProcessed')
-    if (!isApiDataProcessed) {
-        await processBookData()
-        await processMovieData()
-        localStorage.setItem('isApiDataProcessed', 'true')
-        store.saveState()
-    }  
-
-    //quitar esto de abajo luego
-    // await processBookData()
-    // await processMovieData()
-    // store.saveState()
-    //quitar esto de arriba luego
-
-    console.log(store.getState())
-}
-
-//==========================================//
-/**
- * try get user api data
+ * get data from user BBDD
  */
 async function getAPIUserData (apiURL = `http://${location.hostname}:1337/read/users`) {
     
@@ -1116,7 +1001,124 @@ async function getAPIUserData (apiURL = `http://${location.hostname}:1337/read/u
     return apiUserData
 }
 
-getAPIUserData()
-//==========================================//
+/**
+ * get Data from Book API
+ */
+async function getAPIBookData (apiURL = `http://${location.hostname}:1337/read/books`) {
 
+    let apiBookData
 
+    try {
+        apiBookData = await simpleFetch(apiURL, {
+            signal: AbortSignal.timeout(3000),
+            headers: {
+                'Content-Type': 'application/json',
+                // Add cross-origin header
+                'Access-Control-Allow-Origin': '*',
+            },
+        });
+    } catch (/** @type {any | HttpError} */ err){
+        if (err.name === 'AbortError') {
+            console.error('Fetch abortado');
+        }
+        if (err instanceof HttpError) {
+            if (err.response.status === 404) {
+                console.error('Error 404: Not Found');
+            }
+            if (err.response.status === 500) {
+                console.error('Error 500: Internal Server Error');
+            }
+        }
+    }
+    return apiBookData
+}
+
+/**
+ * get Data from Movie API
+ */
+async function getAPIMovieData (apiURL = `http://${location.hostname}:1337/read/movies`) {
+
+    let apiMovieData
+
+    try {
+        apiMovieData = await simpleFetch(apiURL, {
+            signal: AbortSignal.timeout(3000),
+            headers: {
+                'Content-Type': 'application/json',
+                // Add cross-origin header
+                'Access-Control-Allow-Origin': '*',
+            },
+        });
+    } catch (/** @type {any | HttpError} */ err){
+        if (err.name === 'AbortError') {
+            console.error('Fetch abortado');
+        }
+        if (err instanceof HttpError) {
+            if (err.response.status === 404) {
+                console.error('Error 404: Not Found');
+            }
+            if (err.response.status === 500) {
+                console.error('Error 500: Internal Server Error');
+            }
+        }
+    }
+    return apiMovieData
+}
+
+/**
+ * process Book Data
+ */
+async function processBookData () {
+    const apiBookData = await getAPIBookData ();
+    const factory = new ProductFactory ();
+    apiBookData.map(( /** @type {Book} */ product) => {
+        const productData = {
+            id: product.id,
+            name: product.name,
+            year: product.year, 
+            genre: product.genre,
+            author: product.author,
+            pages: product.pages,
+        }
+
+        const bookInstance = factory.createProduct (PRODUCT_TYPE.BOOK, productData);
+        store.product.create(bookInstance);
+
+    });
+}
+
+/**
+ * process Movie Data
+ */
+async function processMovieData () {
+    const apiMovieData = await getAPIMovieData();
+    const factory = new ProductFactory();
+    apiMovieData.map(( /** @type {Movie} */ product) => {
+        const productData = {
+            id: product.id,
+            name: product.name,
+            year: product.year, 
+            genre: product.genre,
+            director: product.director,
+            minutes: product.minutes
+        }
+        
+        const movieInstance = factory.createProduct (PRODUCT_TYPE.MOVIE, productData);
+        store.product.create(movieInstance);
+    }); 
+}
+
+/**
+ * process products Data
+ */
+async function processData() {
+    const isApiDataProcessed = localStorage.getItem('isApiDataProcessed')
+    if (!isApiDataProcessed) {
+        await processBookData()
+        await processMovieData()
+        localStorage.setItem('isApiDataProcessed', 'true')
+        store.saveState()
+    }  
+
+    console.log('store state: ', store.getState())
+}

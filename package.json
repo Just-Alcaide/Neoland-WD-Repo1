@@ -5,8 +5,8 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "server:statics:start": "node --env-file=.env server/server.statics.js",
-    "server:api:start": "node --env-file=.env server/server.api.js",
+    "server:statics:start": "node --env-file=.env --watch server/server.statics.js",
+    "server:api:start": "node --env-file=.env --watch server/server.api.js",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "test:watch": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watchAll",
     "build:docs": "jsdoc ./src -r"

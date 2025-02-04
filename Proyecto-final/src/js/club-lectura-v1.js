@@ -1,30 +1,34 @@
 // @ts-check
 
-/**
- * import store and classes
- * /
-/** @typedef {import('./classes/Product.js').Book} Book */
-/** @typedef {import('./classes/Product.js').Product} Product */
-/** @typedef {import('./classes/Product.js').Movie} Movie */
-/** @typedef {import('./classes/Proposal.js').Proposal} Proposal } */
+
+// /** @typedef {import('./classes/Product.js').Product} Product */
+// /** @typedef {import('./classes/Product.js').Movie} Movie */
+// /** @typedef {import('./classes/Proposal.js').Proposal} Proposal } */
+// /** @typedef {import('./classes/Product.js').Book} Book */
+
+// /** @import {User} from  './classes/User.js' */
+// /** @import {Club} from "./classes/Club.js"; */
+/** @import {Product, Book, Movie} from "./classes/Product.js" */
+/** @import {Proposal} from "./classes/Proposal.js"; */
  
 import {store} from "./store/redux.js";
 import {ProductFactory, PRODUCT_TYPE,} from "./classes/Product.js";
 import {User} from "./classes/User.js";
 import {Club} from "./classes/Club.js";
+// import {Proposal} from "./classes/Proposal.js";
 
 
 /**
  * import templates
  */
-import { clubPageTemplate, clubDetailPageTemplate } from "../templates/dinamic-content.templates.js";
+import { clubPageTemplate, clubDetailPageTemplate, bookProposalTemplate, movieProposalTemplate  } from "../templates/dinamic-content.templates.js";
 
 
 /**
  * define API URLs
  */
-const API_BOOKS_URL = './api/books.json'
-const API_MOVIES_URL = './api/movies.json'
+const API_BOOKS_URL = `http://${location.hostname}:1337/books.json`
+const API_MOVIES_URL = `http://${location.hostname}:1337/movies.json`
 
 /**
  *  DOM Content Loaded
@@ -430,11 +434,15 @@ function updateClubsList() {
 
         // event listeners to clubs list
         addVisitListenerToClubsList()
-        addJoinListenerToClubsList()
-        addLeaveListenerToClubsList()
-        addEditListenerToClubsList()
-        addDeleteListenerToClubsList()
+        initializeListenersToClubButtons()
     } 
+}
+
+function initializeListenersToClubButtons() {
+    addJoinListenerToClubsList()
+    addLeaveListenerToClubsList()
+    addEditListenerToClubsList()
+    addDeleteListenerToClubsList()
 }
 
 /**
@@ -493,32 +501,35 @@ function visitClubPage(clubId) {
         return;
     }
 
+    const club = getClubData(clubId);
+    if (!club) return;
     const loggedUser = getLoggedUserData();
-    const clubToVisit = store.getState().clubs.find((/** @type {Club} */ club) => club.id === clubId);
 
-    if (clubToVisit && dynamicContent && loggedUser) {
+    if (club && dynamicContent) {
         dynamicContent.innerHTML = clubDetailPageTemplate(clubId);
 
+        
         const backToClubsListButton = document.getElementById('backToClubsListButton');
         if (backToClubsListButton) {
-            backToClubsListButton.addEventListener('click', () => {
-                loadClubsPage();
-            });
+            backToClubsListButton.addEventListener('click', loadClubsPage);
         }
 
-        const clubActionButtonsContainer = document.getElementById('clubActionButtonsContainer');
-        if (clubActionButtonsContainer) {
-            clubActionButtonsContainer.innerHTML = generateClubActionButtons(clubToVisit, loggedUser);
+        if (loggedUser) {    
+            const clubActionButtonsContainer = document.getElementById('clubActionButtonsContainer');
+            if (clubActionButtonsContainer) {
+                clubActionButtonsContainer.innerHTML = generateClubActionButtons(club, loggedUser);
 
-            addJoinListenerToClubsList()
-            addLeaveListenerToClubsList()
-            addEditListenerToClubsList()
-            addDeleteListenerToClubsList()
+                initializeListenersToClubButtons();
+            }
         }
     }
 
-    const club = getClubData(clubId);
-    if (!club) return;
+    const addProposalButton = document.getElementById('addProposalButton');
+    if (addProposalButton && loggedUser && club.members.includes(loggedUser.id)) {
+        addProposalButton.classList.remove('hidden');
+        addProposalButton.addEventListener('click', onAddProposalButtonClick);
+    }
+
 
     renderClubDetails(club);
     renderMemberDetails(club);
@@ -763,98 +774,183 @@ function deleteClub(clubId) {
  * 
  * @param {MouseEvent} e 
  */
-// function onAddProposalButtonClick(e) {
-//     e.preventDefault();
-//     const addProposalTypeForm = document.getElementById('addProposalTypeForm');
-//     if (addProposalTypeForm) {
-//         addProposalTypeForm.classList.remove('hidden');
-//     }
-//     const addProposalButton = document.getElementById('addProposalButton');
-//     if (addProposalButton) {
-//         addProposalButton.classList.add('hidden');
-//     }
+function onAddProposalButtonClick(e) {
+    e.preventDefault();
+
+    const addProposalTypeForm = document.getElementById('addProposalTypeForm');
+    if (addProposalTypeForm) {
+        addProposalTypeForm.classList.remove('hidden');
+
+        addProposalTypeForm.addEventListener('change', onProposalTypeChange);
+    }
+
+    const addProposalButton = document.getElementById('addProposalButton');
+    if (addProposalButton) {
+        addProposalButton.classList.add('hidden');
+    }
+}
+
+/**
+ * @param {Event} e
+ */
+function onProposalTypeChange(e) {
+    e.preventDefault();
+    const target = /** @type {HTMLInputElement} */ (e.target);
+    const createNewProposalContainer = document.getElementById('createNewProposalContainer');
+
+    if (!createNewProposalContainer || target.name !== 'proposalType') return;
+
+    createNewProposalContainer.innerHTML = '';
+
+    let proposalFormElement;
+
+    if (target.value === 'bookProposal') {
+        proposalFormElement = document.createElement('form');
+        proposalFormElement.id = 'bookProposalForm';
+        proposalFormElement.innerHTML = bookProposalTemplate;
+        
+    } else if (target.value === 'movieProposal') {
+        proposalFormElement = document.createElement('form');
+        proposalFormElement.id = 'movieProposalForm';
+        proposalFormElement.innerHTML = movieProposalTemplate;
+    }
+
+    if (proposalFormElement) {
+        createNewProposalContainer.appendChild(proposalFormElement);
+        addProposalFormListener(proposalFormElement.id);
+    }
+}
+
+/**
+ * 
+ * @param {string} formId 
+ */
+function addProposalFormListener(formId) {
     
-//     const createNewProposalButton = document.getElementById('createNewProposalButton');
-//     createNewProposalButton?.addEventListener('submit', onCreateNewProposalButtonClick)
-// }
+    const proposalForm = document.getElementById(formId);
+    if (proposalForm) {
+        proposalForm.addEventListener('submit', onCreateNewProposalSubmit);
+    }
+}
 
 /**
  * 
  * @param {SubmitEvent} e 
  */
-// function onCreateNewProposalButtonClick(e) {
-//     e.preventDefault();
-//     createNewProposal();
-//     cleanUpProposalForm();
-//     updateProposalsList();
-//     store.saveState();
-// }
+function onCreateNewProposalSubmit(e) {
+    e.preventDefault();
+    const form = /** @type {HTMLFormElement} */ (e.target);
+    const formData = getDataFromProposalForm(form)
+
+    let productType;
+    if (form.id === 'bookProposalForm') {
+        productType = PRODUCT_TYPE.BOOK;
+    } else if (form.id === 'movieProposalForm') {
+        productType = PRODUCT_TYPE.MOVIE;
+    } else {
+        return;
+    }
+
+    const productData = {
+        id: String(formData.id),
+        name: String(formData.name),
+        year: Number(formData.year),
+        genre: String(formData.genre),
+        author: String(formData.author),
+        director: String(formData.director),
+        pages: Number(formData.pages),
+        minutes: Number(formData.minutes),
+    }
+
+    createNewProduct(productData, productType);
+
+    createNewProposal()
+
+
+    form.reset();
+
+    document.getElementById('addProposalTypeForm')?.classList.add('hidden');
+    document.getElementById('addProposalButton')?.classList.remove('hidden');
+}
+
+/**
+ * get data form proposal form
+ * @param {HTMLFormElement} form
+ */
+function getDataFromProposalForm(form) {
+    const formData = new FormData(form);
+    return Object.fromEntries(formData.entries());
+}
 
 //=====PROPOSAL METHODS=====//
 
-/**
- * create new proposal
- */
-// function createNewProposal () {
-//     const proposalUser = /** @type {HTMLInputElement} */ (document.getElementById('proposalUser')).value;
-//     const proposalProduct = /** @type {HTMLInputElement} */ (document.getElementById('proposalProduct')).value;
-    
-    
+function createNewProposal() {
+    const loggedUser = getLoggedUserData();
+    const user = loggedUser;
+    const clubDetailPage = document.getElementById('clubDetailPage');
+    const clubId = clubDetailPage?.getAttribute('data-id');
 
-// }
+    if (user && clubId) {
+        console.log('let me commit')
+    }
 
-/**
- * update proposals list
- * @param {string} clubId
- */
-// function updateProposalsList(clubId) {
-//     const proposalsList = document.getElementById('proposalsList');
-//     if (proposalsList) {
-//         const proposals = store.getState().proposals.filter((/** @type {Proposal} */ proposal) => proposal.club === clubId);
-        
-//         proposalsList.innerHTML = proposals.map((/** @type {Proposal} */ proposal) => `
-//             <li>
-//                 <p>${proposal.product}</p>
-//                 <p>${proposal.user}</p>
-//                 <p>Votos: ${proposal.votes.length || 0}</p>
-//                 <button class="voteProposalButton" data-id="${proposal.id}">Votar</button>
-//             </li>
-//         `).join('');
-    
-//         // event listeners to proposals list
-//         addVoteListenerToProposalsList()
-//     }
-// }
-
-/**
- * add vote proposal event listener
- */
-// function addVoteListenerToProposalsList() {
-//     const voteProposalButton = document.querySelectorAll('.voteProposalButton');
-//     voteProposalButton.forEach((button) => {
-//         button.addEventListener('click', (e) => {
-//             const target = /** @type {HTMLElement} */ (e.target);
-//             if (target) {
-//                 const proposalId = target.getAttribute('data-id');
-//                 if (proposalId) {
-//                     voteProposal(proposalId);
-//                 }
-//             }
-//         })
-//     })
-// }
-
-// function voteProposal(proposalId) {
-
-// }
-
+}
 
 //TODO: QUE LOS USER PUEDAN "CREAR PRODUCTOS" SI NO ESTÁN EN DB
 //=====PRODUCT EVENTS=====//
 
 
+
+
 //=====PRODUCT METHODS=====//
 
+
+/**
+ * @typedef {Object} ProductData
+ * @prop {string} id
+ * @prop {string} name
+ * @prop {number} year
+ * @prop {string} genre
+ * @prop {string} [author]
+ * @prop {string} [director]
+ * @prop {number} [pages]
+ * @prop {number} [minutes]
+ */
+/**
+ * create new product
+ * @param {ProductData} productData 
+ * @param {string} productType 
+ */
+function createNewProduct(productData, productType) {
+    const productFactory = new ProductFactory();
+    let newProduct;
+
+    if (productType === PRODUCT_TYPE.BOOK) {
+        newProduct = productFactory.createProduct(PRODUCT_TYPE.BOOK, {
+            id: `${productData.name}_${productData.year}`,
+            name: productData.name,
+            year: productData.year,
+            genre: productData.genre,
+            author: productData.author,
+            pages: productData.pages
+        });
+    } else if (productType === PRODUCT_TYPE.MOVIE) {
+        newProduct = productFactory.createProduct(PRODUCT_TYPE.MOVIE, {
+            id: `${productData.name}_${productData.year}`,
+            name: productData.name,
+            year: productData.year,
+            genre: productData.genre,
+            director: productData.director,
+            minutes: productData.minutes
+        });
+    } else {
+        return;
+    }
+
+    store.product.create(newProduct);
+    store.saveState();
+    console.log(store.getState());
+}
 
 
 
@@ -866,7 +962,13 @@ function deleteClub(clubId) {
  * get Data from Book API
  */
 async function getAPIBookData () {
-    const apiBookData = await fetch (API_BOOKS_URL)
+    const apiBookData = await fetch (API_BOOKS_URL, {
+        headers: {
+            'Content-Type': 'application/json',
+            // Add cross-origin header
+            'Access-Control-Allow-Origin': '*',
+        }
+    })
     .then ((response) => {
         if (!response.ok) {
             showError(response.status)
@@ -879,7 +981,13 @@ async function getAPIBookData () {
  * get Data from Movie API
  */
 async function getAPIMovieData () {
-    const apiMovieData = await fetch (API_MOVIES_URL)
+    const apiMovieData = await fetch (API_MOVIES_URL, {
+        headers: {
+            'Content-Type': 'application/json',
+            // Add cross-origin header
+            'Access-Control-Allow-Origin': '*',
+        }
+    })
     .then ((response) => {
         if(!response.ok) {
             showError(response.status)
@@ -948,5 +1056,12 @@ async function processData() {
         localStorage.setItem('isApiDataProcessed', 'true')
         store.saveState()
     }  
+
+    //quitar esto de abajo luego
+    // await processBookData()
+    // await processMovieData()
+    // store.saveState()
+    //quitar esto de arriba luego
+
     console.log(store.getState())
 }

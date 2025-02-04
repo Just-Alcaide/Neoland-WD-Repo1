@@ -31,8 +31,6 @@ export const clubDetailPageTemplate = (/** @type {string} */ clubId)  =>  `
         <ul id="clubMembersList"></ul>
 
         <div id="clubActionButtonsContainer"></div>
-        
-
 
         <h4>Propuestas del Club:</h4>
         <ul id="clubProposalsList"></ul>
@@ -40,10 +38,32 @@ export const clubDetailPageTemplate = (/** @type {string} */ clubId)  =>  `
         <button id="addProposalButton" class="hidden">Agregar Propuesta</button>
 
         <form id="addProposalTypeForm" class="hidden">
-            <label><input type="radio" name="proposalType" value="bookProposal">Propuesta de Libro</label>
-            <label><input type="radio" name="proposalType" value="movieProposal">Propuesta de Película</label>
-            <button type="submit" id="createNewProposalButton">Confirmar Propuesta</button>
+            <label><input type="radio" name="proposalType" id="bookProposal" value="bookProposal">Propuesta de Libro</label>
+            <label><input type="radio" name="proposalType" id="movieProposal" value="movieProposal">Propuesta de Película</label>
         </form>
+        <section id="createNewProposalContainer"></section>
 
     </section>
+`
+
+export const bookProposalTemplate = `
+<fieldset>
+    <label>Nombre: <input type="text" name="name" id="name"></label>
+    <label>Año: <input type="text" name="year" id="year"></label>
+    <label>Género: <input type="text" name="genre" id="genre"> </label>
+    <label>Autor: <input type="text" name="author" id="author"></label>
+    <label>Páginas: <input type="text" name="pages" id="pages"></label>
+    <button type="submit">Enviar Propuesta</button>
+</fieldset>
+`
+
+export const movieProposalTemplate = `
+<fieldset>
+    <label>Nombre: <input type="text" name="name" id="name"></label>
+    <label>Año: <input type="text" name="year" id="year"></label>
+    <label>Género: <input type="text" name="genre" id="genre"></label>
+    <label>Director: <input type="text" name="director" id="director"></label>
+    <label>Minutos: <input type="text" name="minutes" id="minutes"></label>
+    <button type="submit">Enviar Propuesta</button>
+</fieldset>
 `

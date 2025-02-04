@@ -1,9 +1,23 @@
 // @ts-check
 
-import { Product, ProductFactory, Book, Movie, PRODUCT_TYPE } from "../classes/Product.js";
-import { User } from "../classes/User.js";
-import { Club } from "../classes/Club.js";
-import { Proposal } from "../classes/Proposal.js";
+// /** @typedef {import('../classes/Product.js')} Product */
+// /** @typedef {import('../classes/User.js')} User */
+// /** @typedef {import('../classes/Club.js')} Club */
+// /** @typedef {import('../classes/Proposal.js')} Proposal */
+// /** @typedef {import('../classes/Product.js').Book} Book */
+// /** @typedef {import('../classes/Product.js').Movie} Movie */
+
+/** @import {Product, Book, Movie} from "../classes/Product.js" */
+/** @import {User} from  '../classes/User.js' */
+/** @import { Club } from "../classes/Club.js"; */
+/** @import { Proposal } from "../classes/Proposal.js"; */
+
+
+
+// import { Product, ProductFactory, Book, Movie, PRODUCT_TYPE } from "../classes/Product.js";
+// import { User } from "../classes/User.js";
+// import { Club } from "../classes/Club.js";
+// import { Proposal } from "../classes/Proposal.js";
 
 /**
  * @typedef {Object} actionTypeProduct

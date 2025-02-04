@@ -48,50 +48,6 @@ const booksJSON = `[
 
 `
 
-// const moviesJSON = `[
-//     {
-//       "id": "movie_001",
-//       "name": "El laberinto del fauno",
-//       "year": 2006,
-//       "genre": "Fantasía oscura",
-//       "director": "Guillermo del Toro",
-//       "minutes": 118
-//     },
-//     {
-//       "id": "movie_002",
-//       "name": "Pulp Fiction",
-//       "year": 1994,
-//       "genre": "Crimen",
-//       "director": "Quentin Tarantino",
-//       "minutes": 154
-//     },
-//     {
-//       "id": "movie_003",
-//       "name": "El padrino",
-//       "year": 1972,
-//       "genre": "Drama",
-//       "director": "Francis Ford Coppola",
-//       "minutes": 175
-//     },
-//     {
-//       "id": "movie_004",
-//       "name": "Matrix",
-//       "year": 1999,
-//       "genre": "Ciencia ficción",
-//       "director": "The Wachowskis",
-//       "minutes": 136
-//     },
-//     {
-//       "id": "movie_005",
-//       "name": "Parásitos",
-//       "year": 2019,
-//       "genre": "Drama",
-//       "director": "Bong Joon-ho",
-//       "minutes": 132
-//     }
-//   ]
-// `
-
 http.createServer(function server_onRequest (request, response) {
     let pathname = url.parse(request.url).pathname;
 

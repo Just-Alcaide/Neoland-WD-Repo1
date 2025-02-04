@@ -17,6 +17,12 @@ import {User} from "./classes/User.js";
 import {Club} from "./classes/Club.js";
 // import {Proposal} from "./classes/Proposal.js";
 
+/**
+ * import simple fetch + Http Error
+ */
+import { simpleFetch } from "./lib/simpleFetch.js";
+import { HttpError } from "./classes/HttpError.js";
+
 
 /**
  * import templates
@@ -27,8 +33,9 @@ import { clubPageTemplate, clubDetailPageTemplate, bookProposalTemplate, moviePr
 /**
  * define API URLs
  */
-const API_BOOKS_URL = `http://${location.hostname}:1337/books.json`
-const API_MOVIES_URL = `http://${location.hostname}:1337/movies.json`
+const API_BOOKS_URL = `http://${location.hostname}:3333/api/books.json`
+const API_MOVIES_URL = `http://${location.hostname}:3333/api/movies.json`
+
 
 /**
  *  DOM Content Loaded
@@ -177,7 +184,7 @@ function cleanUpLoginForm() {
 /**
  * create new user
  */
-function createNewUser() {
+async function createNewUser() {
     const registerName = /** @type {HTMLInputElement} */ (document.getElementById('registerName')).value
     const registerEmail = /** @type {HTMLInputElement} */ (document.getElementById('registerEmail')).value 
     const registerPassword = /** @type {HTMLInputElement} */ (document.getElementById('registerPassword')).value 
@@ -187,12 +194,18 @@ function createNewUser() {
         name: registerName,
         email: registerEmail,
         password: registerPassword,
-        clubs: [],
-        products: [],
-        productProposals: [],
-        proposalVotes: [],
+        // clubs: [],
+        // products: [],
+        // productProposals: [],
+        // proposalVotes: [],
     }
-    store.user.create(new User(newUser));
+
+    const searchParams = new URLSearchParams(newUser).toString()
+    const apiUserData = await getAPIUserData(`http://${location.hostname}:1337/create/users?${searchParams}`)
+
+    console.log(apiUserData)
+
+    store.user.create(new User(apiUserData));
     store.saveState();
 }
 
@@ -947,6 +960,8 @@ function createNewProduct(productData, productType) {
         return;
     }
 
+
+
     store.product.create(newProduct);
     store.saveState();
     console.log(store.getState());
@@ -1065,3 +1080,43 @@ async function processData() {
 
     console.log(store.getState())
 }
+
+//==========================================//
+/**
+ * try get user api data
+ */
+async function getAPIUserData (apiURL = `http://${location.hostname}:1337/read/users`) {
+    
+    let apiUserData
+    
+    try {
+        apiUserData = await simpleFetch(apiURL, {
+            signal: AbortSignal.timeout(3000),
+            headers: {
+                'Content-Type': 'application/json',
+                // Add cross-origin header
+                'Access-Control-Allow-Origin': '*',
+            },
+        });
+    } catch (/** @type {any | HttpError} */ err){
+        if (err.name === 'AbortError') {
+            console.error('Fetch abortado');
+        }
+        if (err instanceof HttpError) {
+            if (err.response.status === 404) {
+                console.error('Error 404: Not Found');
+            }
+            if (err.response.status === 500) {
+                console.error('Error 500: Internal Server Error');
+            }
+        }
+    }
+
+    console.log('apiUserData', apiUserData)
+    return apiUserData
+}
+
+getAPIUserData()
+//==========================================//
+
+

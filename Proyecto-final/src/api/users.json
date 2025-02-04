@@ -1,0 +1,12 @@
+[
+    {
+        "id": 1,
+        "name": "paco",
+        "email": "paco@paco.com",
+        "password": "1234",
+        "clubs": [],
+        "products": [],
+        "productProposals": [],
+        "proposalVotes": []
+    }
+]

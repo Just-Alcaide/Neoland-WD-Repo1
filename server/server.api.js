@@ -3,6 +3,9 @@ import * as http from "node:http";
 import { crud } from "./server.crud.js";
 
 import {User} from "../Proyecto-final/src/js/classes/User.js";
+import {Club} from "../Proyecto-final/src/js/classes/Club.js";
+import {Proposal} from "../Proyecto-final/src/js/classes/Proposal.js";
+import {/*Product,*/ Book, Movie} from "../Proyecto-final/src/js/classes/Product.js";
 
 const MIME_TYPES = {
   default: "application/octet-stream",
@@ -47,8 +50,13 @@ http
     }
 
     let newUser = new User(urlParams)
+    let newClub = new Club(urlParams)
+    let newProposal = new Proposal(urlParams)
+    let newBook = new Book(urlParams)
+    let newMovie = new Movie(urlParams)
 
     switch (url.pathname) {
+
       case '/create/users':
         crud.create(USERS_URL, newUser, (data) => {
           console.log(`server ${data.name} creado`, data)
@@ -80,7 +88,7 @@ http
         break;
 
       case '/create/clubs':
-        crud.create(CLUBS_URL, urlParams, (data) => {
+        crud.create(CLUBS_URL, newClub, (data) => {
           console.log(`server ${data.name} creado`, data)
           responseData = data
 
@@ -110,7 +118,7 @@ http
         break;
 
       case '/create/proposals':
-        crud.create(PROPOSALS_URL, urlParams, (data) => {
+        crud.create(PROPOSALS_URL, newProposal, (data) => {
           console.log(`server ${data.name} creado`, data)
           responseData = data
 
@@ -140,7 +148,7 @@ http
         break;
 
       case '/create/books':
-        crud.create(BOOKS_URL, urlParams, (data) => {
+        crud.create(BOOKS_URL, newBook, (data) => {
           console.log(`server ${data.name} creado`, data)
           responseData = data
 
@@ -170,7 +178,7 @@ http
         break;
 
       case '/create/movies':
-        crud.create(MOVIES_URL, urlParams, (data) => {
+        crud.create(MOVIES_URL, newMovie, (data) => {
           console.log(`server ${data.name} creado`, data)
           responseData = data
 

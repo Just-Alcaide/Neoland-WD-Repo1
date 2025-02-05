@@ -347,9 +347,9 @@ function onClubsPageLinkClick(e) {
  * on create club form submit
  * @param {SubmitEvent} e
  */
-function onCreateClubFormSubmit(e) {
+async function onCreateClubFormSubmit(e) {
     e.preventDefault();
-    createNewClub();
+    await createNewClub();
     cleanUpNewClubForm();
     updateClubsList();
     console.log(store.getState())
@@ -365,7 +365,7 @@ function onCreateClubFormSubmit(e) {
 /**
  * create new club
  */
-function createNewClub() {
+async function createNewClub() {
     const clubName = /** @type {HTMLInputElement} */ (document.getElementById('clubName')).value;
     const clubDescription = /** @type {HTMLTextAreaElement} */ (document.getElementById('clubDescription')).value;
     const clubVisibility = /** @type {HTMLInputElement} */ (document.querySelector('input[name="clubVisibility"]:checked')).value;
@@ -389,6 +389,16 @@ function createNewClub() {
         deadlineCurrent: null,
     };
 
+    const searchParams = new URLSearchParams();
+        searchParams.append('id', newClub.id);
+        searchParams.append('name', newClub.name);
+        searchParams.append('description', newClub.description);
+        searchParams.append('private', newClub.private ? 'true' : 'false');
+
+    const apiClubData = getAPIClubData(`http://${location.hostname}:1337/create/clubs?${searchParams.toString()}`);
+
+    //TODO: voy a tener que enviar la info en dos partes, una con las propiedades string que puedo meter para el create; y otra con las propiedades array que no puedo meter en el create
+
     store.club.create(new Club(newClub));
     const clubId = newClub.id
 
@@ -400,6 +410,7 @@ function createNewClub() {
     store.user.update(updatedUser);
     sessionStorage.setItem('loggedUser', JSON.stringify(updatedUser));
 
+    console.log(apiClubData)
     store.saveState();
 }
 
@@ -999,6 +1010,39 @@ async function getAPIUserData (apiURL = `http://${location.hostname}:1337/read/u
 
     console.log('apiUserData', apiUserData)
     return apiUserData
+}
+
+/**
+ * get club data from BBDD
+ */
+async function getAPIClubData (apiURL = `http://${location.hostname}:1337/read/clubs`) {
+
+    let apiClubData
+
+    try {
+        apiClubData = await simpleFetch(apiURL, {
+            signal: AbortSignal.timeout(3000),
+            headers: {
+                'Content-Type': 'application/json',
+                // Add cross-origin header
+                'Access-Control-Allow-Origin': '*',
+            },
+        });
+    } catch (/** @type {any | HttpError} */ err){
+        if (err.name === 'AbortError') {
+            console.error('Fetch abortado');
+        }
+        if (err instanceof HttpError) {
+            if (err.response.status === 404) {
+                console.error('Error 404: Not Found');
+            }
+            if (err.response.status === 500) {
+                console.error('Error 500: Internal Server Error');
+            }
+        }
+    }
+    console.log('apiClubData', apiClubData)
+    return apiClubData
 }
 
 /**

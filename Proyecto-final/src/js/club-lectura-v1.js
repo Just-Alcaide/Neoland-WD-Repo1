@@ -194,14 +194,18 @@ async function createNewUser() {
         name: registerName,
         email: registerEmail,
         password: registerPassword,
-        // clubs: [],
-        // products: [],
-        // productProposals: [],
-        // proposalVotes: [],
+        clubs: [],
+        products: [],
+        productProposals: [],
+        proposalVotes: [],
     }
 
-    const searchParams = new URLSearchParams(newUser).toString()
-    const apiUserData = await getAPIUserData(`http://${location.hostname}:1337/create/users?${searchParams}`)
+    const searchParams = new URLSearchParams();
+        searchParams.append('id', newUser.id);
+        searchParams.append('name', newUser.name);
+        searchParams.append('email', newUser.email);
+        searchParams.append('password', newUser.password);
+    const apiUserData = await getAPIUserData(`http://${location.hostname}:1337/create/users?${searchParams.toString()}`);
 
     console.log(apiUserData)
 
@@ -394,7 +398,6 @@ async function createNewClub() {
         searchParams.append('name', newClub.name);
         searchParams.append('description', newClub.description);
         searchParams.append('private', newClub.private ? 'true' : 'false');
-
     const apiClubData = getAPIClubData(`http://${location.hostname}:1337/create/clubs?${searchParams.toString()}`);
 
     //TODO: voy a tener que enviar la info en dos partes, una con las propiedades string que puedo meter para el create; y otra con las propiedades array que no puedo meter en el create

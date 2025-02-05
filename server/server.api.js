@@ -1,11 +1,13 @@
 // server.api.js
 import * as http from "node:http";
+import * as qs from "node:querystring";
 import { crud } from "./server.crud.js";
 
-import {User} from "../Proyecto-final/src/js/classes/User.js";
-import {Club} from "../Proyecto-final/src/js/classes/Club.js";
-import {Proposal} from "../Proyecto-final/src/js/classes/Proposal.js";
-import {/*Product,*/ Book, Movie} from "../Proyecto-final/src/js/classes/Product.js";
+
+// import {User} from "../Proyecto-final/src/js/classes/User.js";
+// import {Club} from "../Proyecto-final/src/js/classes/Club.js";
+// import {Proposal} from "../Proyecto-final/src/js/classes/Proposal.js";
+// import {/*Product,*/ Book, Movie} from "../Proyecto-final/src/js/classes/Product.js";
 
 const MIME_TYPES = {
   default: "application/octet-stream",
@@ -26,16 +28,32 @@ const PROPOSALS_URL = './server/BBDD/proposals.json'
 const BOOKS_URL = './server/BBDD/books.json'
 const MOVIES_URL = './server/BBDD/movies.json'
 
+/**
+ * Returns an object with the action name and id from the given pathname.
+ * For example, for "/create/articles/:id", it will return { name: "/create/articles", id: ":id" }
+ * @param {string} pathname
+ * @returns {{name: string, id: string}}
+ */
+function getAction(pathname) {
+  // /create/articles/:id
+  const actionParts = pathname.split('/');
+  return {
+    name: `/${actionParts[1]}/${actionParts[2]}`,
+    id: actionParts[3]
+   }
+}
+
 http
   .createServer(async (request, response) => {
     const url = new URL(`http://${request.headers.host}${request.url}`);
     const urlParams = Object.fromEntries(url.searchParams);
-
-    
-
+    const action = getAction(url.pathname);
     const statusCode = 200
     let responseData = []
-    console.log(url.pathname, url.searchParams);
+    let chunks = []
+
+    console.log(request.method, url.pathname, urlParams, action.name, action.id);
+
     // Set Up CORS
     response.setHeader('Access-Control-Allow-Origin', '*');
     response.setHeader('Content-Type', MIME_TYPES.json);
@@ -49,22 +67,33 @@ http
       return;
     }
 
-    let newUser = new User(urlParams)
-    let newClub = new Club(urlParams)
-    let newProposal = new Proposal(urlParams)
-    let newBook = new Book(urlParams)
-    let newMovie = new Movie(urlParams)
+    // let newUser = new User(urlParams)
+    // let newClub = new Club(urlParams)
+    // let newProposal = new Proposal(urlParams)
+    // let newBook = new Book(urlParams)
+    // let newMovie = new Movie(urlParams)
 
-    switch (url.pathname) {
+    switch (action.name) {
 
       case '/create/users':
-        crud.create(USERS_URL, newUser, (data) => {
-          console.log(`server ${data.name} creado`, data)
-          responseData = data
 
-          response.write(JSON.stringify(responseData));
-          response.end();
-        });
+        request.on('data', (chunk) => {
+          chunks.push(chunk)
+        })
+        request.on('end', () => {
+          let body = Buffer.concat(chunks)
+          console.log('create article - body BUFFER', body)
+          let parsedData = qs.parse(body.toString())
+          console.log('create article - body', parsedData)
+
+          crud.create(USERS_URL, parsedData, (data) => {
+            console.log(`server create article ${data.name} creado`, data)
+            responseData = data
+
+            response.write(JSON.stringify(responseData));
+            response.end();
+          });
+        })
         break;
 
       case '/read/users':
@@ -77,6 +106,23 @@ http
         });
         break;
 
+        case '/update/users':
+          request.on('data', (chunk) => {
+            chunks.push(chunk)
+          })
+          request.on('end', () => {
+            let body = Buffer.concat(chunks)
+            let parsedData = qs.parse(body.toString())
+            crud.update(USERS_URL, action.id, parsedData, (data) => {
+              console.log(`server update user ${action.id} modificado`, data)
+              responseData = data
+  
+              response.write(JSON.stringify(responseData));
+              response.end();
+            });
+          })
+          break;
+
       case '/filter/users':
         crud.filter(USERS_URL, urlParams, (data) => {
           console.log('server filter users', data)
@@ -87,15 +133,32 @@ http
         })
         break;
 
-      case '/create/clubs':
-        crud.create(CLUBS_URL, newClub, (data) => {
-          console.log(`server ${data.name} creado`, data)
+      case '/delete/users':
+        crud.delete(USERS_URL, action.id, (data) => {
+          console.log('server delete user', action.id, data)
           responseData = data
 
           response.write(JSON.stringify(responseData));
           response.end();
-        });
+        })
         break;
+
+        case '/create/clubs':
+          request.on('data', (chunk) => {
+            chunks.push(chunk)
+          })
+          request.on('end', () => {
+            let body = Buffer.concat(chunks)
+            let parsedData = qs.parse(body.toString())
+            crud.create(CLUBS_URL, parsedData, (data) => {
+              console.log(`server create club ${data.name} creado`, data)
+              responseData = data
+  
+              response.write(JSON.stringify(responseData));
+              response.end();
+            });
+          })
+          break;
 
       case '/read/clubs':
         crud.read(CLUBS_URL, (data) => {
@@ -107,6 +170,23 @@ http
         });
         break;
 
+        case '/update/clubs':
+          request.on('data', (chunk) => {
+            chunks.push(chunk)
+          })
+          request.on('end', () => {
+            let body = Buffer.concat(chunks)
+            let parsedData = qs.parse(body.toString())
+            crud.update(CLUBS_URL, action.id, parsedData, (data) => {
+              console.log(`server update club ${action.id} modificado`, data)
+              responseData = data
+  
+              response.write(JSON.stringify(responseData));
+              response.end();
+            });
+          })
+          break;
+
       case '/filter/clubs':
         crud.filter(CLUBS_URL, urlParams, (data) => {
           console.log('server filter clubs', data)
@@ -117,15 +197,32 @@ http
         })
         break;
 
-      case '/create/proposals':
-        crud.create(PROPOSALS_URL, newProposal, (data) => {
-          console.log(`server ${data.name} creado`, data)
-          responseData = data
+        case '/delete/clubs':
+          crud.delete(CLUBS_URL, action.id, (data) => {
+            console.log('server delete club', action.id, data)
+            responseData = data
+  
+            response.write(JSON.stringify(responseData));
+            response.end();
+          })
+          break;
 
-          response.write(JSON.stringify(responseData));
-          response.end();
-        });
-        break;
+        case '/create/proposals':
+          request.on('data', (chunk) => {
+            chunks.push(chunk)
+          })
+          request.on('end', () => {
+            let body = Buffer.concat(chunks)
+            let parsedData = qs.parse(body.toString())
+            crud.create(PROPOSALS_URL, parsedData, (data) => {
+              console.log(`server create proposal ${data.name} creado`, data)
+              responseData = data
+  
+              response.write(JSON.stringify(responseData));
+              response.end();
+            });
+          })
+          break;
 
       case '/read/proposals':
         crud.read(PROPOSALS_URL, (data) => {
@@ -137,6 +234,23 @@ http
         });
         break;
 
+        case '/update/proposals':
+          request.on('data', (chunk) => {
+            chunks.push(chunk)
+          })
+          request.on('end', () => {
+            let body = Buffer.concat(chunks)
+            let parsedData = qs.parse(body.toString())
+            crud.update(PROPOSALS_URL, action.id, parsedData, (data) => {
+              console.log(`server update proposal ${action.id} modificado`, data)
+              responseData = data
+  
+              response.write(JSON.stringify(responseData));
+              response.end();
+            });
+          })
+          break;
+
       case '/filter/proposals':
         crud.filter(PROPOSALS_URL, urlParams, (data) => {
           console.log('server filter proposals', data)
@@ -147,14 +261,31 @@ http
         })
         break;
 
-      case '/create/books':
-        crud.create(BOOKS_URL, newBook, (data) => {
-          console.log(`server ${data.name} creado`, data)
-          responseData = data
+        case '/delete/proposals':
+          crud.delete(PROPOSALS_URL, action.id, (data) => {
+            console.log('server delete proposal', action.id, data)
+            responseData = data
+  
+            response.write(JSON.stringify(responseData));
+            response.end();
+          })
+          break;
 
-          response.write(JSON.stringify(responseData));
-          response.end();
-        });
+      case '/create/books':
+        request.on('data', (chunk) => {
+          chunks.push(chunk)
+        })
+        request.on('end', () => {
+          let body = Buffer.concat(chunks)
+          let parsedData = qs.parse(body.toString())
+          crud.create(BOOKS_URL, parsedData, (data) => {
+            console.log(`server create book ${data.name} creado`, data)
+            responseData = data
+
+            response.write(JSON.stringify(responseData));
+            response.end();
+          });
+        })
         break;
 
       case '/read/books':
@@ -167,6 +298,23 @@ http
         });
         break;
 
+        case '/update/books':
+          request.on('data', (chunk) => {
+            chunks.push(chunk)
+          })
+          request.on('end', () => {
+            let body = Buffer.concat(chunks)
+            let parsedData = qs.parse(body.toString())
+            crud.update(BOOKS_URL, action.id, parsedData, (data) => {
+              console.log(`server update book ${action.id} modificado`, data)
+              responseData = data
+  
+              response.write(JSON.stringify(responseData));
+              response.end();
+            });
+          })
+          break;
+
       case '/filter/books':
         crud.filter(BOOKS_URL, urlParams, (data) => {
           console.log('server filter books', data)
@@ -177,15 +325,32 @@ http
         })
         break;
 
-      case '/create/movies':
-        crud.create(MOVIES_URL, newMovie, (data) => {
-          console.log(`server ${data.name} creado`, data)
-          responseData = data
+        case '/delete/books':
+          crud.delete(BOOKS_URL, action.id, (data) => {
+            console.log('server delete book', action.id, data)
+            responseData = data
+  
+            response.write(JSON.stringify(responseData));
+            response.end();
+          })
+          break;
 
-          response.write(JSON.stringify(responseData));
-          response.end();
-        });
-        break;
+        case '/create/movies':
+          request.on('data', (chunk) => {
+            chunks.push(chunk)
+          })
+          request.on('end', () => {
+            let body = Buffer.concat(chunks)
+            let parsedData = qs.parse(body.toString())
+            crud.create(MOVIES_URL, parsedData, (data) => {
+              console.log(`server create movie ${data.name} creado`, data)
+              responseData = data
+  
+              response.write(JSON.stringify(responseData));
+              response.end();
+            });
+          })
+          break;
 
       case '/read/movies':
         crud.read(MOVIES_URL, (data) => {
@@ -197,6 +362,23 @@ http
         });
         break;
 
+        case '/update/movies':
+          request.on('data', (chunk) => {
+            chunks.push(chunk)
+          })
+          request.on('end', () => {
+            let body = Buffer.concat(chunks)
+            let parsedData = qs.parse(body.toString())
+            crud.update(MOVIES_URL, action.id, parsedData, (data) => {
+              console.log(`server update movie ${action.id} modificado`, data)
+              responseData = data
+  
+              response.write(JSON.stringify(responseData));
+              response.end();
+            });
+          })
+          break;
+
       case '/filter/movies':
         crud.filter(MOVIES_URL, urlParams, (data) => {
           console.log('server filter movies', data)
@@ -206,6 +388,16 @@ http
           response.end();
         })
         break;
+
+        case '/delete/movies':
+          crud.delete(MOVIES_URL, action.id, (data) => {
+            console.log('server delete movie', action.id, data)
+            responseData = data
+  
+            response.write(JSON.stringify(responseData));
+            response.end();
+          })
+          break;
 
       default:
         console.log('no se encontro el endpoint');

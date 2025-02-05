@@ -20,7 +20,11 @@ async function insertData(file, data, callback) {
   await read(file, (readData) => {
     parsedData = [...readData];
     console.log('insertData parsedData', parsedData);
-    parsedData.push(data);
+
+    const processedData = convertStringToBoolean(data);
+    
+    parsedData.push(processedData);
+    // parsedData.push(data);
 
     fs.writeFile(file, JSON.stringify(parsedData), function (err) {
       if (err) {
@@ -28,8 +32,25 @@ async function insertData(file, data, callback) {
         return;
       }
       if (callback) {
-        callback(data);
+
+        callback(processedData);
+        // callback(data);
       }
     })
   });
+}
+
+function convertStringToBoolean(data) {
+  const convertedData = {};
+
+  for (const [key, value] of Object.entries(data)) {
+    if (value === 'true') {
+      convertedData[key] = true;
+    } else if (value === 'false') {
+      convertedData[key] = false;
+    } else {
+      convertedData[key] = value;
+    }
+  }
+  return convertedData
 }

@@ -194,14 +194,20 @@ async function createNewUser() {
         name: registerName,
         email: registerEmail,
         password: registerPassword,
-        // clubs: [],
-        // products: [],
-        // productProposals: [],
-        // proposalVotes: [],
+        clubs: [],
+        products: [],
+        productProposals: [],
+        proposalVotes: [],
     }
 
-    const searchParams = new URLSearchParams(newUser).toString()
-    const apiUserData = await getAPIUserData(`http://${location.hostname}:1337/create/users?${searchParams}`)
+    const searchParams = new URLSearchParams();
+        searchParams.append('id', newUser.id);
+        searchParams.append('name', newUser.name);
+        searchParams.append('email', newUser.email);
+        searchParams.append('password', newUser.password);
+
+
+    const apiUserData = await getAPIUserData(`http://${location.hostname}:1337/create/users?${searchParams.toString()}`);
 
     console.log(apiUserData)
 

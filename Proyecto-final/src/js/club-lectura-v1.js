@@ -200,16 +200,12 @@ async function createNewUser() {
         proposalVotes: [],
     }
 
-    const searchParams = new URLSearchParams();
-        searchParams.append('id', newUser.id);
-        searchParams.append('name', newUser.name);
-        searchParams.append('email', newUser.email);
-        searchParams.append('password', newUser.password);
-    const apiUserData = await getAPIUserData(`http://${location.hostname}:1337/create/users?${searchParams.toString()}`);
+    const payload = JSON.stringify(newUser);
+    const apiUserData = await getAPIUserData(`http://${location.hostname}:3333/create/users`, 'POST',  payload);
 
     console.log(apiUserData)
 
-    store.user.create(new User(apiUserData));
+    store.user.create(new User(newUser));
     store.saveState();
 }
 
@@ -393,27 +389,25 @@ async function createNewClub() {
         deadlineCurrent: null,
     };
 
-    const searchParams = new URLSearchParams();
-        searchParams.append('id', newClub.id);
-        searchParams.append('name', newClub.name);
-        searchParams.append('description', newClub.description);
-        searchParams.append('private', newClub.private ? 'true' : 'false');
-    const apiClubData = getAPIClubData(`http://${location.hostname}:1337/create/clubs?${searchParams.toString()}`);
+    const payload = JSON.stringify(newClub);
+    const apiClubData = await getAPIClubData(`http://${location.hostname}:3333/create/clubs`, 'POST',  payload);
 
-    //TODO: voy a tener que enviar la info en dos partes, una con las propiedades string que puedo meter para el create; y otra con las propiedades array que no puedo meter en el create
-
-    store.club.create(new Club(newClub));
-    const clubId = newClub.id
+    console.log('club creado: ', apiClubData)
 
     const updatedUser = {
         ...loggedUser,
-        clubs: [...loggedUser.clubs, clubId]
+        clubs: [...loggedUser.clubs, apiClubData.id]
     }
 
+    const updatePayload = JSON.stringify(updatedUser);
+    const apiUserUpdate = await getAPIUserData(`http://${location.hostname}:3333/update/users/${loggedUser.id}`, 'PUT', updatePayload);
+
+    console.log('usuario actualizado: ', apiUserUpdate)
+
+    store.club.create(new Club(apiClubData));
     store.user.update(updatedUser);
     sessionStorage.setItem('loggedUser', JSON.stringify(updatedUser));
 
-    console.log(apiClubData)
     store.saveState();
 }
 
@@ -982,20 +976,26 @@ function createNewProduct(productData, productType) {
 //=====API METHODS=====//
 
 /**
- * get data from user BBDD
+ * get user data from BBDD
+ * @param {Object} [data]
  */
-async function getAPIUserData (apiURL = `http://${location.hostname}:1337/read/users`) {
+async function getAPIUserData (apiURL = `http://${location.hostname}:3333/read/users`, method = 'GET', data) {
     
     let apiUserData
     
     try {
+        let headers = new Headers();
+
+        headers.append('Content-Type', 'application/json')
+        headers.append('Access-Control-Allow-Origin', '*')
+        if (data) {
+          headers.append('Content-Length', String(JSON.stringify(data).length))
+        }
         apiUserData = await simpleFetch(apiURL, {
             signal: AbortSignal.timeout(3000),
-            headers: {
-                'Content-Type': 'application/json',
-                // Add cross-origin header
-                'Access-Control-Allow-Origin': '*',
-            },
+            method: method,
+            body: data ?? undefined,
+            headers: headers
         });
     } catch (/** @type {any | HttpError} */ err){
         if (err.name === 'AbortError') {
@@ -1017,19 +1017,25 @@ async function getAPIUserData (apiURL = `http://${location.hostname}:1337/read/u
 
 /**
  * get club data from BBDD
+ * @param {Object} [data]
  */
-async function getAPIClubData (apiURL = `http://${location.hostname}:1337/read/clubs`) {
+async function getAPIClubData (apiURL = `http://${location.hostname}:3333/read/clubs`, method = 'GET', data) {
 
     let apiClubData
 
     try {
+        let headers = new Headers();
+
+        headers.append('Content-Type', 'application/json')
+        headers.append('Access-Control-Allow-Origin', '*')
+        if (data) {
+          headers.append('Content-Length', String(JSON.stringify(data).length))
+        }
         apiClubData = await simpleFetch(apiURL, {
             signal: AbortSignal.timeout(3000),
-            headers: {
-                'Content-Type': 'application/json',
-                // Add cross-origin header
-                'Access-Control-Allow-Origin': '*',
-            },
+            method: method,
+            body: data ?? undefined,
+            headers: headers
         });
     } catch (/** @type {any | HttpError} */ err){
         if (err.name === 'AbortError') {
@@ -1049,20 +1055,65 @@ async function getAPIClubData (apiURL = `http://${location.hostname}:1337/read/c
 }
 
 /**
- * get Data from Book API
+ * get proposal data from BBDD
+ * @param {Object} [data]
  */
-async function getAPIBookData (apiURL = `http://${location.hostname}:1337/read/books`) {
+async function getAPIProposalData (apiURL = `http://${location.hostname}:3333/read/proposals`, method = 'GET', data) {
+    let apiProposalData
+
+    try {
+        let headers = new Headers();
+
+        headers.append('Content-Type', 'application/json')
+        headers.append('Access-Control-Allow-Origin', '*')
+        if (data) {
+          headers.append('Content-Length', String(JSON.stringify(data).length))
+        }
+        apiProposalData = await simpleFetch(apiURL, {
+            signal: AbortSignal.timeout(3000),
+            method: method,
+            body: data ?? undefined,
+            headers: headers
+        });
+    } catch (/** @type {any | HttpError} */ err){
+        if (err.name === 'AbortError') {
+            console.error('Fetch abortado');
+        }
+        if (err instanceof HttpError) {
+            if (err.response.status === 404) {
+                console.error('Error 404: Not Found');
+            }
+            if (err.response.status === 500) {
+                console.error('Error 500: Internal Server Error');
+            }
+        }
+    }
+    return apiProposalData
+}
+
+getAPIProposalData()
+
+/**
+ * get book data from BBDD
+ * @param {Object} [data]
+ */
+async function getAPIBookData (apiURL = `http://${location.hostname}:3333/read/books`, method = 'GET', data) {
 
     let apiBookData
 
     try {
+        let headers = new Headers();
+
+        headers.append('Content-Type', 'application/json')
+        headers.append('Access-Control-Allow-Origin', '*')
+        if (data) {
+          headers.append('Content-Length', String(JSON.stringify(data).length))
+        }
         apiBookData = await simpleFetch(apiURL, {
             signal: AbortSignal.timeout(3000),
-            headers: {
-                'Content-Type': 'application/json',
-                // Add cross-origin header
-                'Access-Control-Allow-Origin': '*',
-            },
+            method: method,
+            body: data ?? undefined,
+            headers: headers
         });
     } catch (/** @type {any | HttpError} */ err){
         if (err.name === 'AbortError') {
@@ -1081,20 +1132,26 @@ async function getAPIBookData (apiURL = `http://${location.hostname}:1337/read/b
 }
 
 /**
- * get Data from Movie API
+ * get movie data from BBDD
+ * @param {Object} [data]
  */
-async function getAPIMovieData (apiURL = `http://${location.hostname}:1337/read/movies`) {
+async function getAPIMovieData (apiURL = `http://${location.hostname}:3333/read/movies`, method = 'GET', data) {
 
     let apiMovieData
 
     try {
+        let headers = new Headers();
+
+        headers.append('Content-Type', 'application/json')
+        headers.append('Access-Control-Allow-Origin', '*')
+        if (data) {
+          headers.append('Content-Length', String(JSON.stringify(data).length))
+        }
         apiMovieData = await simpleFetch(apiURL, {
             signal: AbortSignal.timeout(3000),
-            headers: {
-                'Content-Type': 'application/json',
-                // Add cross-origin header
-                'Access-Control-Allow-Origin': '*',
-            },
+            method: method,
+            body: data ?? undefined,
+            headers: headers
         });
     } catch (/** @type {any | HttpError} */ err){
         if (err.name === 'AbortError') {

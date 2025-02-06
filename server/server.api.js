@@ -4,10 +4,15 @@ import * as qs from "node:querystring";
 import { crud } from "./server.crud.js";
 
 
-// import {User} from "../Proyecto-final/src/js/classes/User.js";
-// import {Club} from "../Proyecto-final/src/js/classes/Club.js";
+import {User} from "../Proyecto-final/src/js/classes/User.js";
+import {Club} from "../Proyecto-final/src/js/classes/Club.js";
 // import {Proposal} from "../Proyecto-final/src/js/classes/Proposal.js";
 // import {/*Product,*/ Book, Movie} from "../Proyecto-final/src/js/classes/Product.js";
+let newUser 
+let newClub
+// let newProposal = new Proposal(urlParams)
+// let newBook = new Book(urlParams)
+// let newMovie = new Movie(urlParams)
 
 const MIME_TYPES = {
   default: "application/octet-stream",
@@ -57,7 +62,7 @@ http
     // Set Up CORS
     response.setHeader('Access-Control-Allow-Origin', '*');
     response.setHeader('Content-Type', MIME_TYPES.json);
-    response.setHeader('Access-Control-Allow-Methods', 'OPTIONS, GET');
+    response.setHeader('Access-Control-Allow-Methods', 'OPTIONS, GET, POST, PUT, DELETE');
     response.setHeader("Access-Control-Allow-Headers", "*");
     response.setHeader('Access-Control-Max-Age', 2592000); // 30 days
     response.writeHead(statusCode);
@@ -67,27 +72,21 @@ http
       return;
     }
 
-    // let newUser = new User(urlParams)
-    // let newClub = new Club(urlParams)
-    // let newProposal = new Proposal(urlParams)
-    // let newBook = new Book(urlParams)
-    // let newMovie = new Movie(urlParams)
-
     switch (action.name) {
 
       case '/create/users':
-
         request.on('data', (chunk) => {
           chunks.push(chunk)
         })
         request.on('end', () => {
           let body = Buffer.concat(chunks)
-          console.log('create article - body BUFFER', body)
+          console.log('create user - body BUFFER', body)
           let parsedData = qs.parse(body.toString())
-          console.log('create article - body', parsedData)
+          newUser = new User(parsedData)
+          console.log('create user - body', newUser)
 
-          crud.create(USERS_URL, parsedData, (data) => {
-            console.log(`server create article ${data.name} creado`, data)
+          crud.create(USERS_URL, newUser, (data) => {
+            console.log(`server create user ${data.name} creado`, data)
             responseData = data
 
             response.write(JSON.stringify(responseData));
@@ -100,13 +99,12 @@ http
         crud.read(USERS_URL, (data) => {
           console.log('server read users', data)
           responseData = data
-
           response.write(JSON.stringify(responseData));
           response.end();
         });
         break;
 
-        case '/update/users':
+      case '/update/users':
           request.on('data', (chunk) => {
             chunks.push(chunk)
           })
@@ -143,17 +141,27 @@ http
         })
         break;
 
-        case '/create/clubs':
+      case '/create/clubs':
           request.on('data', (chunk) => {
             chunks.push(chunk)
           })
           request.on('end', () => {
             let body = Buffer.concat(chunks)
             let parsedData = qs.parse(body.toString())
-            crud.create(CLUBS_URL, parsedData, (data) => {
+
+            const loggedUserId = parsedData.loggedUserId
+            delete parsedData.loggedUserId
+
+            newClub = new Club({
+              ...parsedData,
+              admins: [loggedUserId],
+              members: [loggedUserId]
+            });
+
+            crud.create(CLUBS_URL, newClub, (data) => {
               console.log(`server create club ${data.name} creado`, data)
               responseData = data
-  
+
               response.write(JSON.stringify(responseData));
               response.end();
             });
@@ -170,22 +178,22 @@ http
         });
         break;
 
-        case '/update/clubs':
-          request.on('data', (chunk) => {
-            chunks.push(chunk)
-          })
-          request.on('end', () => {
-            let body = Buffer.concat(chunks)
-            let parsedData = qs.parse(body.toString())
-            crud.update(CLUBS_URL, action.id, parsedData, (data) => {
-              console.log(`server update club ${action.id} modificado`, data)
-              responseData = data
-  
-              response.write(JSON.stringify(responseData));
-              response.end();
-            });
-          })
-          break;
+      case '/update/clubs':
+        request.on('data', (chunk) => {
+          chunks.push(chunk)
+        })
+        request.on('end', () => {
+          let body = Buffer.concat(chunks)
+          let parsedData = qs.parse(body.toString())
+          crud.update(CLUBS_URL, action.id, parsedData, (data) => {
+            console.log(`server update club ${action.id} modificado`, data)
+            responseData = data
+
+            response.write(JSON.stringify(responseData));
+            response.end();
+          });
+        })
+        break;
 
       case '/filter/clubs':
         crud.filter(CLUBS_URL, urlParams, (data) => {

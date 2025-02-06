@@ -1,56 +1,38 @@
 import fs from 'fs';
 import { read } from './read.js';
 
-export function create(file, data, callback) {
-  console.log('create', file, data)
+export async function create(file, data, callback) {
   if (!fs.existsSync(file)) {
     fs.appendFile(file, '[]', function (err) {
       if (err) {
         console.log('create', err);
-        return;
+        return err;
       }
     })
   }
-  insertData(file, data, callback);
+  return await insertData(file, data, callback);
 }
 
 async function insertData(file, data, callback) {
-  console.log('insertData', data, file);
+  console.log(data);
   let parsedData = []
   await read(file, (readData) => {
     parsedData = [...readData];
-    console.log('insertData parsedData', parsedData);
-
-    const processedData = convertStringToBoolean(data);
-    
-    parsedData.push(processedData);
-    // parsedData.push(data);
+    if (!data.id) {
+      const timestamp = new Date()
+      data.id = String(timestamp.getTime())
+    }
+    parsedData.push(data);
 
     fs.writeFile(file, JSON.stringify(parsedData), function (err) {
       if (err) {
         console.log('insertData', err);
-        return;
+        return err;
       }
       if (callback) {
-
-        callback(processedData);
-        // callback(data);
+        return callback(data);
       }
     })
   });
-}
-
-function convertStringToBoolean(data) {
-  const convertedData = {};
-
-  for (const [key, value] of Object.entries(data)) {
-    if (value === 'true') {
-      convertedData[key] = true;
-    } else if (value === 'false') {
-      convertedData[key] = false;
-    } else {
-      convertedData[key] = value;
-    }
-  }
-  return convertedData
+  return data;
 }

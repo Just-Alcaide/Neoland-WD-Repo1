@@ -7,14 +7,14 @@
 // /** @typedef {import('./classes/Product.js').Book} Book */
 
 // /** @import {User} from  './classes/User.js' */
-// /** @import {Club} from "./classes/Club.js"; */
+/** @import {Club} from "./classes/Club.js"; */
 /** @import {Product, Book, Movie} from "./classes/Product.js" */
 /** @import {Proposal} from "./classes/Proposal.js"; */
  
 import {store} from "./store/redux.js";
 import {ProductFactory, PRODUCT_TYPE,} from "./classes/Product.js";
 import {User} from "./classes/User.js";
-import {Club} from "./classes/Club.js";
+// import {Club} from "./classes/Club.js";
 // import {Proposal} from "./classes/Proposal.js";
 
 /**
@@ -28,14 +28,6 @@ import { HttpError } from "./classes/HttpError.js";
  * import templates
  */
 import { clubPageTemplate, clubDetailPageTemplate, bookProposalTemplate, movieProposalTemplate  } from "../templates/dinamic-content.templates.js";
-
-
-/**
- * define API URLs
- */
-// const API_BOOKS_URL = `http://${location.hostname}:3333/api/books.json`
-// const API_MOVIES_URL = `http://${location.hostname}:3333/api/movies.json`
-
 
 /**
  *  DOM Content Loaded
@@ -89,12 +81,12 @@ function onDomContentLoaded() {
  * on login form submit
  * @param {SubmitEvent} e
  */
-function onLoginFormSubmit(e) {
+async function onLoginFormSubmit(e) {
     e.preventDefault();
-    loginUser()
+    await loginUser()
     cleanUpLoginForm();
-    updateClubsList()
-    console.log(store.getState())
+    checkAuthStatus()
+    await updateClubsList()
 }
 
 /**
@@ -104,9 +96,10 @@ function onLoginFormSubmit(e) {
 async function onRegisterFormSubmit(e) {
     e.preventDefault();
     await createNewUser()
-    loginNewUser()
+    await loginNewUser()
     cleanUpRegisterForm()
-    console.log(store.getState())
+    checkAuthStatus()
+    await updateClubsList()
 }
 
 /**
@@ -116,7 +109,6 @@ async function onRegisterFormSubmit(e) {
 function onLogoutButtonClick(e) {
     e.preventDefault();
     logoutUser();
-    console.log(store.getState())
 }
 
 /**
@@ -132,10 +124,10 @@ function ondeleteAccountButtonClick(e) {
  * on delete user button click
  * @param {MouseEvent} e 
  */
-function onDeleteUserButtonClick(e) {
+async function onDeleteUserButtonClick(e) {
     e.preventDefault();
-    deleteUser()
-    console.log(store.getState())
+    await deleteUser()
+    location.reload();
 }
 
 //=====USER METHODS=====//
@@ -143,22 +135,39 @@ function onDeleteUserButtonClick(e) {
 /**
  * login user
  */
-function loginUser() {
+async function loginUser() {
     const loginEmail = /** @type {HTMLInputElement} */ (document.getElementById('loginEmail')).value;
     const loginPassword = /** @type {HTMLInputElement} */ (document.getElementById('loginPassword')).value
 
-    const users = store.getState().users;
-    const loginUser = users.find((/** @type {User} */ user) => user.email === loginEmail && user.password === loginPassword);
+    try {
+        const requestData = JSON.stringify({email: loginEmail, password: loginPassword});
 
-    if (loginUser) {
-        sessionStorage.setItem('loggedUser', JSON.stringify(loginUser));
+        const apiResponse = await getAPIUserData(`http://${location.hostname}:3333/login/users`, 'POST', requestData);
 
-        console.log('logueado', loginUser)
-    }   else {
-        alert('El email o la contraseña son incorrectos');
+        if (!apiResponse || apiResponse.length === 0) {
+            throw new Error ('El email o la contraseña son incorrectos');
+        }
+
+        const apiUserData = await apiResponse;
+
+        const loggedUserData = {
+            id: apiUserData.id,
+            email: apiUserData.email,
+            name: apiUserData.name,
+            password: '',
+            clubs: apiUserData.clubs || [],
+            products: apiUserData.products || [],
+            productProposals: apiUserData.productProposals || [],
+            proposalVotes: apiUserData.proposalVotes || []
+        };
+
+        sessionStorage.setItem('loggedUser', JSON.stringify(loggedUserData));
+        store.user.create(new User(loggedUserData));
+        store.saveState();
+
+    } catch (error) {
+        console.log('Error: ', error);
     }
-
-    checkAuthStatus()
 }
 
 /**
@@ -201,32 +210,45 @@ async function createNewUser() {
     }
 
     const payload = JSON.stringify(newUser);
-    const apiUserData = await getAPIUserData(`http://${location.hostname}:3333/create/users`, 'POST',  payload);
-
-    console.log(apiUserData)
-
-    store.user.create(new User(newUser));
-    store.saveState();
+    await getAPIUserData(`http://${location.hostname}:3333/create/users`, 'POST',  payload);
 }
 
 /**
  * login new user
  */
-function loginNewUser() {
+async function loginNewUser() {
     const loginEmail = /** @type {HTMLInputElement} */ (document.getElementById('registerEmail')).value 
     const loginPassword = /** @type {HTMLInputElement} */ (document.getElementById('registerPassword')).value 
 
-    const users = store.getState().users;
-    const loginUser = users.find((/** @type {User} */ user) => user.email === loginEmail && user.password === loginPassword);
+    try {
+        const requestData = JSON.stringify({email: loginEmail, password: loginPassword});
 
-    if (loginUser) {
-        sessionStorage.setItem('loggedUser', JSON.stringify(loginUser));
-        console.log('logueado', loginUser)
-    }   else {
-        alert('El email o la contraseña son incorrectos');
+        const apiResponse = await getAPIUserData(`http://${location.hostname}:3333/login/users`, 'POST', requestData);
+
+        if (!apiResponse || apiResponse.length === 0) {
+            throw new Error ('El email o la contraseña son incorrectos');
+        }
+
+        const apiUserData = apiResponse;
+
+        const loggedUserData = {
+            id: apiUserData.id,
+            email: apiUserData.email,
+            name: apiUserData.name,
+            password: '',
+            clubs: apiUserData.clubs || [],
+            products: apiUserData.products || [],
+            productProposals: apiUserData.productProposals || [],
+            proposalVotes: apiUserData.proposalVotes || []
+        };
+
+        sessionStorage.setItem('loggedUser', JSON.stringify(loggedUserData));
+        store.user.create(new User(loggedUserData));
+        store.saveState();
+
+    } catch (error) {
+        console.log('Error: ', error);
     }
-
-    checkAuthStatus()
 }
 
 /**
@@ -281,6 +303,8 @@ function checkAuthStatus() {
  */
 function logoutUser() {
     sessionStorage.removeItem('loggedUser');
+    localStorage.removeItem('storedData');
+    localStorage.removeItem('isApiDataProcessed');
     location.reload();
 }
 
@@ -307,21 +331,40 @@ function deleteAccountForm() {
 /**
  * delete user
  */
-function deleteUser() {
+async function deleteUser() {
     const loggedUser = getLoggedUserData();
 
-    const deleteUserName = /** @type {HTMLInputElement} */ (document.getElementById('deleteUserName')).value
+    // const deleteUserName = /** @type {HTMLInputElement} */ (document.getElementById('deleteUserName')).value
     const deleteUserEmail = /** @type {HTMLInputElement} */ (document.getElementById('deleteUserEmail')).value
     const deleteUserPassword = /** @type {HTMLInputElement} */ (document.getElementById('deleteUserPassword')).value
 
-    if (deleteUserName === loggedUser?.name && deleteUserEmail === loggedUser?.email && deleteUserPassword === loggedUser?.password) {
-        store.user.delete(loggedUser);
-        store.saveState();
-        sessionStorage.removeItem('loggedUser');
-        alert('Cuenta eliminada con exito');
-        location.reload();
-    } else {
-        alert('Los datos ingresados son incorrectos');
+    const requestData = JSON.stringify({email: deleteUserEmail, password: deleteUserPassword});
+
+    try {const apiResponse = await fetch(`http://${location.hostname}:3333/delete/users/${loggedUser?.id}`, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: requestData
+    }); 
+
+    const responseData = await apiResponse.json();
+
+    if (!responseData.success) {
+        throw new Error(responseData.message);
+    }
+
+    const userToDelete = store.getState().users.find((/** @type {User} */ user) => user.id === loggedUser?.id);
+    if (userToDelete) {
+        store.user.delete(userToDelete);
+    store.saveState();
+    }
+    sessionStorage.removeItem('loggedUser');
+    alert('Cuenta eliminada con exito');
+    location.reload();
+
+    } catch (error) {
+        console.log('Error: ', error);
     }
 }
 
@@ -331,11 +374,11 @@ function deleteUser() {
  * show club template
  * @param {MouseEvent} e 
  */
-function onClubsPageLinkClick(e) {
+async function onClubsPageLinkClick(e) {
     e.preventDefault();
     const dynamicContent = document.getElementById('dynamic-content');
     if (dynamicContent) {
-    loadClubsPage()
+    await loadClubsPage()
 
     // event listener for create new club
     const createClubForm = document.getElementById('createClubForm');
@@ -351,7 +394,7 @@ async function onCreateClubFormSubmit(e) {
     e.preventDefault();
     await createNewClub();
     cleanUpNewClubForm();
-    updateClubsList();
+    await updateClubsList();
     console.log(store.getState())
 }
 
@@ -392,22 +435,13 @@ async function createNewClub() {
     const payload = JSON.stringify(newClub);
     const apiClubData = await getAPIClubData(`http://${location.hostname}:3333/create/clubs`, 'POST',  payload);
 
-    console.log('club creado: ', apiClubData)
-
-    const updatedUser = {
-        ...loggedUser,
-        clubs: [...loggedUser.clubs, apiClubData.id]
-    }
-
-    const updatePayload = JSON.stringify(updatedUser);
+    const updatePayload = JSON.stringify({clubs: [...loggedUser.clubs, apiClubData.id]});
     const apiUserUpdate = await getAPIUserData(`http://${location.hostname}:3333/update/users/${loggedUser.id}`, 'PUT', updatePayload);
 
-    console.log('usuario actualizado: ', apiUserUpdate)
+    const userWithoutPassword = {...apiUserUpdate, password: ''};
 
-    store.club.create(new Club(apiClubData));
-    store.user.update(updatedUser);
-    sessionStorage.setItem('loggedUser', JSON.stringify(updatedUser));
-
+    sessionStorage.setItem('loggedUser', JSON.stringify(userWithoutPassword));
+    store.user.update(userWithoutPassword);
     store.saveState();
 }
 
@@ -427,36 +461,41 @@ function cleanUpNewClubForm() {
 /**
  * update clubs list
  */
-function updateClubsList() {
+async function updateClubsList() {
     const clubsList = document.getElementById('clubsList');
     const loggedUser = getLoggedUserData();
-    const clubs = store.getState().clubs;
 
-    const userClubs = clubs.filter((/** @type {Club} */ club) => {
-        if (!loggedUser) {
-            return !club.private;
-        } else {
-            return !club.private || club.members.includes(loggedUser.id);
+    try {
+        const apiClubsData = await getAPIClubData(`http://${location.hostname}:3333/read/clubs`);
+
+        const userClubs = apiClubsData.filter((/** @type {Club} */ club) => {
+            if (!loggedUser) {
+                return !club.private;
+            } else { 
+                return !club.private || club.members.includes(loggedUser.id);
+            }
+        });
+
+        if (clubsList) {
+            clubsList.innerHTML = userClubs.map((/** @type {Club} */ club) => 
+                `
+                <li>
+                    <h3>Nombre: ${club.name}</h3>
+                    <p>Descripción: ${club.description}</p>
+                    <p>Miembros: ${club.members.length || 0}</p>
+                    <button class="visitClubButton" data-id="${club.id}">Visitar Club</button>
+                    ${loggedUser ? generateClubActionButtons(club, loggedUser) : ''}
+                    
+                </li>
+                `).join('');
+    
+            // event listeners to clubs list
+            addVisitListenerToClubsList()
+            initializeListenersToClubButtons()
         }
-    });
-
-    if (clubsList) {
-        clubsList.innerHTML = userClubs.map((/** @type {Club} */ club) => 
-            `
-            <li>
-                <h3>Nombre: ${club.name}</h3>
-                <p>Descripción: ${club.description}</p>
-                <p>Miembros: ${club.members.length || 0}</p>
-                <button class="visitClubButton" data-id="${club.id}">Visitar Club</button>
-                ${loggedUser ? generateClubActionButtons(club, loggedUser) : ''}
-                
-            </li>
-            `).join('');
-
-        // event listeners to clubs list
-        addVisitListenerToClubsList()
-        initializeListenersToClubButtons()
-    } 
+    } catch (error) {
+        console.log('Error: ', error);
+    }
 }
 
 function initializeListenersToClubButtons() {
@@ -557,11 +596,11 @@ function visitClubPage(clubId) {
     renderClubProposals(club);
 }
 
-function loadClubsPage() {
+async function loadClubsPage() {
     const dynamicContent = document.getElementById('dynamic-content');
     if (dynamicContent) {
         dynamicContent.innerHTML = clubPageTemplate;
-        updateClubsList();
+        await updateClubsList();
     }
 }
 
@@ -694,7 +733,7 @@ function addLeaveListenerToClubsList() {
  * leave club
  * @param {string} clubId 
  */
-function leaveClub(clubId) {
+async function leaveClub(clubId) {
     const loggedUser = getLoggedUserData();
     if (!loggedUser) {
         alert('Debes iniciar sesión para salir de un club');
@@ -723,7 +762,7 @@ function leaveClub(clubId) {
         if (dynamicContent) {
             dynamicContent.innerHTML = clubPageTemplate;
         }
-        loadClubsPage();
+        await loadClubsPage();
         
     }
     console.log(store.getState())
@@ -779,12 +818,16 @@ function addDeleteListenerToClubsList() {
  * delete club
  * @param {string} clubId
  */
-function deleteClub(clubId) {
-    const clubToDelete = store.getState().clubs.find((/** @type {Club} */ club) => club.id === clubId);
-    if (clubToDelete) {
-        store.club.delete(clubToDelete);
-        loadClubsPage();
+async function deleteClub(clubId) {
+
+    const apiClubData = await getAPIClubData(`http://${location.hostname}:3333/delete/clubs/${clubId}`, 'DELETE');
+
+    // const clubToDelete = store.getState().clubs.find((/** @type {Club} */ club) => club.id === clubId);
+
+    if (apiClubData) {
+        store.club.delete(clubId);
         store.saveState();
+        await loadClubsPage();
     }
 }
 

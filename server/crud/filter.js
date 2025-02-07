@@ -1,16 +1,23 @@
 import fs from 'fs';
 
 export async function filter(file, filterParams, callback) {
-  let filteredData = []
+  let filteredData = [];
   console.log('filter', filterParams);
+
   try {
     if (fs.existsSync(file)) {
       await fs.readFile(file, function (err, data) {
         const parsedData = JSON.parse(data.toString());
+
         // Filter by filterParams
-        filteredData = parsedData.filter((item) => {
-          return item.name.includes(filterParams.name)
+        filteredData = parsedData.filter(item => {
+          return Object.entries(filterParams).every(([key, value]) => {
+            if (!value) return true;
+            if (Array.isArray(item[key])) return item [key].includes(value);
+            return item[key] == value || String(item[key]).includes(value);
+          });
         });
+
         if (filteredData.length === 0) {
           console.log('read', 'No se encontraron resultados');
           if (callback) {
@@ -28,6 +35,7 @@ export async function filter(file, filterParams, callback) {
         }
         return filteredData
       });
+
     } else {
       console.log('filter', 'El fichero no existe');
       if (callback) {

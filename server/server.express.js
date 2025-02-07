@@ -10,8 +10,12 @@ const MOVIES_URL = './server/BBDD/movies.json'
 
 const app = express();
 const port = process.env.PORT;
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 app.use(express.static('./Proyecto-final/src'));
   
@@ -28,21 +32,55 @@ app.get('/read/users', (req, res) => {
 })
 
 app.put('/update/users/:id', (req, res) => {
-  crud.update(USERS_URL, req.params.id, req.body, (data) => {
-    res.json(data)
+  crud.update(USERS_URL, req.params.id, req.body, (user) => {
+    const userWithoutPassword = {...user, password: undefined};
+    res.json(userWithoutPassword);
   });
 })
 
 app.get('/filter/users', (req, res) => {
   crud.filter(USERS_URL, req.body, (data) => {
     res.json(data)
+    
   });
 })
 
+app.post('/login/users', (req, res) => {
+  const { email, password } = req.body;
+
+  crud.read(USERS_URL, (users) => {
+    if (!users || users.length === 0) {
+      return res.status(400).json({ success: false, message: 'No users found' });
+    } 
+    const user = users.find(user => user.email === email && user.password === password);
+    if (!user) {
+      return res.status(400).json({ success: false, message: 'Invalid email or password' });
+    }
+
+    const userWithoutPassword = {...user, password: undefined};
+    res.json(userWithoutPassword);
+  })
+})
+
 app.delete('/delete/users/:id', (req, res) => {
-  crud.delete(USERS_URL, req.params.id, (data) => {
-    res.json(data)
-  });
+  const userId = req.params.id;
+  const { email, password } = req.body;
+
+  crud.read(USERS_URL, (users) => {
+    const userIndex = users.findIndex(user => user.id === userId);
+    if (userIndex === -1){
+      return res.status(404).json({ success:false, message: 'User not found' });
+    } 
+
+    const user = users[userIndex];
+    if (user.email !== email || user.password !== password) {
+      return res.status(400).json({ success: false, message: 'Invalid email or password' });
+    }
+    
+    crud.delete(USERS_URL, userId, (updatedUsers) => {
+      res.json({ success: true, message: 'User deleted successfully', data: updatedUsers });
+    });
+  })
 })
 
 app.post('/create/clubs', (req, res) => {

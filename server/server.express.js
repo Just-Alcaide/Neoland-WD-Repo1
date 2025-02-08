@@ -101,14 +101,18 @@ app.put('/update/clubs/:id', (req, res) => {
   });
 })
 
-app.get('/filter/clubs', (req, res) => {
-  crud.filter(CLUBS_URL, req.body, (data) => {
+app.post('/filter/clubs', (req, res) => {
+  const filterParams = req.body;
+  crud.filter(CLUBS_URL, filterParams, (data) => {
     res.json(data)
   });
 })
 
 app.delete('/delete/clubs/:id', (req, res) => {
   crud.delete(CLUBS_URL, req.params.id, (data) => {
+    if (!data || data.length === 0) {
+      return res.status(404).json({ success: false, message: 'Club not found' });
+    }
     res.json(data)
   });
 })

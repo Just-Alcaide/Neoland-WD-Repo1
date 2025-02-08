@@ -535,15 +535,15 @@ function generateClubActionButtons(club, loggedUser) {
 /**
  * add visit club event listener
  */
-function addVisitListenerToClubsList(){
+async function addVisitListenerToClubsList(){
     const visitClubButton = document.querySelectorAll('.visitClubButton');
     visitClubButton.forEach((button) => {
-        button.addEventListener('click', (e) => {
+        button.addEventListener('click', async (e) => {
             const target = /** @type {HTMLElement} */ (e.target)
             if (target) {
                 const clubId = target.getAttribute('data-id');
                 if (clubId) {
-                    visitClubPage(clubId);
+                    await visitClubPage(clubId);
                 }
             }
         });
@@ -555,21 +555,27 @@ function addVisitListenerToClubsList(){
  * visit club page
  * @param {string} clubId
  */
-function visitClubPage(clubId) {
+async function visitClubPage(clubId) {
     const dynamicContent = document.getElementById('dynamic-content');
     if (!dynamicContent) {
         return;
     }
 
-    const club = getClubData(clubId);
-    if (!club) return;
-    const loggedUser = getLoggedUserData();
+    try {
+        const apiClubData = await getAPIClubData(
+            `http://${location.hostname}:3333/filter/clubs`, 'POST',
+            JSON.stringify({id: clubId})
+            );
 
-    if (club && dynamicContent) {
+        if (!apiClubData || apiClubData.length === 0) {
+            throw new Error ('Club no encontrado');
+        }
+
+        const club = apiClubData[0];
         dynamicContent.innerHTML = clubDetailPageTemplate(clubId);
-
-        
+        const loggedUser = getLoggedUserData();
         const backToClubsListButton = document.getElementById('backToClubsListButton');
+
         if (backToClubsListButton) {
             backToClubsListButton.addEventListener('click', loadClubsPage);
         }
@@ -578,22 +584,23 @@ function visitClubPage(clubId) {
             const clubActionButtonsContainer = document.getElementById('clubActionButtonsContainer');
             if (clubActionButtonsContainer) {
                 clubActionButtonsContainer.innerHTML = generateClubActionButtons(club, loggedUser);
-
                 initializeListenersToClubButtons();
             }
         }
+
+        const addProposalButton = document.getElementById('addProposalButton');
+        if (addProposalButton && loggedUser && club.members.includes(loggedUser.id)) {
+            addProposalButton.classList.remove('hidden');
+            addProposalButton.addEventListener('click', onAddProposalButtonClick);
+        }
+
+        renderClubDetails(club);
+        renderMemberDetails(club);
+        renderClubProposals(club);
+
+    } catch (error) {
+        console.log('Error: ', error);
     }
-
-    const addProposalButton = document.getElementById('addProposalButton');
-    if (addProposalButton && loggedUser && club.members.includes(loggedUser.id)) {
-        addProposalButton.classList.remove('hidden');
-        addProposalButton.addEventListener('click', onAddProposalButtonClick);
-    }
-
-
-    renderClubDetails(club);
-    renderMemberDetails(club);
-    renderClubProposals(club);
 }
 
 async function loadClubsPage() {
@@ -608,9 +615,9 @@ async function loadClubsPage() {
  * get club data
  * @param {string} clubId 
  */
-function getClubData(clubId) {
-    return store.getState().clubs.find((/** @type {Club} */ club) => club.id === clubId);
-}
+// function getClubData(clubId) {
+//     return store.getState().clubs.find((/** @type {Club} */ club) => club.id === clubId);
+// }
 
 /**
  * render club details
@@ -682,7 +689,7 @@ function addJoinListenerToClubsList() {
  * join club
  * @param {string} clubId 
  */
-function joinClub(clubId) {
+async function joinClub(clubId) {
     const loggedUser = getLoggedUserData();
     if (!loggedUser) {
         alert('Debes iniciar sesión para unirte a un club');
@@ -706,7 +713,7 @@ function joinClub(clubId) {
         store.user.update(updatedUser);
         sessionStorage.setItem('loggedUser', JSON.stringify(updatedUser));
         store.saveState();
-        visitClubPage(clubId)
+        await visitClubPage(clubId)
     }
     console.log(store.getState())
 }

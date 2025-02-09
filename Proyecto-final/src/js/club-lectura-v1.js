@@ -670,15 +670,15 @@ function renderClubProposals(club) {
 /**
  * add join club event listener
  */
-function addJoinListenerToClubsList() {
+async function addJoinListenerToClubsList() {
     const joinClubButton = document.querySelectorAll('.joinClubButton');
     joinClubButton.forEach((button) => {
-        button.addEventListener('click', (e) => {
+        button.addEventListener('click', async (e) => {
             const target = /** @type {HTMLElement} */ (e.target)
             if (target) {
                 const clubId = target.getAttribute('data-id');
                 if (clubId) {
-                    joinClub(clubId);
+                    await joinClub(clubId);
                 }
             }
         })
@@ -696,26 +696,33 @@ async function joinClub(clubId) {
         return;
     }
 
-    const clubToJoin = store.getState().clubs.find((/** @type {Club} */ club) => club.id === clubId);
-    if (clubToJoin) {
+    try {
+        const apiClubData = await getAPIClubData(`http://${location.hostname}:3333/filter/clubs`, 'POST', JSON.stringify({id: clubId}));
 
-        const updatedClub = {
+        if (!apiClubData || apiClubData.length === 0) {
+            throw new Error ('Club no encontrado');
+        }
+
+        const clubToJoin = apiClubData[0];
+
+        const updateClub = {
             ...clubToJoin,
             members: [...clubToJoin.members, loggedUser.id]
         };
+        await getAPIClubData(`http://${location.hostname}:3333/update/clubs/${clubId}`, 'PUT', JSON.stringify(updateClub));
 
-        const updatedUser = {
-            ...loggedUser,
-            clubs: [...loggedUser.clubs, clubId]
-        }
+        const updateUser = JSON.stringify({ clubs: [...loggedUser.clubs, clubId]});
+        const apiUserUpdate = await getAPIUserData(`http://${location.hostname}:3333/update/users/${loggedUser.id}`, 'PUT', updateUser);
 
-        store.club.update(updatedClub);
-        store.user.update(updatedUser);
-        sessionStorage.setItem('loggedUser', JSON.stringify(updatedUser));
+        const userWithoutPassword = {...apiUserUpdate, password: ''};
+        sessionStorage.setItem('loggedUser', JSON.stringify(userWithoutPassword));
+        store.user.update(userWithoutPassword);
         store.saveState();
-        await visitClubPage(clubId)
+        await visitClubPage(clubId);
+
+    } catch (error) {
+        console.log('Error: ', error);
     }
-    console.log(store.getState())
 }
 
 /**

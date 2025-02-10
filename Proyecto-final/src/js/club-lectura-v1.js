@@ -728,15 +728,15 @@ async function joinClub(clubId) {
 /**
  * add leave club event listener
  */
-function addLeaveListenerToClubsList() {
+async function addLeaveListenerToClubsList() {
     const leaveClubButton = document.querySelectorAll('.leaveClubButton');
     leaveClubButton.forEach((button) => {
-        button.addEventListener('click', (e) => {
+        button.addEventListener('click', async (e) => {
             const target = /** @type {HTMLElement} */ (e.target)
             if (target) {
                 const clubId = target.getAttribute('data-id');
                 if (clubId) {
-                    leaveClub(clubId);
+                    await leaveClub(clubId);
                 }
             }
         })
@@ -754,22 +754,34 @@ async function leaveClub(clubId) {
         return;
     }
 
-    const clubToLeave = store.getState().clubs.find((/** @type {Club} */ club) => club.id === clubId);
-    if (clubToLeave) {
+    try {
+        const apiClubData = await getAPIClubData(`http://${location.hostname}:3333/filter/clubs`, 'POST', JSON.stringify({id: clubId}));
 
-        const updatedClub = {
+        if (!apiClubData || apiClubData.length === 0) {
+            throw new Error ('Club no encontrado');
+        }
+
+        const clubToLeave = apiClubData[0];
+
+        const updateClub = {
             ...clubToLeave,
             members: clubToLeave.members.filter((/** @type {string} */ memberId) => memberId !== loggedUser.id)
         };
 
-        const updatedUser = {
-            ...loggedUser,
-            clubs: loggedUser.clubs.filter((/** @type {string} */ clubId) => clubId !== clubId)
-        }
+        const clubUpdatePayload = JSON.stringify({members: updateClub.members});
+        await getAPIClubData(`http://${location.hostname}:3333/update/clubs/${clubId}`, 'PUT', clubUpdatePayload);
 
-        store.club.update(updatedClub);
-        store.user.update(updatedUser);
-        sessionStorage.setItem('loggedUser', JSON.stringify(updatedUser));
+        const updateUser = {
+            clubs: loggedUser.clubs.filter(id => id !== clubId)
+        };
+
+        const userUpdatePayload = JSON.stringify(updateUser);
+        const apiUserUpdate =await getAPIUserData(`http://${location.hostname}:3333/update/users/${loggedUser.id}`, 'PUT', userUpdatePayload);
+
+        const safeUserData = {...apiUserUpdate, password: ""};
+
+        sessionStorage.setItem('loggedUser', JSON.stringify(safeUserData));
+        store.user.update(safeUserData);
         store.saveState();
 
         const dynamicContent = document.getElementById('dynamic-content');
@@ -777,9 +789,10 @@ async function leaveClub(clubId) {
             dynamicContent.innerHTML = clubPageTemplate;
         }
         await loadClubsPage();
-        
+
+        } catch (error) {
+        console.log('Error: ', error);
     }
-    console.log(store.getState())
 }
 
 /**
@@ -813,15 +826,15 @@ function editClub(clubId) {
 /**
  * add delete club event listener
  */
-function addDeleteListenerToClubsList() {
+async function addDeleteListenerToClubsList() {
     const deleteClubButtons = document.querySelectorAll('.deleteClubButton');
     deleteClubButtons.forEach((button) => {
-    button.addEventListener('click', (e) => {
+    button.addEventListener('click', async (e) => {
         const target = /** @type {HTMLElement} */ (e.target)
         if (target) { 
             const clubId = target.getAttribute('data-id');
             if (clubId) {
-                deleteClub(clubId);
+                await deleteClub(clubId);
             }
         }
     });
@@ -833,15 +846,62 @@ function addDeleteListenerToClubsList() {
  * @param {string} clubId
  */
 async function deleteClub(clubId) {
+    const loggedUser = getLoggedUserData();
 
-    const apiClubData = await getAPIClubData(`http://${location.hostname}:3333/delete/clubs/${clubId}`, 'DELETE');
+    if (!loggedUser) {
+        alert('Debes iniciar sesión para borrar un club');
+        return;
+    }
 
-    // const clubToDelete = store.getState().clubs.find((/** @type {Club} */ club) => club.id === clubId);
+    try {
+        const apiClubData = await getAPIClubData(`http://${location.hostname}:3333/filter/clubs`, 'POST', JSON.stringify({ id: clubId }));
 
-    if (apiClubData) {
-        store.club.delete(clubId);
+        if (!apiClubData || apiClubData.length === 0) {
+            throw new Error('Club no encontrado');
+        }
+
+        const clubToDelete = apiClubData[0];
+
+        
+        const apiUserData = await getAPIUserData(`http://${location.hostname}:3333/filter/users`, 'POST', JSON.stringify({ ids: clubToDelete.members}) );
+
+        console.log('usuarios encontrados', apiUserData)
+
+        if (!apiUserData || apiUserData.length === 0) {
+            throw new Error('Usuarios no encontrados');
+        } 
+
+        for (const userToUpdate of apiUserData) {
+            const updatedUser = {
+                clubs: userToUpdate.clubs.filter((/** @type {string} */ id) => id !== clubId),
+            };
+            
+            await getAPIUserData(`http://${location.hostname}:3333/update/users/${userToUpdate.id}`, 'PUT', JSON.stringify(updatedUser));
+        }
+
+        const remainingClub = await getAPIClubData(`http://${location.hostname}:3333/filter/clubs`, 'POST', JSON.stringify({ id: clubId }));
+
+        if (!remainingClub || remainingClub.length === 0) {
+            console.warn('intentando eliminar un club que ya no existe en la base de datos');
+        } else {
+            console.log('el club aún existe, procediendo a eliminar')
+            const deleteResponse = await getAPIClubData(`http://${location.hostname}:3333/delete/clubs/${clubId}`, 'DELETE');
+            
+            console.log('respuesta de eliminación: ', deleteResponse )
+        }
+
+        const updatedLoggedUser = {
+            ...loggedUser,
+            clubs: loggedUser.clubs.filter(id => id !== clubId)
+        };
+
+        sessionStorage.setItem('loggedUser', JSON.stringify(updatedLoggedUser));
+        store.user.update(updatedLoggedUser);
         store.saveState();
         await loadClubsPage();
+
+    } catch (error) {
+        console.log('Error: ', error);
     }
 }
 

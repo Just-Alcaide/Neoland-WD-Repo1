@@ -38,7 +38,7 @@ app.put('/update/users/:id', (req, res) => {
   });
 })
 
-app.get('/filter/users', (req, res) => {
+app.post('/filter/users', (req, res) => {
   crud.filter(USERS_URL, req.body, (data) => {
     res.json(data)
     
@@ -109,11 +109,16 @@ app.post('/filter/clubs', (req, res) => {
 })
 
 app.delete('/delete/clubs/:id', (req, res) => {
-  crud.delete(CLUBS_URL, req.params.id, (data) => {
-    if (!data || data.length === 0) {
-      return res.status(404).json({ success: false, message: 'Club not found' });
-    }
-    res.json(data)
+  const clubId = req.params.id;
+  console.log(`solicitud DELETE recibida para el club: ${clubId}`);
+
+  crud.delete(CLUBS_URL, clubId, (data) => {
+    console.log(`club eliminado: ${clubId}`);
+
+    // if (!data || data.length === 0) {
+    //   return res.status(404).json({ success: false, message: 'Club not found' });
+    // }
+    res.json({success: true, data});
   });
 })
 

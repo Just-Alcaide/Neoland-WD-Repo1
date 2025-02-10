@@ -19,6 +19,8 @@ export async function deleteById(file, id, callback) {
           }
           if (callback) {
             return callback(updatedData);
+          } else  {
+            return 'OK';
           }
         })
         if (err) {
@@ -30,6 +32,8 @@ export async function deleteById(file, id, callback) {
       console.log('deleteById', 'El fichero no existe');
       if (callback) {
         return callback('El fichero no existe');
+      } else {
+        return 'El fichero no existe';
       }
     }
   } catch (err) {

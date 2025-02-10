@@ -1,12 +1,6 @@
 import express from 'express';
 import bodyParser from 'body-parser';
-import { crud } from "./server.crud.js";
-
-const USERS_URL = './server/BBDD/users.json'
-const CLUBS_URL = './server/BBDD/clubs.json'
-const PROPOSALS_URL = './server/BBDD/proposals.json'
-const BOOKS_URL = './server/BBDD/books.json'
-const MOVIES_URL = './server/BBDD/movies.json'
+import { db } from "./server.mongodb.js";
 
 const app = express();
 const port = process.env.PORT;
@@ -18,201 +12,161 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use(express.static('./Proyecto-final/src'));
-  
-app.post('/create/users', (req, res) => {
-  crud.create(USERS_URL, req.body, (data) => {
-    res.json(data)
-  });
+
+
+//===CRUFD USERS===//
+
+app.post('/create/users', async (req, res) => {
+  res.json(await db.users.create(req.body))
 })
 
-app.get('/read/users', (req, res) => {
-  crud.read(USERS_URL, (data) => {
-    res.json(data)
-  });
+app.get('/read/users', async (req, res) => {
+  res.json(await db.users.get())
 })
 
-app.put('/update/users/:id', (req, res) => {
-  crud.update(USERS_URL, req.params.id, req.body, (user) => {
-    const userWithoutPassword = {...user, password: undefined};
-    res.json(userWithoutPassword);
-  });
+app.put('/update/users/:id', async (req, res) => {
+  res.json(await db.users.update(req.params.id, req.body))
+})
+//TODO: MODIFICAR
+app.get('/filter/users/:name', async (req, res) => {
+  res.json(await db.users.get({ $text: { $search: req.params.name } }))
 })
 
-app.post('/filter/users', (req, res) => {
-  crud.filter(USERS_URL, req.body, (data) => {
-    res.json(data)
-    
-  });
+app.delete('/delete/users/:id', async (req, res) => {
+  res.json(await db.users.delete(req.params.id))
 })
-
-app.post('/login/users', (req, res) => {
+//TODO: MODIFICAR
+app.post('/login/users', async (req, res) => {
   const { email, password } = req.body;
-
-  crud.read(USERS_URL, (users) => {
-    if (!users || users.length === 0) {
-      return res.status(400).json({ success: false, message: 'No users found' });
-    } 
-    const user = users.find(user => user.email === email && user.password === password);
-    if (!user) {
-      return res.status(400).json({ success: false, message: 'Invalid email or password' });
-    }
-
-    const userWithoutPassword = {...user, password: undefined};
-    res.json(userWithoutPassword);
-  })
-})
-
-app.delete('/delete/users/:id', (req, res) => {
-  const userId = req.params.id;
-  const { email, password } = req.body;
-
-  crud.read(USERS_URL, (users) => {
-    const userIndex = users.findIndex(user => user.id === userId);
-    if (userIndex === -1){
-      return res.status(404).json({ success:false, message: 'User not found' });
-    } 
-
-    const user = users[userIndex];
-    if (user.email !== email || user.password !== password) {
-      return res.status(400).json({ success: false, message: 'Invalid email or password' });
-    }
-    
-    crud.delete(USERS_URL, userId, (updatedUsers) => {
-      res.json({ success: true, message: 'User deleted successfully', data: updatedUsers });
-    });
-  })
-})
-
-app.post('/create/clubs', (req, res) => {
-  crud.create(CLUBS_URL, req.body, (data) => {
-    res.json(data)
-  });
-})
-
-app.get('/read/clubs', (req, res) => {
-  crud.read(CLUBS_URL, (data) => {
-    res.json(data)
-  });
-})
-
-app.put('/update/clubs/:id', (req, res) => {
-  crud.update(CLUBS_URL, req.params.id, req.body, (data) => {
-    res.json(data)
-  });
-})
-
-app.post('/filter/clubs', (req, res) => {
-  const filterParams = req.body;
-  crud.filter(CLUBS_URL, filterParams, (data) => {
-    res.json(data)
-  });
-})
-
-app.delete('/delete/clubs/:id', (req, res) => {
-  const clubId = req.params.id;
-  console.log(`solicitud DELETE recibida para el club: ${clubId}`);
-
-  crud.delete(CLUBS_URL, clubId, (data) => {
-    console.log(`club eliminado: ${clubId}`);
-
-    // if (!data || data.length === 0) {
-    //   return res.status(404).json({ success: false, message: 'Club not found' });
-    // }
-    res.json({success: true, data});
-  });
-})
-
-app.post('/create/proposals', (req, res) => {
-  crud.create(PROPOSALS_URL, req.body, (data) => {
-    res.json(data)
-  });
-})
-
-app.get('/read/proposals', (req, res) => {
-  crud.read(PROPOSALS_URL, (data) => {
-    res.json(data)
-  });
-})
-
-app.put('/update/proposals/:id', (req, res) => {
-  crud.update(PROPOSALS_URL, req.params.id, req.body, (data) => {
-    res.json(data)
-  });
-})
-
-app.get('/filter/proposals', (req, res) => {
-  crud.filter(PROPOSALS_URL, req.body, (data) => {
-    res.json(data)
-  });
-})
-
-app.delete('/delete/proposals/:id', (req, res) => {
-  crud.delete(PROPOSALS_URL, req.params.id, (data) => {
-    res.json(data)
-  });
-})
-
-app.post('/create/books', (req, res) => {
-  crud.create(BOOKS_URL, req.body, (data) => {
-    res.json(data)
-  });
-})
-
-app.get('/read/books', (req, res) => {
-  crud.read(BOOKS_URL, (data) => {
-    res.json(data)
-  });
-})
-
-app.put('/update/books/:id', (req, res) => {
-  crud.update(BOOKS_URL, req.params.id, req.body, (data) => {
-    res.json(data)
-  });
-})
-
-app.get('/filter/books', (req, res) => {
-  crud.filter(BOOKS_URL, req.body, (data) => {
-    res.json(data)
-  });
-})
-
-app.delete('/delete/books/:id', (req, res) => {
-  crud.delete(BOOKS_URL, req.params.id, (data) => {
-    res.json(data)
-  });
-})
-
-app.post('/create/movies', (req, res) => {
-  crud.create(MOVIES_URL, req.body, (data) => {
-    res.json(data)
-  });
-})
-
-app.get('/read/movies', (req, res) => {
-  crud.read(MOVIES_URL, (data) => {
-    res.json(data)
-  });
-})
-
-app.put('/update/movies/:id', (req, res) => {
-  crud.update(MOVIES_URL, req.params.id, req.body, (data) => {
-    res.json(data)
-  });
-})
-
-app.get('/filter/movies', (req, res) => {
-  crud.filter(MOVIES_URL, req.body, (data) => {
-    res.json(data)
-  });
-})
-
-app.delete('/delete/movies/:id', (req, res) => {
-  crud.delete(MOVIES_URL, req.params.id, (data) => {
-    res.json(data)
-  });
+  const user = await db.users.login(email, password);
+  res.json(user);
 })
 
 
-app.listen(port, () => {
-console.log(`Example app listening on port ${port}`)
+//===CRUFD CLUBS===//
+
+app.post('/create/clubs', async (req, res) => {
+  res.json(await db.clubs.create(req.body))
+})
+
+app.get('/read/clubs', async (req, res) => {
+  res.json(await db.clubs.get())
+})
+
+app.put('/update/clubs/:id', async (req, res) => {
+  res.json(await db.clubs.update(req.params.id, req.body))
+})
+
+//TODO: MODIFICAR
+app.get('/filter/clubs/:name', async (req, res) => {
+  res.json(await db.clubs.get({ $text: { $search: req.params.name } }))
+})
+
+app.delete('/delete/clubs/:id', async (req, res) => {
+  res.json(await db.clubs.delete(req.params.id))
+})
+
+
+//===CRUFD BOOKS===//
+
+app.post('/create/books', async (req, res) => {
+  res.json(await db.books.create(req.body))
+})
+
+app.get('/read/books', async (req, res) => {
+  res.json(await db.books.get())
+})
+
+app.put('/update/books/:id', async (req, res) => {
+  res.json(await db.books.update(req.params.id, req.body))
+})
+
+//TODO: MODIFICAR
+app.get('/filter/books/:name', async (req, res) => {
+  res.json(await db.books.get({ $text: { $search: req.params.name } }))
+})
+
+app.delete('/delete/books/:id', async (req, res) => {
+  res.json(await db.books.delete(req.params.id))
+})
+
+
+//===CRUFD MOVIES===//
+
+app.post('/create/movies', async (req, res) => {
+  res.json(await db.movies.create(req.body))
+})
+
+app.get('/read/movies', async (req, res) => {
+  res.json(await db.movies.get())
+})
+
+app.put('/update/movies/:id', async (req, res) => {
+  res.json(await db.movies.update(req.params.id, req.body))
+})
+
+//TODO: MODIFICAR
+app.get('/filter/movies/:name', async (req, res) => {
+  res.json(await db.movies.get({ $text: { $search: req.params.name } }))
+})
+
+app.delete('/delete/movies/:id', async (req, res) => {
+  res.json(await db.movies.delete(req.params.id))
+})
+
+
+//===CRUFD PROPOSALS===//
+
+app.post('/create/proposals', async (req, res) => {
+  res.json(await db.proposals.create(req.body))
+})
+
+app.get('/read/proposals', async (req, res) => {
+  res.json(await db.proposals.get())
+})
+
+app.put('/update/proposals/:id', async (req, res) => {
+  res.json(await db.proposals.update(req.params.id, req.body))
+})
+
+//TODO: MODIFICAR
+app.get('/filter/proposals/:name', async (req, res) => {
+  res.json(await db.proposals.get({ $text: { $search: req.params.name } }))
+})
+
+app.delete('/delete/proposals/:id', async (req, res) => {
+  res.json(await db.proposals.delete(req.params.id))
+})
+
+
+//===CRUFD VOTES===//
+
+app.post('/create/votes', async (req, res) => {
+  res.json(await db.votes.create(req.body))
+})
+
+app.get('/read/votes', async (req, res) => {
+  res.json(await db.votes.get())
+})
+
+app.put('/update/votes/:id', async (req, res) => {
+  res.json(await db.votes.update(req.params.id, req.body))
+})
+
+//TODO: MODIFICAR
+app.get('/filter/votes/:name', async (req, res) => {
+  res.json(await db.votes.get({ $text: { $search: req.params.name } }))
+})
+
+app.delete('/delete/votes/:id', async (req, res) => {
+  res.json(await db.votes.delete(req.params.id))
+})
+
+
+//===LISTEN PORT===//
+
+app.listen(port, async () => {
+  const users = await db.users.count();
+  const clubs = await db.clubs.count();
+  console.log(`Sophia Social listening on port ${port}: ${users} users and ${clubs} clubs`);
 })

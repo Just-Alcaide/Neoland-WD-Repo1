@@ -151,14 +151,13 @@ async function loginUser() {
         const apiUserData = await apiResponse;
 
         const loggedUserData = {
-            id: apiUserData.id,
+            _id: apiUserData._id,
             email: apiUserData.email,
             name: apiUserData.name,
             password: '',
             clubs: apiUserData.clubs || [],
             products: apiUserData.products || [],
-            productProposals: apiUserData.productProposals || [],
-            proposalVotes: apiUserData.proposalVotes || []
+            proposals: apiUserData.proposals || [],
         };
 
         sessionStorage.setItem('loggedUser', JSON.stringify(loggedUserData));
@@ -199,14 +198,12 @@ async function createNewUser() {
     const registerPassword = /** @type {HTMLInputElement} */ (document.getElementById('registerPassword')).value 
 
     const newUser = {
-        id: `user_${Date.now()}`,
         name: registerName,
         email: registerEmail,
         password: registerPassword,
         clubs: [],
         products: [],
-        productProposals: [],
-        proposalVotes: [],
+        proposals: [],
     }
 
     const payload = JSON.stringify(newUser);
@@ -229,17 +226,14 @@ async function loginNewUser() {
             throw new Error ('El email o la contraseña son incorrectos');
         }
 
-        const apiUserData = apiResponse;
-
         const loggedUserData = {
-            id: apiUserData.id,
-            email: apiUserData.email,
-            name: apiUserData.name,
+            _id: apiResponse._id,
+            email: apiResponse.email,
+            name: apiResponse.name,
             password: '',
-            clubs: apiUserData.clubs || [],
-            products: apiUserData.products || [],
-            productProposals: apiUserData.productProposals || [],
-            proposalVotes: apiUserData.proposalVotes || []
+            clubs: apiResponse.clubs || [],
+            products: apiResponse.products || [],
+            proposals: apiResponse.proposals || [],
         };
 
         sessionStorage.setItem('loggedUser', JSON.stringify(loggedUserData));
@@ -340,7 +334,7 @@ async function deleteUser() {
 
     const requestData = JSON.stringify({email: deleteUserEmail, password: deleteUserPassword});
 
-    try {const apiResponse = await fetch(`http://${location.hostname}:3333/delete/users/${loggedUser?.id}`, {
+    try {const apiResponse = await fetch(`http://${location.hostname}:3333/delete/users/${loggedUser?._id}`, {
         method: 'DELETE',
         headers: {
             'Content-Type': 'application/json'
@@ -354,7 +348,7 @@ async function deleteUser() {
         throw new Error(responseData.message);
     }
 
-    const userToDelete = store.getState().users.find((/** @type {User} */ user) => user.id === loggedUser?.id);
+    const userToDelete = store.getState().users.find((/** @type {User} */ user) => user._id === loggedUser?._id);
     if (userToDelete) {
         store.user.delete(userToDelete);
     store.saveState();
@@ -421,13 +415,12 @@ async function createNewClub() {
     }
 
     const newClub = {
-        id: `club_${Date.now()}`,
         name: clubName,
         description: clubDescription,
         private: isPrivate,
-        admins: [loggedUser.id],
-        members: [loggedUser.id],
-        productProposals: [],
+        admins: [loggedUser._id],
+        members: [loggedUser._id],
+        proposals: [],
         productCurrent: null,
         deadlineCurrent: null,
     };
@@ -435,8 +428,8 @@ async function createNewClub() {
     const payload = JSON.stringify(newClub);
     const apiClubData = await getAPIClubData(`http://${location.hostname}:3333/create/clubs`, 'POST',  payload);
 
-    const updatePayload = JSON.stringify({clubs: [...loggedUser.clubs, apiClubData.id]});
-    const apiUserUpdate = await getAPIUserData(`http://${location.hostname}:3333/update/users/${loggedUser.id}`, 'PUT', updatePayload);
+    const updatePayload = JSON.stringify({clubs: [...loggedUser.clubs, apiClubData._id]});
+    const apiUserUpdate = await getAPIUserData(`http://${location.hostname}:3333/update/users/${loggedUser._id}`, 'PUT', updatePayload);
 
     const userWithoutPassword = {...apiUserUpdate, password: ''};
 
@@ -472,7 +465,7 @@ async function updateClubsList() {
             if (!loggedUser) {
                 return !club.private;
             } else { 
-                return !club.private || club.members.includes(loggedUser.id);
+                return !club.private || club.members.includes(loggedUser._id);
             }
         });
 
@@ -483,7 +476,7 @@ async function updateClubsList() {
                     <h3>Nombre: ${club.name}</h3>
                     <p>Descripción: ${club.description}</p>
                     <p>Miembros: ${club.members.length || 0}</p>
-                    <button class="visitClubButton" data-id="${club.id}">Visitar Club</button>
+                    <button class="visitClubButton" data-id="${club._id}">Visitar Club</button>
                     ${loggedUser ? generateClubActionButtons(club, loggedUser) : ''}
                     
                 </li>
@@ -513,20 +506,20 @@ function initializeListenersToClubButtons() {
 function generateClubActionButtons(club, loggedUser) {
     let userButtons = '';
 
-    if (loggedUser && !club.private && !club.members.includes(loggedUser.id)) {
+    if (loggedUser && !club.private && !club.members.includes(loggedUser._id)) {
         userButtons += `
-        <button class="joinClubButton" data-id="${club.id}">Unirse al Club</button>
+        <button class="joinClubButton" data-id="${club._id}">Unirse al Club</button>
         `;}
 
-    if (loggedUser && club.members.includes(loggedUser.id)) {
+    if (loggedUser && club.members.includes(loggedUser._id)) {
         userButtons += `
-        <button class="leaveClubButton" data-id="${club.id}">Salir del Club</button>
+        <button class="leaveClubButton" data-id="${club._id}">Salir del Club</button>
         `;}
     
-    if (loggedUser && club.admins.includes(loggedUser.id)) {
+    if (loggedUser && club.admins.includes(loggedUser._id)) {
         userButtons += `
-        <button class="editClubButton" data-id="${club.id}">Editar Club</button>
-        <button class="deleteClubButton" data-id="${club.id}">Eliminar Club</button>
+        <button class="editClubButton" data-id="${club._id}">Editar Club</button>
+        <button class="deleteClubButton" data-id="${club._id}">Eliminar Club</button>
         `;}
     
     return userButtons;
@@ -589,7 +582,7 @@ async function visitClubPage(clubId) {
         }
 
         const addProposalButton = document.getElementById('addProposalButton');
-        if (addProposalButton && loggedUser && club.members.includes(loggedUser.id)) {
+        if (addProposalButton && loggedUser && club.members.includes(loggedUser._id)) {
             addProposalButton.classList.remove('hidden');
             addProposalButton.addEventListener('click', onAddProposalButtonClick);
         }
@@ -610,14 +603,6 @@ async function loadClubsPage() {
         await updateClubsList();
     }
 }
-
-/**
- * get club data
- * @param {string} clubId 
- */
-// function getClubData(clubId) {
-//     return store.getState().clubs.find((/** @type {Club} */ club) => club.id === clubId);
-// }
 
 /**
  * render club details
@@ -642,7 +627,7 @@ function renderMemberDetails(club) {
     }
 
     membersList.innerHTML = club.members.map((memberId) => {
-        const member = store.getState().users.find((/** @type {User} */ user) => user.id === memberId);
+        const member = store.getState().users.find((/** @type {User} */ user) => user._id === memberId);
         const isAdmin = club.admins.includes(memberId);
 
         return `
@@ -661,8 +646,8 @@ function renderClubProposals(club) {
         return;
     }
 
-    proposalsList.innerHTML = club.productProposals.map(proposalId => {
-        const proposal = store.getState().proposals.find((/** @type {Proposal} */ proposal) => proposal.id === proposalId);
+    proposalsList.innerHTML = club.proposals.map(proposalId => {
+        const proposal = store.getState().proposals.find((/** @type {Proposal} */ proposal) => proposal._id === proposalId);
         return proposal ? `<li>${proposal.product} (Propuesta de: ${proposal.user})</li>` : '';
     }).join('');
 }
@@ -707,12 +692,12 @@ async function joinClub(clubId) {
 
         const updateClub = {
             ...clubToJoin,
-            members: [...clubToJoin.members, loggedUser.id]
+            members: [...clubToJoin.members, loggedUser._id]
         };
         await getAPIClubData(`http://${location.hostname}:3333/update/clubs/${clubId}`, 'PUT', JSON.stringify(updateClub));
 
         const updateUser = JSON.stringify({ clubs: [...loggedUser.clubs, clubId]});
-        const apiUserUpdate = await getAPIUserData(`http://${location.hostname}:3333/update/users/${loggedUser.id}`, 'PUT', updateUser);
+        const apiUserUpdate = await getAPIUserData(`http://${location.hostname}:3333/update/users/${loggedUser._id}`, 'PUT', updateUser);
 
         const userWithoutPassword = {...apiUserUpdate, password: ''};
         sessionStorage.setItem('loggedUser', JSON.stringify(userWithoutPassword));
@@ -765,7 +750,7 @@ async function leaveClub(clubId) {
 
         const updateClub = {
             ...clubToLeave,
-            members: clubToLeave.members.filter((/** @type {string} */ memberId) => memberId !== loggedUser.id)
+            members: clubToLeave.members.filter((/** @type {string} */ memberId) => memberId !== loggedUser._id)
         };
 
         const clubUpdatePayload = JSON.stringify({members: updateClub.members});
@@ -776,7 +761,7 @@ async function leaveClub(clubId) {
         };
 
         const userUpdatePayload = JSON.stringify(updateUser);
-        const apiUserUpdate =await getAPIUserData(`http://${location.hostname}:3333/update/users/${loggedUser.id}`, 'PUT', userUpdatePayload);
+        const apiUserUpdate =await getAPIUserData(`http://${location.hostname}:3333/update/users/${loggedUser._id}`, 'PUT', userUpdatePayload);
 
         const safeUserData = {...apiUserUpdate, password: ""};
 
@@ -876,7 +861,7 @@ async function deleteClub(clubId) {
                 clubs: userToUpdate.clubs.filter((/** @type {string} */ id) => id !== clubId),
             };
             
-            await getAPIUserData(`http://${location.hostname}:3333/update/users/${userToUpdate.id}`, 'PUT', JSON.stringify(updatedUser));
+            await getAPIUserData(`http://${location.hostname}:3333/update/users/${userToUpdate._id}`, 'PUT', JSON.stringify(updatedUser));
         }
 
         const remainingClub = await getAPIClubData(`http://${location.hostname}:3333/filter/clubs`, 'POST', JSON.stringify({ id: clubId }));
@@ -990,7 +975,6 @@ function onCreateNewProposalSubmit(e) {
     }
 
     const productData = {
-        id: String(formData.id),
         name: String(formData.name),
         year: Number(formData.year),
         genre: String(formData.genre),
@@ -1045,7 +1029,6 @@ function createNewProposal() {
 
 /**
  * @typedef {Object} ProductData
- * @prop {string} id
  * @prop {string} name
  * @prop {number} year
  * @prop {string} genre
@@ -1065,7 +1048,6 @@ function createNewProduct(productData, productType) {
 
     if (productType === PRODUCT_TYPE.BOOK) {
         newProduct = productFactory.createProduct(PRODUCT_TYPE.BOOK, {
-            id: `${productData.name}_${productData.year}`,
             name: productData.name,
             year: productData.year,
             genre: productData.genre,
@@ -1074,7 +1056,6 @@ function createNewProduct(productData, productType) {
         });
     } else if (productType === PRODUCT_TYPE.MOVIE) {
         newProduct = productFactory.createProduct(PRODUCT_TYPE.MOVIE, {
-            id: `${productData.name}_${productData.year}`,
             name: productData.name,
             year: productData.year,
             genre: productData.genre,
@@ -1175,40 +1156,38 @@ async function getAPIClubData (apiURL = `http://${location.hostname}:3333/read/c
  * get proposal data from BBDD
  * @param {Object} [data]
  */
-async function getAPIProposalData (apiURL = `http://${location.hostname}:3333/read/proposals`, method = 'GET', data) {
-    let apiProposalData
+// async function getAPIProposalData (apiURL = `http://${location.hostname}:3333/read/proposals`, method = 'GET', data) {
+//     let apiProposalData
 
-    try {
-        let headers = new Headers();
+//     try {
+//         let headers = new Headers();
 
-        headers.append('Content-Type', 'application/json')
-        headers.append('Access-Control-Allow-Origin', '*')
-        if (data) {
-          headers.append('Content-Length', String(JSON.stringify(data).length))
-        }
-        apiProposalData = await simpleFetch(apiURL, {
-            signal: AbortSignal.timeout(3000),
-            method: method,
-            body: data ?? undefined,
-            headers: headers
-        });
-    } catch (/** @type {any | HttpError} */ err){
-        if (err.name === 'AbortError') {
-            console.error('Fetch abortado');
-        }
-        if (err instanceof HttpError) {
-            if (err.response.status === 404) {
-                console.error('Error 404: Not Found');
-            }
-            if (err.response.status === 500) {
-                console.error('Error 500: Internal Server Error');
-            }
-        }
-    }
-    return apiProposalData
-}
-
-getAPIProposalData()
+//         headers.append('Content-Type', 'application/json')
+//         headers.append('Access-Control-Allow-Origin', '*')
+//         if (data) {
+//           headers.append('Content-Length', String(JSON.stringify(data).length))
+//         }
+//         apiProposalData = await simpleFetch(apiURL, {
+//             signal: AbortSignal.timeout(3000),
+//             method: method,
+//             body: data ?? undefined,
+//             headers: headers
+//         });
+//     } catch (/** @type {any | HttpError} */ err){
+//         if (err.name === 'AbortError') {
+//             console.error('Fetch abortado');
+//         }
+//         if (err instanceof HttpError) {
+//             if (err.response.status === 404) {
+//                 console.error('Error 404: Not Found');
+//             }
+//             if (err.response.status === 500) {
+//                 console.error('Error 500: Internal Server Error');
+//             }
+//         }
+//     }
+//     return apiProposalData
+// }
 
 /**
  * get book data from BBDD
@@ -1245,6 +1224,7 @@ async function getAPIBookData (apiURL = `http://${location.hostname}:3333/read/b
             }
         }
     }
+    console.log('apiBookData', apiBookData)
     return apiBookData
 }
 
@@ -1294,7 +1274,7 @@ async function processBookData () {
     const factory = new ProductFactory ();
     apiBookData.map(( /** @type {Book} */ product) => {
         const productData = {
-            id: product.id,
+            id: product._id,
             name: product.name,
             year: product.year, 
             genre: product.genre,
@@ -1316,7 +1296,7 @@ async function processMovieData () {
     const factory = new ProductFactory();
     apiMovieData.map(( /** @type {Movie} */ product) => {
         const productData = {
-            id: product.id,
+
             name: product.name,
             year: product.year, 
             genre: product.genre,

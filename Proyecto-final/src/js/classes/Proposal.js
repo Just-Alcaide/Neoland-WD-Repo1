@@ -2,26 +2,23 @@
 
 /**
  * @typedef {Object} proposalData
- * @property {string} id
- * @property {string} product
- * @property {string} user
- * @property {string} club
- * @property {string []=} [votes]
+ * @property {string} _id
+ * @property {string} product_id
+ * @property {string} user_id
+ * @property {string} club_id
  */
 export class Proposal {
-    id
-    product
-    user
-    club
-    votes
+    _id
+    product_id
+    user_id
+    club_id
     /**
      * @param {proposalData} proposalData 
      */
     constructor (proposalData) {
-        this.id = `${proposalData.product}_${proposalData.user}_${proposalData.club}`
-        this.product = proposalData.product
-        this.user = proposalData.user
-        this.club = proposalData.club
-        this.votes = proposalData.votes || []
+        this._id = proposalData._id
+        this.product_id = proposalData.product_id
+        this.user_id = proposalData.user_id
+        this.club_id = proposalData.club_id
     }
 }

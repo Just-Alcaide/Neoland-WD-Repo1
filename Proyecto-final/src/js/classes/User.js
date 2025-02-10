@@ -2,35 +2,33 @@
 
 /**
  * @typedef {Object} userData
- * @property {string} id
+ * @property {string} _id
  * @property {string} name
  * @property {string} email
  * @property {string} password
+ * // meter TOKEN
  * @property {string[]=} [clubs]
  * @property {string[]=} [products]
- * @property {string[]=} [productProposals]
- * @property {string[]=} [proposalVotes]
+ * @property {string[]=} [proposals] // No debería existir, en proposals ya está el user_id
  */
 export class User {
-    id
+    _id
     name
     email
     password
     clubs
     products
-    productProposals
-    proposalVotes
+    proposals
     /**
      * @param {userData} userData 
      */
     constructor (userData) {
-        this.id = userData.id
+        this._id = userData._id
         this.name = userData.name
         this.email = userData.email
         this.password = userData.password
         this.clubs = userData.clubs || []
         this.products = userData.products || []
-        this.productProposals = userData.productProposals || []
-        this.proposalVotes = userData.proposalVotes || []
+        this.proposals = userData.proposals || []
     }
 }

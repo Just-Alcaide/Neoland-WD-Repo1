@@ -2,7 +2,7 @@
 
 /**
  * @typedef {Object} productData
- * @property {string} id
+ * @property {string} [_id]
  * @property {string} name
  * @property {number} year
  * @property {string} genre
@@ -13,7 +13,7 @@
  */
 
 export class Product {
-    id
+    _id
     name
     year
     genre
@@ -21,7 +21,7 @@ export class Product {
      * @param {productData} productData
      */
     constructor (productData) {
-        this.id = productData.id
+        this._id = productData._id
         this.name = productData.name
         this.year = productData.year
         this.genre = productData.genre

@@ -12,8 +12,21 @@ export async function filter(file, filterParams, callback) {
         // Filter by filterParams
         filteredData = parsedData.filter(item => {
           return Object.entries(filterParams).every(([key, value]) => {
+
             if (!value) return true;
-            if (Array.isArray(item[key])) return item [key].includes(value);
+
+            if (Array.isArray(item[key]) && Array.isArray(value)){
+              return item[key].some(v => value.includes(v));
+            } 
+
+            if (key === 'ids' && Array.isArray(value)){
+              return value.includes(item.id);
+            }
+            
+            if (Array.isArray(item[key])){
+              return item[key].includes(value);
+            }
+
             return item[key] == value || String(item[key]).includes(value);
           });
         });

@@ -109,7 +109,7 @@ const INITIAL_STATE = {
         return {
           ...state,
           products: state.products.map((/** @type {Book | Movie} */ product) => {
-            if (product.id === actionWithProduct.product?.id) {
+            if (product._id === actionWithProduct.product?._id) {
               return actionWithProduct.product
             }
             return product
@@ -119,7 +119,7 @@ const INITIAL_STATE = {
       case ACTION_TYPES.DELETE_PRODUCT:
         return {
           ...state,
-          products: state.products.filter((/** @type {Book | Movie} */ product) => product.id !== actionWithProduct.product?.id)
+          products: state.products.filter((/** @type {Book | Movie} */ product) => product._id !== actionWithProduct.product?._id)
         };
 
       case ACTION_TYPES.CREATE_USER:
@@ -138,7 +138,7 @@ const INITIAL_STATE = {
         return {
           ...state,
           users: state.users.map((/** @type {User} */ user) => {
-            if (user.id === actionWithUser.user?.id) {
+            if (user._id === actionWithUser.user?._id) {
               return actionWithUser.user
             }
             return user
@@ -148,7 +148,7 @@ const INITIAL_STATE = {
       case ACTION_TYPES.DELETE_USER:
         return {
           ...state,
-          users: state.users.filter((/** @type {User}*/ user) => user.id !== actionWithUser.user?.id)
+          users: state.users.filter((/** @type {User}*/ user) => user._id !== actionWithUser.user?._id)
         };
 
       case ACTION_TYPES.CREATE_CLUB:
@@ -167,7 +167,7 @@ const INITIAL_STATE = {
         return {
           ...state,
           clubs: state.clubs.map((/** @type {Club}*/ club) => {
-            if (club.id === actionWithClub.club?.id) {
+            if (club._id === actionWithClub.club?._id) {
               return actionWithClub.club
             }
             return club
@@ -177,7 +177,7 @@ const INITIAL_STATE = {
       case ACTION_TYPES.DELETE_CLUB:
         return {
           ...state,
-          clubs: state.clubs.filter((/** @type {Club}*/ club) => club.id !== actionWithClub.club?.id)
+          clubs: state.clubs.filter((/** @type {Club}*/ club) => club._id !== actionWithClub.club?._id)
         };
 
       case ACTION_TYPES.CREATE_PROPOSAL:
@@ -196,7 +196,7 @@ const INITIAL_STATE = {
         return {
           ...state,
           proposals: state.proposals.map((/** @type {Proposal} */ proposal) => {
-            if (proposal.id === actionWithProposal.proposal?.id) {
+            if (proposal._id === actionWithProposal.proposal?._id) {
               return actionWithProposal.proposal
             }
             return proposal
@@ -206,7 +206,7 @@ const INITIAL_STATE = {
       case ACTION_TYPES.DELETE_PROPOSAL:
         return {
           ...state,
-          proposals: state.proposals.filter((/** @type {Proposal} */ proposal) => proposal.id !== actionWithProposal.proposal?.id)
+          proposals: state.proposals.filter((/** @type {Proposal} */ proposal) => proposal._id !== actionWithProposal.proposal?._id)
         };
 
       default:
@@ -369,28 +369,28 @@ const INITIAL_STATE = {
      * @param {string} id 
      * @returns {Book | Movie | undefined}
      */
-    const getProductById = (id) => { return currentState.articles.find((/** @type {Book | Movie} */ article) => article.id === id) };
+    const getProductById = (id) => { return currentState.products.find((/** @type {Book | Movie} */ product) => product._id === id) };
   
     /**
      * get user by id
      * @param {string} id 
      * @returns {User | undefined} 
      */
-    const getUserById = (id) => { return currentState.users.find((/** @type {User} */ user) => user.id === id) };
+    const getUserById = (id) => { return currentState.users.find((/** @type {User} */ user) => user._id === id) };
 
     /**
      * get club by id
      * @param {string} id 
      * @returns {Club | undefined} 
      */
-    const getClubById = (id) => { return currentState.clubs.find((/** @type {Club} */ club) => club.id === id) };
+    const getClubById = (id) => { return currentState.clubs.find((/** @type {Club} */ club) => club._id === id) };
 
     /**
      * get proposal by id
      * @param {string} id 
      * @returns {Proposal | undefined} 
      */
-    const getProposalById = (id) => { return currentState.proposals.find((/** @type {Proposal} */ proposal) => proposal.id === id) };
+    const getProposalById = (id) => { return currentState.proposals.find((/** @type {Proposal} */ proposal) => proposal._id === id) };
 
     /**
      * load state from local Storage and save in Store

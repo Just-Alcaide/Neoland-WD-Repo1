@@ -1,4 +1,5 @@
 import { MongoClient, ObjectId } from "mongodb";
+export { ObjectId };
 
 const URI = process.env.MONGO_URI;
 
@@ -9,7 +10,7 @@ export const db = {
         get: getUsers,
         update: updateUser,
         delete: deleteUser,
-        login: loginUser,
+        validate: validateUser,
     },
     clubs: {
         create: createClub,
@@ -105,7 +106,10 @@ async function updateUser(id, updates) {
     const client = new MongoClient(URI)
     const SophiaSocialDB = client.db('SophiaSocial');
     const usersCollection = SophiaSocialDB.collection('users');
-    const returnValue = await usersCollection.updateOne({ _id: new ObjectId(id)}, { $set: updates });
+
+    const updateQuery = Object.keys(updates).some(key => key.startsWith('$')) ? updates : { $set: updates };
+    const returnValue = await usersCollection.updateOne({ _id: new ObjectId(id)}, updateQuery);
+
     console.log('db updateUser', returnValue, id, updates);
     return returnValue;
 }
@@ -125,18 +129,16 @@ async function deleteUser(id) {
 }
 
 /**
- * Authenticates a user with the provided email and password.
+ * Retrieves a user from the database by their email and password.
  * @param {string} email - The user's email.
  * @param {string} password - The user's password.
- * @returns {Promise<Object>} The authenticated user object, with the password removed for security.
+ * @returns {Promise<Object|null>} The user object if found, or null if the user does not exist.
  */
-async function loginUser(email, password) {
+async function validateUser({email, password}) {
     const client = new MongoClient(URI);
     const SophiaSocialDB = client.db('SophiaSocial');
     const usersCollection = SophiaSocialDB.collection('users');
-    const user = await usersCollection.findOne({ email, password });
-    const safeUser = { ...user, password: undefined };
-    return safeUser;
+    return await usersCollection.findOne({ email, password });
 }
 
 //===CRUD CLUBS===//
@@ -151,8 +153,11 @@ async function createClub(club) {
     const SophiaSocialDB = client.db('SophiaSocial');
     const clubsCollection = SophiaSocialDB.collection('clubs');
     const returnValue = await clubsCollection.insertOne(club);
-    console.log('db createClub', returnValue, club._id);
-    return club;
+
+    const newClub = {...club, _id: returnValue.insertedId};
+
+    console.log('db createClub', newClub);
+    return newClub;
 }
 
 /**

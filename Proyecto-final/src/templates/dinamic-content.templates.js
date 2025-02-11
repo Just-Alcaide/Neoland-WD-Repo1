@@ -6,7 +6,7 @@ export const clubPageTemplate = `
         <h2>Tu Lista de Clubs:</h2>
         <ul id="clubsList">
         </ul>
-        <form id="createClubForm">
+        <form id="createClubForm" class="hidden">
             <h4>Crear Nuevo Club</h4>
             <label for="clubName">Nombre del Club:</label>
             <input type="text" name="clubName" id="clubName" required>

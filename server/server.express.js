@@ -1,6 +1,8 @@
 import express from 'express';
 import bodyParser from 'body-parser';
-import { db } from "./server.mongodb.js";
+import {db} from "./server.mongodb.js";
+import {ObjectId} from "./server.mongodb.js";
+import {Oauth2} from "./server.oauth.js";
 
 const app = express();
 const port = process.env.PORT;
@@ -13,6 +15,15 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(express.static('./Proyecto-final/src'));
 
+//Require Auth//
+
+function requireAuth (req, res, next) {
+  if (req.headers.authorization === `Bearer ${Oauth2()}`) {
+    next()
+  } else {
+    res.status(401).json({ error: 'No autorizado' });
+  }
+}
 
 //===CRUFD USERS===//
 
@@ -27,26 +38,56 @@ app.get('/read/users', async (req, res) => {
 app.put('/update/users/:id', async (req, res) => {
   res.json(await db.users.update(req.params.id, req.body))
 })
+
 //TODO: MODIFICAR
 app.get('/filter/users/:name', async (req, res) => {
   res.json(await db.users.get({ $text: { $search: req.params.name } }))
 })
 
-app.delete('/delete/users/:id', async (req, res) => {
-  res.json(await db.users.delete(req.params.id))
+app.post('/validate/users', requireAuth, async (req, res) => {
+  const user = await db.users.validate(req.body)
+  if (user) {
+    res.json({success: true})
+  } else {
+    res.status(401).json({success: false, message: 'Credenciales incorrectas'})
+  }
 })
-//TODO: MODIFICAR
+
+app.delete('/delete/users/:id', requireAuth, async (req, res) => {
+  res.json(await db.users.delete(req.params.id))
+  //TODO: En adelante, tendrá que borrar datos del user en clubs, propuestas...
+})
+
 app.post('/login/users', async (req, res) => {
-  const { email, password } = req.body;
-  const user = await db.users.login(email, password);
-  res.json(user);
+  const user = await db.users.validate(req.body)
+  if (user) {
+    user.token = Oauth2()
+    delete user.password
+    res.json(user);
+  } else {
+    res.status(401).json({ error: 'Credenciales incorrectas' });
+  }
 })
 
 
 //===CRUFD CLUBS===//
+/**
+ * @param {string} userId
+ * 
+ */
+app.post('/create/clubs', requireAuth, async (req, res) => {
+  const {userId, ...clubData} = req.body
+  const userObjectId = ObjectId(userId);
 
-app.post('/create/clubs', async (req, res) => {
-  res.json(await db.clubs.create(req.body))
+  const newClub = await db.clubs.create({
+    ...clubData,
+    admins: [userObjectId],
+    members: [userObjectId],
+  });
+
+  await db.users.update(userObjectId, { $push: { clubs: newClub._id } });
+
+  res.json(newClub)
 })
 
 app.get('/read/clubs', async (req, res) => {

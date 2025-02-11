@@ -5,20 +5,21 @@
  * @property {string} _id
  * @property {string} name
  * @property {string} email
- * @property {string} password
- * // meter TOKEN
+ * @property {string=} [password]
+ * @property {string} token
  * @property {string[]=} [clubs]
  * @property {string[]=} [products]
- * @property {string[]=} [proposals] // No debería existir, en proposals ya está el user_id
+ * @property {string[]=} [proposals] // yes? no? maybe? i dont know? can you repeat the question?
  */
 export class User {
     _id
     name
     email
     password
+    token
     clubs
     products
-    proposals
+    proposals 
     /**
      * @param {userData} userData 
      */
@@ -27,6 +28,7 @@ export class User {
         this.name = userData.name
         this.email = userData.email
         this.password = userData.password
+        this.token = userData.token
         this.clubs = userData.clubs || []
         this.products = userData.products || []
         this.proposals = userData.proposals || []

@@ -388,7 +388,6 @@ async function onCreateClubFormSubmit(e) {
     await createNewClub();
     cleanUpNewClubForm();
     await updateClubsList();
-    console.log(store.getState())
 }
 
 
@@ -404,6 +403,7 @@ async function onCreateClubFormSubmit(e) {
 async function createNewClub() {
     const clubName = /** @type {HTMLInputElement} */ (document.getElementById('clubName')).value;
     const clubDescription = /** @type {HTMLTextAreaElement} */ (document.getElementById('clubDescription')).value;
+    const clubType = /**@type {HTMLSelectElement} */ (document.getElementById('clubType')).value;
     const clubVisibility = /** @type {HTMLInputElement} */ (document.querySelector('input[name="clubVisibility"]:checked')).value;
     const isPrivate = clubVisibility === 'private';
 
@@ -418,6 +418,7 @@ async function createNewClub() {
     const newClub = {
         name: clubName,
         description: clubDescription,
+        type: clubType,
         private: isPrivate,
         admins: [loggedUser._id],
         members: [loggedUser._id],
@@ -477,17 +478,22 @@ async function updateClubsList() {
         });
 
         if (clubsList) {
-            clubsList.innerHTML = userClubs.map((/** @type {Club} */ club) => 
-                `
+            clubsList.innerHTML = userClubs.map((/** @type {Club} */ club) => {
+
+                const clubTypeText = club.type === 'book' ? 'Club de Lectura' : 'Club de Cine';
+                
+                return `
                 <li>
                     <h3>Nombre: ${club.name}</h3>
                     <p>Descripción: ${club.description}</p>
+                    <p>Tipo: ${clubTypeText}</p>
                     <p>Miembros: ${club.members.length || 0}</p>
                     <button class="visitClubButton" data-id="${club._id}">Visitar Club</button>
                     ${loggedUser ? generateClubActionButtons(club, loggedUser) : ''}
                     
                 </li>
-                `).join('');
+                `}).join('');
+                
     
             // event listeners to clubs list
             addVisitListenerToClubsList()
@@ -630,36 +636,57 @@ function renderClubDetails(club) {
  * render member details
  * @param {Club} club 
  */
-function renderMemberDetails(club) {
+async function renderMemberDetails(club) {
     const membersList = document.getElementById('clubMembersList');
     if (!membersList) {
         return;
     }
 
-    membersList.innerHTML = club.members.map((memberId) => {
-        const member = store.getState().users.find((/** @type {User} */ user) => user._id === memberId);
-        const isAdmin = club.admins.includes(memberId);
+    try {
+        const membersData = await getAPIUserData(`${location.protocol}//${location.hostname}${API_PORT}/read/users`, 'POST', JSON.stringify({ids: club.members}))
 
-        return `
+        membersList.innerHTML = membersData.map((/** @type User */ member) => {
+            const isAdmin = club.admins.includes(member._id);
+            return `
         <li>${member ? member.name : ''} ${isAdmin ? '(Administrador)' : '(Miembro)'}</li>
         `
-    }).join('');
+        }).join('');
+    } catch (error) {
+        console.log('Error: ', error)
+    }
 }
 
 /**
  * render club proposals
  * @param {Club} club 
  */
-function renderClubProposals(club) {
+async function renderClubProposals(club) {
     const proposalsList = document.getElementById('clubProposalsList');
     if (!proposalsList) {
         return;
     }
 
-    proposalsList.innerHTML = club.proposals.map(proposalId => {
-        const proposal = store.getState().proposals.find((/** @type {Proposal} */ proposal) => proposal._id === proposalId);
-        return proposal ? `<li>${proposal.product} (Propuesta de: ${proposal.user})</li>` : '';
-    }).join('');
+    try {
+        const apiProposalData = await getAPIProposalData(`${location.protocol}//${location.hostname}${API_PORT}/read/proposals`, 'POST', JSON.stringify({ids: club.proposals}));
+
+        if (!apiProposalData || apiProposalData.length === 0) {
+            proposalsList.innerHTML = 'No hay propuestas';
+            return;
+        }
+
+        proposalsList.innerHTML = apiProposalData.map((/** @type {Proposal} */ proposal) => {
+            return `
+                <li>
+                <-- TODO: METER LOS DATOS DE LAS PROPUESTAS. ${proposal} -->
+                </li>
+            `;
+        }).join('');
+
+        //TODO: METER LISTENERS PARA VOTACIONES
+
+    } catch (error) {
+        console.log('Error: ', error);
+    }
 }
 
 /**
@@ -1110,6 +1137,12 @@ async function getAPIProposalData (apiURL = `${location.protocol}//${location.ho
         if (data) {
           headers.append('Content-Length', String(JSON.stringify(data).length))
         }
+
+        const loggedUser = getLoggedUserData();
+        if (loggedUser) {
+            headers.append('Authorization', `Bearer ${loggedUser.token}`)
+        }
+
         apiProposalData = await simpleFetch(apiURL, {
             signal: AbortSignal.timeout(3000),
             method: method,
@@ -1212,7 +1245,6 @@ async function getAPIMovieData (apiURL = `${location.protocol}//${location.hostn
 }
 
 function letMeCommit(){
-    getAPIProposalData();
     getAPIBookData();
     getAPIMovieData();
 }

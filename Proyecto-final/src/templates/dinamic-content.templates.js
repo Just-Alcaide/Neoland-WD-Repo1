@@ -12,6 +12,11 @@ export const clubPageTemplate = `
             <input type="text" name="clubName" id="clubName" required>
             <label for="clubDescription">Descripción del Club:</label>
             <textarea name="clubDescription" id="clubDescription" required></textarea>
+            <label>Tipo de Club:</label>
+            <select name="clubType" id="clubType" required>
+                <option value="book">Club de Lectura</option>
+                <option value="movie">Club de Cine</option>
+            </select>
             <label>Privado<input type="radio" name="clubVisibility" value="private" required></label>
             <label>Publico<input type="radio" name="clubVisibility" value="public" required></label>
             <button type="submit">Crear Club</button>

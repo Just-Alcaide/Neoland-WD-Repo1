@@ -34,6 +34,12 @@ app.get('/read/users', async (req, res) => {
   res.json(await db.users.get())
 })
 
+app.post('/read/users', async (req, res) => {
+  const {ids} = req.body;
+  const users = await db.users.getByIds(ids);
+  res.json(users);
+})
+
 app.put('/update/users/:id', async (req, res) => {
   res.json(await db.users.update(req.params.id, req.body))
 })
@@ -177,6 +183,12 @@ app.post('/create/proposals', async (req, res) => {
 
 app.get('/read/proposals', async (req, res) => {
   res.json(await db.proposals.get())
+})
+
+app.post('/read/proposals', async (req, res) => {
+  const {ids} = req.body;
+  const proposals = await db.proposals.getByIds(ids);
+  res.json(proposals);
 })
 
 app.put('/update/proposals/:id', async (req, res) => {

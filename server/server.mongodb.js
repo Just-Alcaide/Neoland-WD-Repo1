@@ -8,6 +8,7 @@ export const db = {
         create: createUser,
         count: countUsers,
         get: getUsers,
+        getByIds: getUserByIds,
         update: updateUser,
         delete: deleteUser,
         validate: validateUser,
@@ -40,6 +41,7 @@ export const db = {
         create: createProposal,
         count: countProposals,
         get: getProposals,
+        getByIds: getProposalsByIds,
         update: updateProposal,
         delete: deleteProposal,
     },
@@ -97,6 +99,16 @@ async function getUsers(filter) {
     const SophiaSocialDB = client.db('SophiaSocial');
     const usersCollection = SophiaSocialDB.collection('users');
     return await usersCollection.find(filter).toArray();
+}
+
+async function getUserByIds (ids) {
+    const client = new MongoClient(URI);
+    const SophiaSocialDB = client.db('SophiaSocial');
+    const usersCollection = SophiaSocialDB.collection('users');
+
+    const objectIds = ids.map(id => new ObjectId(String(id)));
+
+    return await usersCollection.find({_id: {$in: objectIds}}).toArray();
 }
 
 /**
@@ -465,6 +477,17 @@ async function getProposals(filter) {
     const SophiaSocialDB = client.db('SophiaSocial')
     const proposalsCollection = SophiaSocialDB.collection('proposals')
     return await proposalsCollection.find(filter).toArray()
+}
+
+async function getProposalsByIds(ids) {
+    const client = new MongoClient(URI)
+    const SophiaSocialDB = client.db('SophiaSocial')
+    const proposalsCollection = SophiaSocialDB.collection('proposals')
+
+    const objectIds = ids.map(id => new ObjectId(String(id)))
+    const proposals = await proposalsCollection.find({ _id: { $in: objectIds } }).toArray()
+
+    return proposals
 }
 
 /**

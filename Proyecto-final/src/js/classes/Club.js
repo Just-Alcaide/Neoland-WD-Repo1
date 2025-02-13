@@ -5,6 +5,7 @@
  * @property {string} _id
  * @property {string} name
  * @property {string} description
+ * @property {string} type
  * @property {boolean} private
  * @property {string[]=} [admins]
  * @property {string[]=} [members]
@@ -18,6 +19,7 @@ export class Club {
     _id
     name
     description
+    type
     private
     admins
     members
@@ -31,6 +33,7 @@ export class Club {
         this._id = clubData._id
         this.name = clubData.name
         this.description = clubData.description
+        this.type = clubData.type
         this.private = clubData.private
         this.admins = clubData.admins || []
         this.members = clubData.members || []

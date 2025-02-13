@@ -16,7 +16,10 @@ export const db = {
         create: createClub,
         count: countClubs,
         get: getClubs,
+        getById: getClubById,
         update: updateClub,
+        join: joinClub,
+        leave: leaveClub,
         delete: deleteClub,
     },
     books: {
@@ -108,7 +111,7 @@ async function updateUser(id, updates) {
     const usersCollection = SophiaSocialDB.collection('users');
 
     const updateQuery = Object.keys(updates).some(key => key.startsWith('$')) ? updates : { $set: updates };
-    const returnValue = await usersCollection.updateOne({ _id: new ObjectId(id)}, updateQuery);
+    const returnValue = await usersCollection.updateOne({ _id: new ObjectId(String(id))}, updateQuery);
 
     console.log('db updateUser', returnValue, id, updates);
     return returnValue;
@@ -123,7 +126,7 @@ async function deleteUser(id) {
     const client = new MongoClient(URI)
     const SophiaSocialDB = client.db('SophiaSocial');
     const usersCollection = SophiaSocialDB.collection('users');
-    const returnValue = await usersCollection.deleteOne({_id: new ObjectId(id)});
+    const returnValue = await usersCollection.deleteOne({_id: new ObjectId(String(id))});
     console.log('db deleteUser', returnValue, id);
     return id;
 }
@@ -138,7 +141,10 @@ async function validateUser({email, password}) {
     const client = new MongoClient(URI);
     const SophiaSocialDB = client.db('SophiaSocial');
     const usersCollection = SophiaSocialDB.collection('users');
-    return await usersCollection.findOne({ email, password });
+    const user = await usersCollection.findOne({ email, password });
+    if (!user) return null
+    delete user.password
+    return user
 }
 
 //===CRUD CLUBS===//
@@ -148,13 +154,24 @@ async function validateUser({email, password}) {
  * @param {Object} club - The club data to be inserted.
  * @returns {Promise<Object>} The created club object.
  */
-async function createClub(club) {
+async function createClub(clubData, userId) {
     const client = new MongoClient(URI)
     const SophiaSocialDB = client.db('SophiaSocial');
     const clubsCollection = SophiaSocialDB.collection('clubs');
-    const returnValue = await clubsCollection.insertOne(club);
+    const usersCollection = SophiaSocialDB.collection('users');
 
-    const newClub = {...club, _id: returnValue.insertedId};
+    const userObjectId = new ObjectId(String(userId));
+
+    const clubToCreate = {
+        ...clubData, 
+        admins: [userObjectId], 
+        members: [userObjectId]
+    };
+
+    const returnValue = await clubsCollection.insertOne(clubToCreate);
+    const newClub = {...clubToCreate, _id: returnValue.insertedId};
+
+    await usersCollection.updateOne({ _id: userObjectId}, { $push: { clubs: newClub._id } });
 
     console.log('db createClub', newClub);
     return newClub;
@@ -185,6 +202,18 @@ async function getClubs(filter) {
 }
 
 /**
+ * Retrieves a club from the database by its id.
+ * @param {string} id - The ObjectID of the club to retrieve.
+ * @returns {Promise<Object|null>} The club object if found, or null if the club does not exist.
+ */
+async function getClubById(id) {
+    const client = new MongoClient(URI)
+    const SophiaSocialDB = client.db('SophiaSocial');
+    const clubsCollection = SophiaSocialDB.collection('clubs');
+    return await clubsCollection.findOne({ _id: new ObjectId(String(id)) });
+}
+
+/**
  * Updates a club with the provided _id.
  * @param {string} id - The ObjectID of the club to update.
  * @param {Object} updates - The fields to update and their new values.
@@ -194,9 +223,46 @@ async function updateClub(id, updates) {
     const client = new MongoClient(URI)
     const SophiaSocialDB = client.db('SophiaSocial');
     const clubsCollection = SophiaSocialDB.collection('clubs');
-    const returnValue = await clubsCollection.updateOne({ _id: new ObjectId(id)}, { $set: updates });
+
+    const updateQuery = Object.keys(updates).some(key => key.startsWith('$')) ? updates : { $set: updates };
+    const returnValue = await clubsCollection.updateOne({ _id: new ObjectId(String(id))}, updateQuery);
+
     console.log('db updateClub', returnValue, id, updates);
     return returnValue;
+}
+
+async function joinClub(clubId, userId) {
+    const client = new MongoClient(URI);
+    const SophiaSocialDB = client.db('SophiaSocial');
+    const clubsCollection = SophiaSocialDB.collection('clubs');
+    const usersCollection = SophiaSocialDB.collection('users');
+
+    const userObjectId = new ObjectId(String(userId));
+    const clubObjectId = new ObjectId(String(clubId));
+
+    const updatedClub = await clubsCollection.updateOne({ _id: clubObjectId}, { $addToSet: {members: userObjectId}});
+
+    const updatedUser = await usersCollection.updateOne({ _id: userObjectId}, {$addToSet: {clubs: clubObjectId}});
+
+    console.log('db joinClub', updatedClub, updatedUser);
+    return updatedClub;
+}
+
+async function leaveClub(clubId, userId) {
+    const client = new MongoClient(URI);
+    const SophiaSocialDB = client.db('SophiaSocial');
+    const clubsCollection = SophiaSocialDB.collection('clubs');
+    const usersCollection = SophiaSocialDB.collection('users');
+
+    const userObjectId = new ObjectId(String(userId));
+    const clubObjectId = new ObjectId(String(clubId));
+
+    const updatedClub = await clubsCollection.updateOne({ _id: clubObjectId}, { $pull: {members: userObjectId}});
+
+    const updatedUser = await usersCollection.updateOne({ _id: userObjectId}, {$pull: {clubs: clubObjectId}});
+
+    console.log('db leaveClub', updatedClub, updatedUser);
+    return updatedClub;
 }
 
 /**
@@ -204,13 +270,26 @@ async function updateClub(id, updates) {
  * @param {string} id - The ID of the club to be deleted.
  * @returns {Promise<string>} The ID of the deleted club.
  */
-async function deleteClub(id) {
+async function deleteClub(clubId, userId) {
     const client = new MongoClient(URI)
     const SophiaSocialDB = client.db('SophiaSocial');
+
     const clubsCollection = SophiaSocialDB.collection('clubs');
-    const returnValue = await clubsCollection.deleteOne({_id: new ObjectId(id)});
-    console.log('db deleteClub', returnValue, id);
-    return id;
+    const usersCollection = SophiaSocialDB.collection('users');
+
+    const club = await clubsCollection.findOne({ _id: new ObjectId(String(clubId)) });
+    if (!club) return null
+    if (!club.admins.some(adminId => adminId.toString() === userId)) return null
+
+    await usersCollection.updateMany(
+        { _id: {$in: club.members.map(id => new ObjectId(String(id)))}},
+        {$pull: {clubs: new ObjectId(String(clubId))}}
+    );
+
+    const returnValue = await clubsCollection.deleteOne({ _id: new ObjectId(String(clubId))});
+
+    console.log('db deleteClub', returnValue, clubId);
+    return returnValue;
 }
 
 //===CRUD BOOKS===//
@@ -262,7 +341,7 @@ async function updateBook(id, updates) {
     const client = new MongoClient(URI)
     const SophiaSocialDB = client.db('SophiaSocial');
     const booksCollection = SophiaSocialDB.collection('books');
-    const returnValue = await booksCollection.updateOne({ _id: new ObjectId(id)}, { $set: updates });
+    const returnValue = await booksCollection.updateOne({ _id: new ObjectId(String(id))}, { $set: updates });
     console.log('db updateBook', returnValue, id, updates);
     return returnValue;
 }
@@ -276,7 +355,7 @@ async function deleteBook(id) {
     const client = new MongoClient(URI)
     const SophiaSocialDB = client.db('SophiaSocial');
     const booksCollection = SophiaSocialDB.collection('books');
-    const returnValue = await booksCollection.deleteOne({_id: new ObjectId(id)});
+    const returnValue = await booksCollection.deleteOne({_id: new ObjectId(String(id))});
     console.log('db deleteBook', returnValue, id);
     return id;
 }
@@ -330,7 +409,7 @@ async function updateMovie(id, updates) {
     const client = new MongoClient(URI)
     const SophiaSocialDB = client.db('SophiaSocial')
     const moviesCollection = SophiaSocialDB.collection('movies')
-    const returnValue = await moviesCollection.updateOne({ _id: new ObjectId(id)}, { $set: updates })
+    const returnValue = await moviesCollection.updateOne({ _id: new ObjectId(String(id))}, { $set: updates })
     console.log('db updateMovie', returnValue, id, updates)
     return returnValue
 }
@@ -344,7 +423,7 @@ async function deleteMovie(id) {
     const client = new MongoClient(URI)
     const SophiaSocialDB = client.db('SophiaSocial')
     const moviesCollection = SophiaSocialDB.collection('movies')
-    const returnValue = await moviesCollection.deleteOne({_id: new ObjectId(id)})
+    const returnValue = await moviesCollection.deleteOne({_id: new ObjectId(String(id))})
     console.log('db deleteMovie', returnValue, id)
     return id
 }
@@ -399,7 +478,7 @@ async function updateProposal(id, updates) {
     const client = new MongoClient(URI)
     const SophiaSocialDB = client.db('SophiaSocial')
     const proposalsCollection = SophiaSocialDB.collection('proposals')
-    const returnValue = await proposalsCollection.updateOne({ _id: new ObjectId(id)}, { $set: updates })
+    const returnValue = await proposalsCollection.updateOne({ _id: new ObjectId(String(id))}, { $set: updates })
     console.log('db updateProposal', returnValue, id, updates)
     return returnValue
 }
@@ -413,7 +492,7 @@ async function deleteProposal(id) {
     const client = new MongoClient(URI)
     const SophiaSocialDB = client.db('SophiaSocial')
     const proposalsCollection = SophiaSocialDB.collection('proposals')
-    const returnValue = await proposalsCollection.deleteOne({_id: new ObjectId(id)})
+    const returnValue = await proposalsCollection.deleteOne({_id: new ObjectId(String(id))})
     console.log('db deleteProposal', returnValue, id)
     return id
 }
@@ -468,7 +547,7 @@ async function updateVote(id, updates) {
     const client = new MongoClient(URI)
     const SophiaSocialDB = client.db('SophiaSocial')
     const votesCollection = SophiaSocialDB.collection('votes')
-    const returnValue = await votesCollection.updateOne({ _id: new ObjectId(id)}, { $set: updates })
+    const returnValue = await votesCollection.updateOne({ _id: new ObjectId(String(id))}, { $set: updates })
     console.log('db updateVote', returnValue, id, updates)
     return returnValue
 }
@@ -482,7 +561,7 @@ async function deleteVote(id) {
     const client = new MongoClient(URI)
     const SophiaSocialDB = client.db('SophiaSocial')
     const votesCollection = SophiaSocialDB.collection('votes')
-    const returnValue = await votesCollection.deleteOne({_id: new ObjectId(id)})
+    const returnValue = await votesCollection.deleteOne({_id: new ObjectId(String(id))})
     console.log('db deleteVote', returnValue, id)
     return id
 }
@@ -537,7 +616,7 @@ async function updateRating(id, updates) {
     const client = new MongoClient(URI)
     const SophiaSocialDB = client.db('SophiaSocial')
     const ratingsCollection = SophiaSocialDB.collection('ratings')
-    const returnValue = await ratingsCollection.updateOne({ _id: new ObjectId(id)}, { $set: updates })
+    const returnValue = await ratingsCollection.updateOne({ _id: new ObjectId(String(id))}, { $set: updates })
     console.log('db updateRating', returnValue, id, updates)
     return returnValue
 }
@@ -551,7 +630,7 @@ async function deleteRating(id) {
     const client = new MongoClient(URI)
     const SophiaSocialDB = client.db('SophiaSocial')
     const ratingsCollection = SophiaSocialDB.collection('ratings')
-    const returnValue = await ratingsCollection.deleteOne({_id: new ObjectId(id)})
+    const returnValue = await ratingsCollection.deleteOne({_id: new ObjectId(String(id))})
     console.log('db deleteRating', returnValue, id)
     return id
 }

@@ -1,7 +1,6 @@
 import express from 'express';
 import bodyParser from 'body-parser';
 import {db} from "./server.mongodb.js";
-import {ObjectId} from "./server.mongodb.js";
 import {Oauth2} from "./server.oauth.js";
 
 const app = express();
@@ -62,7 +61,6 @@ app.post('/login/users', async (req, res) => {
   const user = await db.users.validate(req.body)
   if (user) {
     user.token = Oauth2()
-    delete user.password
     res.json(user);
   } else {
     res.status(401).json({ error: 'Credenciales incorrectas' });
@@ -71,22 +69,10 @@ app.post('/login/users', async (req, res) => {
 
 
 //===CRUFD CLUBS===//
-/**
- * @param {string} userId
- * 
- */
+
 app.post('/create/clubs', requireAuth, async (req, res) => {
   const {userId, ...clubData} = req.body
-  const userObjectId = ObjectId(userId);
-
-  const newClub = await db.clubs.create({
-    ...clubData,
-    admins: [userObjectId],
-    members: [userObjectId],
-  });
-
-  await db.users.update(userObjectId, { $push: { clubs: newClub._id } });
-
+  const newClub = await db.clubs.create(clubData, userId);
   res.json(newClub)
 })
 
@@ -94,8 +80,32 @@ app.get('/read/clubs', async (req, res) => {
   res.json(await db.clubs.get())
 })
 
+app.get('/read/clubs/:id', async (req, res) => {
+  res.json(await db.clubs.getById(req.params.id))
+})
+
 app.put('/update/clubs/:id', async (req, res) => {
-  res.json(await db.clubs.update(req.params.id, req.body))
+  const clubId = req.params.id;
+  const updates = req.body;
+
+  const updatedClub = await db.clubs.update(clubId, updates);
+  res.json(updatedClub);
+})
+
+app.put('/join/clubs/:id', async (req, res) => {
+  const clubId = req.params.id
+  const userId = req.body.userId
+
+  const updatedClub = await db.clubs.join(clubId, userId);
+  res.json(updatedClub);
+});
+
+app.put('/leave/clubs/:id', async (req, res) => {
+  const clubId = req.params.id
+  const userId = req.body.userId
+
+  const updatedClub = await db.clubs.leave(clubId, userId);
+  res.json(updatedClub);
 })
 
 //TODO: MODIFICAR
@@ -103,9 +113,12 @@ app.get('/filter/clubs/:name', async (req, res) => {
   res.json(await db.clubs.get({ $text: { $search: req.params.name } }))
 })
 
-app.delete('/delete/clubs/:id', async (req, res) => {
-  res.json(await db.clubs.delete(req.params.id))
-})
+app.delete('/delete/clubs/:clubId/:userId', requireAuth, async (req, res) => {
+  const {clubId, userId} = req.params;
+
+  const result = await db.clubs.delete(clubId, userId);
+  res.json(result);
+});
 
 
 //===CRUFD BOOKS===//

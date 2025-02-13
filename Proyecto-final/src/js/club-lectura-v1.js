@@ -29,6 +29,8 @@ import { HttpError } from "./classes/HttpError.js";
  */
 import { clubPageTemplate, clubDetailPageTemplate, bookProposalTemplate, movieProposalTemplate  } from "../templates/dinamic-content.templates.js";
 
+const API_PORT = location.port ? `:${location.port}` : '';
+
 /**
  *  DOM Content Loaded
  */
@@ -142,7 +144,7 @@ async function loginUser() {
     try {
         const requestData = JSON.stringify({email: loginEmail, password: loginPassword});
 
-        const apiResponse = await getAPIUserData(`http://${location.hostname}:3333/login/users`, 'POST', requestData);
+        const apiResponse = await getAPIUserData(`${location.protocol}//${location.hostname}${API_PORT}/login/users`, 'POST', requestData);
 
         if (!apiResponse || apiResponse.length === 0) {
             alert('El email o la contraseña son incorrectos');
@@ -209,7 +211,7 @@ async function createNewUser() {
     }
 
     const payload = JSON.stringify(newUser);
-    await getAPIUserData(`http://${location.hostname}:3333/create/users`, 'POST',  payload);
+    await getAPIUserData(`${location.protocol}//${location.hostname}${API_PORT}/create/users`, 'POST',  payload);
 }
 
 /**
@@ -222,7 +224,7 @@ async function loginNewUser() {
     try {
         const requestData = JSON.stringify({email: loginEmail, password: loginPassword});
 
-        const apiResponse = await getAPIUserData(`http://${location.hostname}:3333/login/users`, 'POST', requestData);
+        const apiResponse = await getAPIUserData(`${location.protocol}//${location.hostname}${API_PORT}/login/users`, 'POST', requestData);
 
         if (!apiResponse || apiResponse.length === 0) {
             throw new Error ('El email o la contraseña son incorrectos');
@@ -338,14 +340,14 @@ async function deleteUser() {
     try {
         const validationData = JSON.stringify({email: deleteUserEmail, password: deleteUserPassword});
 
-        const validationResponse = await getAPIUserData(`http://${location.hostname}:3333/validate/users`, 'POST', validationData);
+        const validationResponse = await getAPIUserData(`${location.protocol}//${location.hostname}${API_PORT}/validate/users`, 'POST', validationData);
 
         if (!validationResponse.success) {
             alert(validationResponse.message);
             throw new Error(validationResponse.message);
         }
 
-        await getAPIUserData (`http://${location.hostname}:3333/delete/users/${loggedUser?._id}`, 'DELETE');
+        await getAPIUserData (`${location.protocol}//${location.hostname}${API_PORT}/delete/users/${loggedUser?._id}`, 'DELETE');
 
         store.user.delete(loggedUser);
         store.saveState();
@@ -427,7 +429,7 @@ async function createNewClub() {
     const payload = JSON.stringify({...newClub, userId});
 
     try {
-        const apiClubData = await getAPIClubData(`http://${location.hostname}:3333/create/clubs`, 'POST',  payload);
+        const apiClubData = await getAPIClubData(`${location.protocol}//${location.hostname}${API_PORT}/create/clubs`, 'POST',  payload);
 
         if (!apiClubData) {
             throw new Error('Error al crear el club');
@@ -464,7 +466,7 @@ async function updateClubsList() {
     const loggedUser = getLoggedUserData();
 
     try {
-        const apiClubsData = await getAPIClubData(`http://${location.hostname}:3333/read/clubs`);
+        const apiClubsData = await getAPIClubData(`${location.protocol}//${location.hostname}${API_PORT}/read/clubs`);
 
         const userClubs = apiClubsData.filter((/** @type {Club} */ club) => {
             if (!loggedUser) {
@@ -561,15 +563,12 @@ async function visitClubPage(clubId) {
 
     try {
         const apiClubData = await getAPIClubData(
-            `http://${location.hostname}:3333/filter/clubs`, 'POST',
-            JSON.stringify({id: clubId})
-            );
+            `${location.protocol}//${location.hostname}${API_PORT}/read/clubs/${clubId}`);
 
         if (!apiClubData || apiClubData.length === 0) {
             throw new Error ('Club no encontrado');
         }
-
-        const club = apiClubData[0];
+        
         dynamicContent.innerHTML = clubDetailPageTemplate(clubId);
         const loggedUser = getLoggedUserData();
         const backToClubsListButton = document.getElementById('backToClubsListButton');
@@ -581,20 +580,20 @@ async function visitClubPage(clubId) {
         if (loggedUser) {    
             const clubActionButtonsContainer = document.getElementById('clubActionButtonsContainer');
             if (clubActionButtonsContainer) {
-                clubActionButtonsContainer.innerHTML = generateClubActionButtons(club, loggedUser);
+                clubActionButtonsContainer.innerHTML = generateClubActionButtons(apiClubData, loggedUser);
                 initializeListenersToClubButtons();
             }
         }
 
         const addProposalButton = document.getElementById('addProposalButton');
-        if (addProposalButton && loggedUser && club.members.includes(loggedUser._id)) {
+        if (addProposalButton && loggedUser && apiClubData.members.includes(loggedUser._id)) {
             addProposalButton.classList.remove('hidden');
             addProposalButton.addEventListener('click', onAddProposalButtonClick);
         }
 
-        renderClubDetails(club);
-        renderMemberDetails(club);
-        renderClubProposals(club);
+        renderClubDetails(apiClubData);
+        renderMemberDetails(apiClubData);
+        renderClubProposals(apiClubData);
 
     } catch (error) {
         console.log('Error: ', error);
@@ -693,26 +692,13 @@ async function joinClub(clubId) {
     }
 
     try {
-        const apiClubData = await getAPIClubData(`http://${location.hostname}:3333/filter/clubs`, 'POST', JSON.stringify({id: clubId}));
+        const updateData = JSON.stringify({ userId: loggedUser._id });
 
-        if (!apiClubData || apiClubData.length === 0) {
-            throw new Error ('Club no encontrado');
-        }
+        await getAPIClubData(`${location.protocol}//${location.hostname}${API_PORT}/join/clubs/${clubId}`, 'PUT', updateData);
 
-        const clubToJoin = apiClubData[0];
-
-        const updateClub = {
-            ...clubToJoin,
-            members: [...clubToJoin.members, loggedUser._id]
-        };
-        await getAPIClubData(`http://${location.hostname}:3333/update/clubs/${clubId}`, 'PUT', JSON.stringify(updateClub));
-
-        const updateUser = JSON.stringify({ clubs: [...loggedUser.clubs, clubId]});
-        const apiUserUpdate = await getAPIUserData(`http://${location.hostname}:3333/update/users/${loggedUser._id}`, 'PUT', updateUser);
-
-        const userWithoutPassword = {...apiUserUpdate, password: ''};
-        sessionStorage.setItem('loggedUser', JSON.stringify(userWithoutPassword));
-        store.user.update(userWithoutPassword);
+        loggedUser.clubs.push(clubId);
+        sessionStorage.setItem('loggedUser', JSON.stringify(loggedUser));
+        store.user.update(loggedUser);
         store.saveState();
         await visitClubPage(clubId);
 
@@ -751,39 +737,14 @@ async function leaveClub(clubId) {
     }
 
     try {
-        const apiClubData = await getAPIClubData(`http://${location.hostname}:3333/filter/clubs`, 'POST', JSON.stringify({id: clubId}));
+        const updateData = JSON.stringify({ userId: loggedUser._id });
 
-        if (!apiClubData || apiClubData.length === 0) {
-            throw new Error ('Club no encontrado');
-        }
+        await getAPIClubData(`${location.protocol}//${location.hostname}${API_PORT}/leave/clubs/${clubId}`, 'PUT', updateData);
 
-        const clubToLeave = apiClubData[0];
-
-        const updateClub = {
-            ...clubToLeave,
-            members: clubToLeave.members.filter((/** @type {string} */ memberId) => memberId !== loggedUser._id)
-        };
-
-        const clubUpdatePayload = JSON.stringify({members: updateClub.members});
-        await getAPIClubData(`http://${location.hostname}:3333/update/clubs/${clubId}`, 'PUT', clubUpdatePayload);
-
-        const updateUser = {
-            clubs: loggedUser.clubs.filter(id => id !== clubId)
-        };
-
-        const userUpdatePayload = JSON.stringify(updateUser);
-        const apiUserUpdate =await getAPIUserData(`http://${location.hostname}:3333/update/users/${loggedUser._id}`, 'PUT', userUpdatePayload);
-
-        const safeUserData = {...apiUserUpdate, password: ""};
-
-        sessionStorage.setItem('loggedUser', JSON.stringify(safeUserData));
-        store.user.update(safeUserData);
+        loggedUser.clubs = loggedUser.clubs.filter((id) => id !== clubId);
+        sessionStorage.setItem('loggedUser', JSON.stringify(loggedUser));
+        store.user.update(loggedUser);
         store.saveState();
-
-        const dynamicContent = document.getElementById('dynamic-content');
-        if (dynamicContent) {
-            dynamicContent.innerHTML = clubPageTemplate;
-        }
         await loadClubsPage();
 
         } catch (error) {
@@ -850,49 +811,11 @@ async function deleteClub(clubId) {
     }
 
     try {
-        const apiClubData = await getAPIClubData(`http://${location.hostname}:3333/filter/clubs`, 'POST', JSON.stringify({ id: clubId }));
+        await getAPIClubData(`${location.protocol}//${location.hostname}${API_PORT}/delete/clubs/${clubId}/${loggedUser._id}`, 'DELETE');
 
-        if (!apiClubData || apiClubData.length === 0) {
-            throw new Error('Club no encontrado');
-        }
-
-        const clubToDelete = apiClubData[0];
-
-        
-        const apiUserData = await getAPIUserData(`http://${location.hostname}:3333/filter/users`, 'POST', JSON.stringify({ ids: clubToDelete.members}) );
-
-        console.log('usuarios encontrados', apiUserData)
-
-        if (!apiUserData || apiUserData.length === 0) {
-            throw new Error('Usuarios no encontrados');
-        } 
-
-        for (const userToUpdate of apiUserData) {
-            const updatedUser = {
-                clubs: userToUpdate.clubs.filter((/** @type {string} */ id) => id !== clubId),
-            };
-            
-            await getAPIUserData(`http://${location.hostname}:3333/update/users/${userToUpdate._id}`, 'PUT', JSON.stringify(updatedUser));
-        }
-
-        const remainingClub = await getAPIClubData(`http://${location.hostname}:3333/filter/clubs`, 'POST', JSON.stringify({ id: clubId }));
-
-        if (!remainingClub || remainingClub.length === 0) {
-            console.warn('intentando eliminar un club que ya no existe en la base de datos');
-        } else {
-            console.log('el club aún existe, procediendo a eliminar')
-            const deleteResponse = await getAPIClubData(`http://${location.hostname}:3333/delete/clubs/${clubId}`, 'DELETE');
-            
-            console.log('respuesta de eliminación: ', deleteResponse )
-        }
-
-        const updatedLoggedUser = {
-            ...loggedUser,
-            clubs: loggedUser.clubs.filter(id => id !== clubId)
-        };
-
-        sessionStorage.setItem('loggedUser', JSON.stringify(updatedLoggedUser));
-        store.user.update(updatedLoggedUser);
+        loggedUser.clubs = loggedUser.clubs.filter(id => id !== clubId);
+        sessionStorage.setItem('loggedUser', JSON.stringify(loggedUser));
+        store.user.update(loggedUser);
         store.saveState();
         await loadClubsPage();
 
@@ -1088,7 +1011,7 @@ function createNewProduct(productData, productType) {
  * get user data from BBDD
  * @param {Object} [data]
  */
-async function getAPIUserData (apiURL = `http://${location.hostname}:3333/read/users`, method = 'GET', data) {
+async function getAPIUserData (apiURL = `${location.protocol}//${location.hostname}${API_PORT}/read/users`, method = 'GET', data) {
     
     let apiUserData
     
@@ -1132,7 +1055,7 @@ async function getAPIUserData (apiURL = `http://${location.hostname}:3333/read/u
  * get club data from BBDD
  * @param {Object} [data]
  */
-async function getAPIClubData (apiURL = `http://${location.hostname}:3333/read/clubs`, method = 'GET', data) {
+async function getAPIClubData (apiURL = `${location.protocol}//${location.hostname}${API_PORT}/read/clubs`, method = 'GET', data) {
 
     let apiClubData
 
@@ -1176,7 +1099,7 @@ async function getAPIClubData (apiURL = `http://${location.hostname}:3333/read/c
  * get proposal data from BBDD
  * @param {Object} [data]
  */
-async function getAPIProposalData (apiURL = `http://${location.hostname}:3333/read/proposals`, method = 'GET', data) {
+async function getAPIProposalData (apiURL = `${location.protocol}//${location.hostname}${API_PORT}/read/proposals`, method = 'GET', data) {
     let apiProposalData
 
     try {
@@ -1214,7 +1137,7 @@ async function getAPIProposalData (apiURL = `http://${location.hostname}:3333/re
  * get book data from BBDD
  * @param {Object} [data]
  */
-async function getAPIBookData (apiURL = `http://${location.hostname}:3333/read/books`, method = 'GET', data) {
+async function getAPIBookData (apiURL = `${location.protocol}//${location.hostname}${API_PORT}/read/books`, method = 'GET', data) {
 
     let apiBookData
 
@@ -1253,7 +1176,7 @@ async function getAPIBookData (apiURL = `http://${location.hostname}:3333/read/b
  * get movie data from BBDD
  * @param {Object} [data]
  */
-async function getAPIMovieData (apiURL = `http://${location.hostname}:3333/read/movies`, method = 'GET', data) {
+async function getAPIMovieData (apiURL = `${location.protocol}//${location.hostname}${API_PORT}/read/movies`, method = 'GET', data) {
 
     let apiMovieData
 

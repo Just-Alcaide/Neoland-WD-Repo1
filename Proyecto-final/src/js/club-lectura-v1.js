@@ -475,9 +475,10 @@ async function updateClubsList() {
         const selectedTypeRadio = document.querySelector('input[name="clubTypeFilter"]:checked');
         const selectedTypeFilter = selectedTypeRadio ? selectedTypeRadio.value : 'all';
 
-        /** @type {HTMLInputElement | null} */
         const clubNameFilter = document.getElementById('clubNameFilter');
-        const filterValue = clubNameFilter ? clubNameFilter.value.toLowerCase().trim() : '';
+        const filterValue = clubNameFilter instanceof HTMLInputElement 
+        ? clubNameFilter.value.toLowerCase().trim() 
+        : '';
 
         const apiClubsData = await getAPIClubData(`${location.protocol}//${location.hostname}${API_PORT}/api/read/clubs`, 'POST', JSON.stringify({type: selectedTypeFilter !== "all" ? selectedTypeFilter : undefined}));
         
@@ -634,9 +635,9 @@ async function loadClubsPage() {
             createClubForm.classList.remove('hidden');
         }
 
-        const clubSearchInput = document.getElementById('clubSearchInput');
-        if (clubSearchInput) {
-            clubSearchInput.addEventListener('input', updateClubsList);
+        const clubNameFilter = document.getElementById('clubNameFilter');
+        if (clubNameFilter) {
+            clubNameFilter.addEventListener('input', updateClubsList);
         }
 
         const filterRadios = document.querySelectorAll('input[name="clubTypeFilter"]');

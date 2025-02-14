@@ -7,6 +7,7 @@
  * @property {string} description
  * @property {string} type
  * @property {boolean} private
+ * @property {string | null} [password]
  * @property {string[]=} [admins]
  * @property {string[]=} [members]
  * @property {string[]=} [proposals]
@@ -21,6 +22,7 @@ export class Club {
     description
     type
     private
+    password
     admins
     members
     proposals
@@ -35,6 +37,7 @@ export class Club {
         this.description = clubData.description
         this.type = clubData.type
         this.private = clubData.private
+        this.password = clubData.password || null
         this.admins = clubData.admins || []
         this.members = clubData.members || []
         this.proposals = clubData.proposals || []

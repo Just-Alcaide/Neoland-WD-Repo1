@@ -4,15 +4,27 @@
 export const clubPageTemplate = `
     <section id="clubsPage">
         <h2>Tu Lista de Clubs:</h2>
+
+        <fieldset id="clubTypeFilter">
+            <legend>Filtrar Clubs por Tipo:</legend>
+            <label><input type="radio" name="clubTypeFilter" value="all" checked> Todos </label>
+            <label><input type="radio" name="clubTypeFilter" value="book"> Clubs de Lectura </label>
+            <label><input type="radio" name="clubTypeFilter" value="movie"> Clubs de Cine </label>
+            <legend>Filtrar Clubs por Nombre:</legend>
+            <input type="text" name="clubNameFilter" id="clubNameFilter" placeholder="Filtrar por Nombre">
+        </fieldset>
+
         <ul id="clubsList">
         </ul>
         <form id="createClubForm" class="hidden">
             <h4>Crear Nuevo Club</h4>
             <label for="clubName">Nombre del Club:</label>
             <input type="text" name="clubName" id="clubName" required>
+            <label for="clubPassword">Contraseña:</label>
+            <input type="password" name="clubPassword" id="clubPassword">
+            <label>Tipo de Club:</label>
             <label for="clubDescription">Descripción del Club:</label>
             <textarea name="clubDescription" id="clubDescription" required></textarea>
-            <label>Tipo de Club:</label>
             <select name="clubType" id="clubType" required>
                 <option value="book">Club de Lectura</option>
                 <option value="movie">Club de Cine</option>

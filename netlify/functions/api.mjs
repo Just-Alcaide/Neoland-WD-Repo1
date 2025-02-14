@@ -1,7 +1,250 @@
+import express, { Router } from 'express';
+import bodyParser from 'body-parser';
+import serverless from 'serverless-http';
 import { MongoClient, ObjectId } from "mongodb";
 // export { ObjectId };
 
-const URI = process.env.MONGO_URI;
+const URI = process.env.MONGO_ATLAS;
+const api = express();
+const router = Router();
+
+//EXPRESS.JS
+
+//Require Auth//
+
+function requireAuth (req, res, next) {
+  if (req.headers.authorization === `Bearer ${Oauth2()}`) {
+    next()
+  } else {
+    res.status(401).json({ error: 'No autorizado' });
+  }
+}
+
+//===CRUFD USERS===//
+
+router.post('/create/users', async (req, res) => {
+  res.json(await db.users.create(req.body))
+})
+
+router.get('/read/users', async (req, res) => {
+  res.json(await db.users.get())
+})
+
+router.post('/read/users', async (req, res) => {
+  const {ids} = req.body;
+  const users = await db.users.getByIds(ids);
+  res.json(users);
+})
+
+router.put('/update/users/:id', async (req, res) => {
+  res.json(await db.users.update(req.params.id, req.body))
+})
+
+//TODO: MODIFICAR
+router.get('/filter/users/:name', async (req, res) => {
+  res.json(await db.users.get({ $text: { $search: req.params.name } }))
+})
+
+router.post('/validate/users', requireAuth, async (req, res) => {
+  const user = await db.users.validate(req.body)
+  if (user) {
+    res.json({success: true})
+  } else {
+    res.status(401).json({success: false, message: 'Credenciales incorrectas'})
+  }
+})
+
+router.delete('/delete/users/:id', requireAuth, async (req, res) => {
+  res.json(await db.users.delete(req.params.id))
+  //TODO: En adelante, tendrá que borrar datos del user en clubs, propuestas...
+})
+
+router.post('/login/users', async (req, res) => {
+  const user = await db.users.validate(req.body)
+  if (user) {
+    user.token = Oauth2()
+    res.json(user);
+  } else {
+    res.status(401).json({ error: 'Credenciales incorrectas' });
+  }
+})
+
+
+//===CRUFD CLUBS===//
+
+router.post('/create/clubs', requireAuth, async (req, res) => {
+  const {userId, ...clubData} = req.body
+  const newClub = await db.clubs.create(clubData, userId);
+  res.json(newClub)
+})
+
+//read all clubs
+router.get('/read/clubs', async (req, res) => {
+  res.json(await db.clubs.get())
+})
+
+//read clubs by id
+router.get('/read/clubs/:id', async (req, res) => {
+  res.json(await db.clubs.getById(req.params.id))
+})
+
+//read clubs by type
+router.post('/read/clubs', async (req, res) => {
+  const {type} = req.body;
+  res.json(await db.clubs.getByType(type));
+})
+
+router.put('/update/clubs/:id', async (req, res) => {
+  const clubId = req.params.id;
+  const updates = req.body;
+
+  const updatedClub = await db.clubs.update(clubId, updates);
+  res.json(updatedClub);
+})
+
+router.put('/join/clubs/:id', async (req, res) => {
+  const clubId = req.params.id
+  const userId = req.body.userId
+
+  const updatedClub = await db.clubs.join(clubId, userId);
+  res.json(updatedClub);
+});
+
+router.put('/leave/clubs/:id', async (req, res) => {
+  const clubId = req.params.id
+  const userId = req.body.userId
+
+  const updatedClub = await db.clubs.leave(clubId, userId);
+  res.json(updatedClub);
+})
+
+//TODO: MODIFICAR
+router.get('/filter/clubs/:name', async (req, res) => {
+  res.json(await db.clubs.get({ $text: { $search: req.params.name } }))
+})
+
+router.delete('/delete/clubs/:clubId/:userId', requireAuth, async (req, res) => {
+  const {clubId, userId} = req.params;
+
+  const result = await db.clubs.delete(clubId, userId);
+  res.json(result);
+});
+
+
+//===CRUFD BOOKS===//
+
+router.post('/create/books', async (req, res) => {
+  res.json(await db.books.create(req.body))
+})
+
+router.get('/read/books', async (req, res) => {
+  res.json(await db.books.get())
+})
+
+router.put('/update/books/:id', async (req, res) => {
+  res.json(await db.books.update(req.params.id, req.body))
+})
+
+//TODO: MODIFICAR
+router.get('/filter/books/:name', async (req, res) => {
+  res.json(await db.books.get({ $text: { $search: req.params.name } }))
+})
+
+router.delete('/delete/books/:id', async (req, res) => {
+  res.json(await db.books.delete(req.params.id))
+})
+
+
+//===CRUFD MOVIES===//
+
+router.post('/create/movies', async (req, res) => {
+  res.json(await db.movies.create(req.body))
+})
+
+router.get('/read/movies', async (req, res) => {
+  res.json(await db.movies.get())
+})
+
+router.put('/update/movies/:id', async (req, res) => {
+  res.json(await db.movies.update(req.params.id, req.body))
+})
+
+//TODO: MODIFICAR
+router.get('/filter/movies/:name', async (req, res) => {
+  res.json(await db.movies.get({ $text: { $search: req.params.name } }))
+})
+
+router.delete('/delete/movies/:id', async (req, res) => {
+  res.json(await db.movies.delete(req.params.id))
+})
+
+
+//===CRUFD PROPOSALS===//
+
+router.post('/create/proposals', async (req, res) => {
+  res.json(await db.proposals.create(req.body))
+})
+
+router.get('/read/proposals', async (req, res) => {
+  res.json(await db.proposals.get())
+})
+
+router.post('/read/proposals', async (req, res) => {
+  const {ids} = req.body;
+  const proposals = await db.proposals.getByIds(ids);
+  res.json(proposals);
+})
+
+router.put('/update/proposals/:id', async (req, res) => {
+  res.json(await db.proposals.update(req.params.id, req.body))
+})
+
+//TODO: MODIFICAR
+router.get('/filter/proposals/:name', async (req, res) => {
+  res.json(await db.proposals.get({ $text: { $search: req.params.name } }))
+})
+
+router.delete('/delete/proposals/:id', async (req, res) => {
+  res.json(await db.proposals.delete(req.params.id))
+})
+
+
+//===CRUFD VOTES===//
+
+router.post('/create/votes', async (req, res) => {
+  res.json(await db.votes.create(req.body))
+})
+
+router.get('/read/votes', async (req, res) => {
+  res.json(await db.votes.get())
+})
+
+router.put('/update/votes/:id', async (req, res) => {
+  res.json(await db.votes.update(req.params.id, req.body))
+})
+
+//TODO: MODIFICAR
+router.get('/filter/votes/:name', async (req, res) => {
+  res.json(await db.votes.get({ $text: { $search: req.params.name } }))
+})
+
+router.delete('/delete/votes/:id', async (req, res) => {
+  res.json(await db.votes.delete(req.params.id))
+})
+
+
+// for parsing application/json
+api.use(bodyParser.json())
+// for parsing application/x-www-form-urlencoded
+api.use(bodyParser.urlencoded({ extended: true }))
+api.use('/api/', router)
+
+export const handler = serverless(api);
+
+
+
+//MONGODB.JS
+
 
 export const db = {
     users: {
@@ -669,4 +912,8 @@ async function deleteRating(id) {
     const returnValue = await ratingsCollection.deleteOne({_id: new ObjectId(String(id))})
     console.log('db deleteRating', returnValue, id)
     return id
+}
+
+function Oauth2() {
+    return '123456'
 }

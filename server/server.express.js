@@ -26,30 +26,30 @@ function requireAuth (req, res, next) {
 
 //===CRUFD USERS===//
 
-app.post('/create/users', async (req, res) => {
+app.post('/api/create/users', async (req, res) => {
   res.json(await db.users.create(req.body))
 })
 
-app.get('/read/users', async (req, res) => {
+app.get('/api/read/users', async (req, res) => {
   res.json(await db.users.get())
 })
 
-app.post('/read/users', async (req, res) => {
+app.post('/api/read/users', async (req, res) => {
   const {ids} = req.body;
   const users = await db.users.getByIds(ids);
   res.json(users);
 })
 
-app.put('/update/users/:id', async (req, res) => {
+app.put('/api/update/users/:id', async (req, res) => {
   res.json(await db.users.update(req.params.id, req.body))
 })
 
 //TODO: MODIFICAR
-app.get('/filter/users/:name', async (req, res) => {
+app.get('/api/filter/users/:name', async (req, res) => {
   res.json(await db.users.get({ $text: { $search: req.params.name } }))
 })
 
-app.post('/validate/users', requireAuth, async (req, res) => {
+app.post('/api/validate/users', requireAuth, async (req, res) => {
   const user = await db.users.validate(req.body)
   if (user) {
     res.json({success: true})
@@ -58,12 +58,12 @@ app.post('/validate/users', requireAuth, async (req, res) => {
   }
 })
 
-app.delete('/delete/users/:id', requireAuth, async (req, res) => {
+app.delete('/api/delete/users/:id', requireAuth, async (req, res) => {
   res.json(await db.users.delete(req.params.id))
   //TODO: En adelante, tendrá que borrar datos del user en clubs, propuestas...
 })
 
-app.post('/login/users', async (req, res) => {
+app.post('/api/login/users', async (req, res) => {
   const user = await db.users.validate(req.body)
   if (user) {
     user.token = Oauth2()
@@ -76,21 +76,29 @@ app.post('/login/users', async (req, res) => {
 
 //===CRUFD CLUBS===//
 
-app.post('/create/clubs', requireAuth, async (req, res) => {
+app.post('/api/create/clubs', requireAuth, async (req, res) => {
   const {userId, ...clubData} = req.body
   const newClub = await db.clubs.create(clubData, userId);
   res.json(newClub)
 })
 
-app.get('/read/clubs', async (req, res) => {
+//read all clubs
+app.get('/api/read/clubs', async (req, res) => {
   res.json(await db.clubs.get())
 })
 
-app.get('/read/clubs/:id', async (req, res) => {
+//read clubs by id
+app.get('/api/read/clubs/:id', async (req, res) => {
   res.json(await db.clubs.getById(req.params.id))
 })
 
-app.put('/update/clubs/:id', async (req, res) => {
+//read clubs by type
+app.post('/api/read/clubs', async (req, res) => {
+  const {type} = req.body;
+  res.json(await db.clubs.getByType(type));
+})
+
+app.put('/api/update/clubs/:id', async (req, res) => {
   const clubId = req.params.id;
   const updates = req.body;
 
@@ -98,7 +106,7 @@ app.put('/update/clubs/:id', async (req, res) => {
   res.json(updatedClub);
 })
 
-app.put('/join/clubs/:id', async (req, res) => {
+app.put('/api/join/clubs/:id', async (req, res) => {
   const clubId = req.params.id
   const userId = req.body.userId
 
@@ -106,7 +114,7 @@ app.put('/join/clubs/:id', async (req, res) => {
   res.json(updatedClub);
 });
 
-app.put('/leave/clubs/:id', async (req, res) => {
+app.put('/api/leave/clubs/:id', async (req, res) => {
   const clubId = req.params.id
   const userId = req.body.userId
 
@@ -115,11 +123,11 @@ app.put('/leave/clubs/:id', async (req, res) => {
 })
 
 //TODO: MODIFICAR
-app.get('/filter/clubs/:name', async (req, res) => {
+app.get('/api/filter/clubs/:name', async (req, res) => {
   res.json(await db.clubs.get({ $text: { $search: req.params.name } }))
 })
 
-app.delete('/delete/clubs/:clubId/:userId', requireAuth, async (req, res) => {
+app.delete('/api/delete/clubs/:clubId/:userId', requireAuth, async (req, res) => {
   const {clubId, userId} = req.params;
 
   const result = await db.clubs.delete(clubId, userId);
@@ -129,102 +137,102 @@ app.delete('/delete/clubs/:clubId/:userId', requireAuth, async (req, res) => {
 
 //===CRUFD BOOKS===//
 
-app.post('/create/books', async (req, res) => {
+app.post('/api/create/books', async (req, res) => {
   res.json(await db.books.create(req.body))
 })
 
-app.get('/read/books', async (req, res) => {
+app.get('/api/read/books', async (req, res) => {
   res.json(await db.books.get())
 })
 
-app.put('/update/books/:id', async (req, res) => {
+app.put('/api/update/books/:id', async (req, res) => {
   res.json(await db.books.update(req.params.id, req.body))
 })
 
 //TODO: MODIFICAR
-app.get('/filter/books/:name', async (req, res) => {
+app.get('/api/filter/books/:name', async (req, res) => {
   res.json(await db.books.get({ $text: { $search: req.params.name } }))
 })
 
-app.delete('/delete/books/:id', async (req, res) => {
+app.delete('/api/delete/books/:id', async (req, res) => {
   res.json(await db.books.delete(req.params.id))
 })
 
 
 //===CRUFD MOVIES===//
 
-app.post('/create/movies', async (req, res) => {
+app.post('/api/create/movies', async (req, res) => {
   res.json(await db.movies.create(req.body))
 })
 
-app.get('/read/movies', async (req, res) => {
+app.get('/api/read/movies', async (req, res) => {
   res.json(await db.movies.get())
 })
 
-app.put('/update/movies/:id', async (req, res) => {
+app.put('/api/update/movies/:id', async (req, res) => {
   res.json(await db.movies.update(req.params.id, req.body))
 })
 
 //TODO: MODIFICAR
-app.get('/filter/movies/:name', async (req, res) => {
+app.get('/api/filter/movies/:name', async (req, res) => {
   res.json(await db.movies.get({ $text: { $search: req.params.name } }))
 })
 
-app.delete('/delete/movies/:id', async (req, res) => {
+app.delete('/api/delete/movies/:id', async (req, res) => {
   res.json(await db.movies.delete(req.params.id))
 })
 
 
 //===CRUFD PROPOSALS===//
 
-app.post('/create/proposals', async (req, res) => {
+app.post('/api/create/proposals', async (req, res) => {
   res.json(await db.proposals.create(req.body))
 })
 
-app.get('/read/proposals', async (req, res) => {
+app.get('/api/read/proposals', async (req, res) => {
   res.json(await db.proposals.get())
 })
 
-app.post('/read/proposals', async (req, res) => {
+app.post('/api/read/proposals', async (req, res) => {
   const {ids} = req.body;
   const proposals = await db.proposals.getByIds(ids);
   res.json(proposals);
 })
 
-app.put('/update/proposals/:id', async (req, res) => {
+app.put('/api/update/proposals/:id', async (req, res) => {
   res.json(await db.proposals.update(req.params.id, req.body))
 })
 
 //TODO: MODIFICAR
-app.get('/filter/proposals/:name', async (req, res) => {
+app.get('/api/filter/proposals/:name', async (req, res) => {
   res.json(await db.proposals.get({ $text: { $search: req.params.name } }))
 })
 
-app.delete('/delete/proposals/:id', async (req, res) => {
+app.delete('/api/delete/proposals/:id', async (req, res) => {
   res.json(await db.proposals.delete(req.params.id))
 })
 
 
 //===CRUFD VOTES===//
 
-app.post('/create/votes', async (req, res) => {
+app.post('/api/create/votes', async (req, res) => {
   res.json(await db.votes.create(req.body))
 })
 
-app.get('/read/votes', async (req, res) => {
+app.get('/api/read/votes', async (req, res) => {
   res.json(await db.votes.get())
 })
 
-app.put('/update/votes/:id', async (req, res) => {
+app.put('/api/update/votes/:id', async (req, res) => {
   res.json(await db.votes.update(req.params.id, req.body))
 })
 
 //TODO: MODIFICAR
-app.get('/filter/votes/:name', async (req, res) => {
+app.get('/api/filter/votes/:name', async (req, res) => {
   res.json(await db.votes.get({ $text: { $search: req.params.name } }))
 })
 
-app.delete('/delete/votes/:id', async (req, res) => {
+app.delete('/api/delete/votes/:id', async (req, res) => {
   res.json(await db.votes.delete(req.params.id))
 })
 

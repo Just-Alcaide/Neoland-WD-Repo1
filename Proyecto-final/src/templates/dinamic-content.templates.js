@@ -3,6 +3,14 @@
 
 export const clubPageTemplate = `
     <section id="clubsPage">
+        <h2>Buscar un Club:</h2>
+        <fieldset id="clubSearch">
+            <legend>Nombre del Club:</legend>
+            <input type="text" name="clubSearchName" id="clubSearchName">
+            <button type="submit" id="searchClubButton">Buscar</button>
+        </fieldset>
+        <ul id="clubsSearchResultsContainer"></ul>
+
         <h2>Tu Lista de Clubs:</h2>
 
         <fieldset id="clubTypeFilter">
@@ -20,17 +28,20 @@ export const clubPageTemplate = `
             <h4>Crear Nuevo Club</h4>
             <label for="clubName">Nombre del Club:</label>
             <input type="text" name="clubName" id="clubName" required>
-            <label for="clubPassword">Contraseña:</label>
-            <input type="password" name="clubPassword" id="clubPassword">
-            <label>Tipo de Club:</label>
+            
             <label for="clubDescription">Descripción del Club:</label>
             <textarea name="clubDescription" id="clubDescription" required></textarea>
+            <label>Tipo de Club:</label>
             <select name="clubType" id="clubType" required>
                 <option value="book">Club de Lectura</option>
                 <option value="movie">Club de Cine</option>
             </select>
             <label>Privado<input type="radio" name="clubVisibility" value="private" required></label>
             <label>Publico<input type="radio" name="clubVisibility" value="public" required></label>
+            <div id="clubPasswordField" class="hidden">
+            <label for="clubPassword">Contraseña:</label>
+            <input type="password" name="clubPassword" id="clubPassword">
+            </div>
             <button type="submit">Crear Club</button>
         </form>
     </section>

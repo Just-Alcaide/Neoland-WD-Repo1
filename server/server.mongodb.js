@@ -19,6 +19,7 @@ export const db = {
         get: getClubs,
         getById: getClubById,
         getByType: getClubsByType,
+        getByName: getClubsByName,
         update: updateClub,
         join: joinClub,
         leave: leaveClub,
@@ -235,6 +236,16 @@ async function getClubsByType(type){
     const clubs = await clubsCollection.find(query).toArray();
 
     console.log('db getClubsByType', clubs);
+    return clubs;
+}
+
+async function getClubsByName(name){
+    const client = new MongoClient(URI);
+    const SophiaSocialDB = client.db('SophiaSocial');
+    const clubsCollection = SophiaSocialDB.collection('clubs');
+
+    const clubs = await clubsCollection.find({ $text: { $search: name } }).toArray();
+    
     return clubs;
 }
 

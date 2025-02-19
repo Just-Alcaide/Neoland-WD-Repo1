@@ -10,7 +10,11 @@
 /** @import {Club} from "./classes/Club.js"; */
 /** @import {Product, Book, Movie} from "./classes/Product.js" */
 /** @import {Proposal} from "./classes/Proposal.js"; */
- 
+
+/** @typedef {import('./components/LoginForm/LoginForm.js').LoginForm} LoginForm */
+/** @typedef {import('./components/RegisterForm/RegisterForm.js').RegisterForm} RegisterForm */
+
+
 import {store} from "./store/redux.js";
 import {ProductFactory, PRODUCT_TYPE,} from "./classes/Product.js";
 import {User} from "./classes/User.js";
@@ -29,7 +33,7 @@ import { HttpError } from "./classes/HttpError.js";
  */
 import { clubPageTemplate, clubDetailPageTemplate, bookProposalTemplate, movieProposalTemplate  } from "../templates/dinamic-content.templates.js";
 
-const API_PORT = location.port ? `:${location.port}` : '';
+export const API_PORT = location.port ? `:${location.port}` : '';
 
 /**
  *  DOM Content Loaded
@@ -58,50 +62,56 @@ function onDomContentLoaded() {
     checkAuthStatus()
 
     
-    // ==EVENT LISTENERS==//
 
-    /**
-     * auth forms
-     */
-    const loginForm = document.getElementById('loginForm')
-    loginForm?.addEventListener('submit', onLoginFormSubmit)
-
-    const registerForm = document.getElementById('registerForm')
-    registerForm?.addEventListener('submit', onRegisterFormSubmit)
     
     /**
      * show templates
      */
     const clubsPageLink = document.getElementById('clubsPageLink')
-    clubsPageLink?.addEventListener('click', onClubsPageLinkClick)    
+    clubsPageLink?.addEventListener('click', onClubsPageLinkClick)
+    
+    // ==EVENT LISTENERS==//
+
+    // Login web component listener    
+    window.addEventListener('login-form-submit', (event) => {
+        onLoginComponentSubmit(/** @type {CustomEvent} */ (event).detail)
+    })
+
+    //register web component listener
+    window.addEventListener('register-form-submit', (event) => {
+        onRegisterComponentSubmit(/** @type {CustomEvent} */ (event).detail)
+    })
 }
 
 
 //=====USER EVENTS=====//
 
 /**
- * on login form submit
- * @param {SubmitEvent} e
+ * @param {User} apiUserData
+ * @returns void
  */
-async function onLoginFormSubmit(e) {
-    e.preventDefault();
-    await loginUser()
-    cleanUpLoginForm();
+async function onLoginComponentSubmit(apiUserData) {
+    await loginUser(apiUserData)
+
+    const loginWrapper = /** @type {LoginForm | null} */ (document.getElementById('loginWrapper'))
+    loginWrapper?.cleanUpLoginForm();
+
     checkAuthStatus()
     await updateClubsList()
 }
 
 /**
- * on register form submit
- * @param {SubmitEvent} e
+ * @param {User} apiUserData
+ * @returns void
  */
-async function onRegisterFormSubmit(e) {
-    e.preventDefault();
-    await createNewUser()
-    await loginNewUser()
-    cleanUpRegisterForm()
+async function onRegisterComponentSubmit(apiUserData) {
+    await loginNewUser(apiUserData)
+
+    const registerWrapper = /** @type {RegisterForm | null} */ (document.getElementById('registerWrapper'))
+    registerWrapper?.cleanUpRegisterForm();
+
     checkAuthStatus()
-    await updateClubsList()
+    await updateClubsList()    
 }
 
 /**
@@ -136,40 +146,29 @@ async function onDeleteUserButtonClick(e) {
 
 /**
  * login user
+ * @param {User} apiUserData
  */
-async function loginUser() {
-    const loginEmail = /** @type {HTMLInputElement} */ (document.getElementById('loginEmail')).value;
-    const loginPassword = /** @type {HTMLInputElement} */ (document.getElementById('loginPassword')).value
-
-    try {
-        const requestData = JSON.stringify({email: loginEmail, password: loginPassword});
-
-        const apiResponse = await getAPIUserData(`${location.protocol}//${location.hostname}${API_PORT}/api/login/users`, 'POST', requestData);
-
-        if (!apiResponse || apiResponse.length === 0) {
-            alert('El email o la contraseña son incorrectos');
-            throw new Error ('El email o la contraseña son incorrectos');
-        }
-
-        const apiUserData = await apiResponse;
-
-        const loggedUserData = {
-            _id: apiUserData._id,
-            email: apiUserData.email,
-            name: apiUserData.name,
-            token: apiUserData.token,
-            clubs: apiUserData.clubs || [],
-            products: apiUserData.products || [],
-            proposals: apiUserData.proposals || [],
-        };
-
-        sessionStorage.setItem('loggedUser', JSON.stringify(loggedUserData));
-        store.user.create(new User(loggedUserData));
-        store.saveState();
-
-    } catch (error) {
-        console.log('Error: ', error);
+async function loginUser(apiUserData) {
+    if (!apiUserData) {
+        alert ('Email o Contraseña incorrectos');
+        return;
     }
+
+    console.log(`Desde fuera del componente: `, apiUserData);
+
+    const loggedUserData = {
+        _id: apiUserData._id,
+        email: apiUserData.email,
+        name: apiUserData.name,
+        token: apiUserData.token,
+        clubs: apiUserData.clubs || [],
+        products: apiUserData.products || [],
+        proposals: apiUserData.proposals || [],
+    };
+
+    sessionStorage.setItem('loggedUser', JSON.stringify(loggedUserData));
+    store.user.create(new User(loggedUserData));
+    store.saveState();
 }
 
 /**
@@ -182,55 +181,16 @@ function getLoggedUserData() {
 }
 
 /**
- * clean up login form
+ * login new user
+ * @param {User} apiUserData
  */
-function cleanUpLoginForm() {
-    const loginEmail = /** @type {HTMLInputElement} */ (document.getElementById('loginEmail'))
-    const loginPassword = /** @type {HTMLInputElement} */ (document.getElementById('loginPassword'))
-
-    loginEmail.value = ''
-    loginPassword.value = ''
-}
-
-/**
- * create new user
- */
-async function createNewUser() {
-    const registerName = /** @type {HTMLInputElement} */ (document.getElementById('registerName')).value
-    const registerEmail = /** @type {HTMLInputElement} */ (document.getElementById('registerEmail')).value 
-    const registerPassword = /** @type {HTMLInputElement} */ (document.getElementById('registerPassword')).value 
-
-    const newUser = {
-        name: registerName,
-        email: registerEmail,
-        password: registerPassword,
-        token: '',
-        clubs: [],
-        products: [],
-        proposals: [],
+async function loginNewUser(apiUserData) {
+    if (!apiUserData) {
+        alert ('Email o Contraseña incorrectos');
+        return;
     }
 
-    const payload = JSON.stringify(newUser);
-    await getAPIUserData(`${location.protocol}//${location.hostname}${API_PORT}/api/create/users`, 'POST',  payload);
-}
-
-/**
- * login new user
- */
-async function loginNewUser() {
-    const loginEmail = /** @type {HTMLInputElement} */ (document.getElementById('registerEmail')).value 
-    const loginPassword = /** @type {HTMLInputElement} */ (document.getElementById('registerPassword')).value 
-
-    try {
-        const requestData = JSON.stringify({email: loginEmail, password: loginPassword});
-
-        const apiResponse = await getAPIUserData(`${location.protocol}//${location.hostname}${API_PORT}/api/login/users`, 'POST', requestData);
-
-        if (!apiResponse || apiResponse.length === 0) {
-            throw new Error ('El email o la contraseña son incorrectos');
-        }
-
-        const apiUserData = await apiResponse;
+    console.log(`Desde fuera del componente: `, apiUserData);
 
         const loggedUserData = {
             _id: apiUserData._id,
@@ -245,24 +205,7 @@ async function loginNewUser() {
         sessionStorage.setItem('loggedUser', JSON.stringify(loggedUserData));
         store.user.create(new User(loggedUserData));
         store.saveState();
-
-    } catch (error) {
-        console.log('Error: ', error);
-    }
 }
-
-/**
- * clean up register form
- */
-function cleanUpRegisterForm() {
-    const registerName = /** @type {HTMLInputElement} */ (document.getElementById('registerName'))
-    const registerEmail = /** @type {HTMLInputElement} */ (document.getElementById('registerEmail'))
-    const registerPassword = /** @type {HTMLInputElement} */ (document.getElementById('registerPassword'))
-
-    registerName.value = ''
-    registerEmail.value = ''
-    registerPassword.value = ''
-} 
 
 /**
  * check auth status
@@ -372,11 +315,77 @@ async function onClubsPageLinkClick(e) {
     if (dynamicContent) {
     await loadClubsPage()
 
+    //event listener for search club
+    const searchClubButton = document.getElementById('searchClubButton');
+    searchClubButton?.addEventListener('click', onSearchClubButtonClick);
+
     // event listener for create new club
     const createClubForm = document.getElementById('createClubForm');
-    
     createClubForm?.addEventListener('submit', onCreateClubFormSubmit);
     }
+}
+
+/**
+ * 
+ * @param {MouseEvent} e 
+ */
+function onSearchClubButtonClick(e) {
+    e.preventDefault();
+    searchClubs()
+}
+
+async function searchClubs() {
+    const searchInput = document.getElementById('clubSearchName')
+    if (!(searchInput instanceof HTMLInputElement)) {
+        console.error('Search input not found or is not an input element');
+        return;
+    }
+    const searchValue = searchInput.value.toLowerCase().trim();
+
+    if (!searchValue) {
+        console.warn ('Search value is empty');
+        return;
+    }
+
+    try {
+        const clubs = await getAPIClubData(`${location.protocol}//${location.hostname}${API_PORT}/api/filter/clubs/${searchValue}`, 'GET');
+
+        renderSearchResults(clubs);
+
+    } catch (error) {
+        console.log('Error searching clubs: ', error);
+    }
+}
+
+/**
+ * 
+ * @param {Club []} clubs 
+ */
+function renderSearchResults(clubs) {
+    const loggedUser = getLoggedUserData();
+    const clubsSearchResultsContainer = document.getElementById('clubsSearchResultsContainer');
+    if (!clubsSearchResultsContainer) return;
+
+    clubsSearchResultsContainer.innerHTML = '';
+
+    if (!clubs || clubs.length === 0) {
+        clubsSearchResultsContainer.innerHTML = 'No se encontraron clubs';
+    }
+
+    clubsSearchResultsContainer.innerHTML = clubs.map((club) => {
+
+        return `
+            <li>
+                <h3>Nombre: ${club.name}</h3>
+                <p>Descripción: ${club.description}</p>
+                <p>Tipo: ${club.type === 'book' ? 'Club de Lectura' : 'Club de Cine'}</p>
+                <p>Miembros: ${club.members.length || 0}</p>
+                ${loggedUser ? generateClubActionButtons(club, loggedUser) : ''}
+            </li>
+        `;
+    }).join('')
+
+    addJoinListenerToClubsList()
 }
 
 /**
@@ -402,13 +411,19 @@ async function onCreateClubFormSubmit(e) {
  */
 async function createNewClub() {
     const clubName = /** @type {HTMLInputElement} */ (document.getElementById('clubName')).value;
-    
     const clubDescription = /** @type {HTMLTextAreaElement} */ (document.getElementById('clubDescription')).value;
     const clubType = /**@type {HTMLSelectElement} */ (document.getElementById('clubType')).value;
     const clubVisibility = /** @type {HTMLInputElement} */ (document.querySelector('input[name="clubVisibility"]:checked')).value;
     const isPrivate = clubVisibility === 'private';
-
-    const clubPassword = /** @type {HTMLInputElement} */ (document.getElementById('clubPassword')).value;
+    let clubPassword = null;
+    if (isPrivate){
+        clubPassword = /** @type {HTMLInputElement} */ (document.getElementById('clubPassword')).value;
+        if (!clubPassword) {
+            alert('Debes ingresar una contraseña para crear un club privado');
+            return
+        }
+    }
+    
 
     const loggedUser = getLoggedUserData();
     if (!loggedUser) {
@@ -423,7 +438,7 @@ async function createNewClub() {
         description: clubDescription,
         type: clubType,
         private: isPrivate,
-        password: clubPassword || null,
+        password: isPrivate ? clubPassword : null,
         admins: [loggedUser._id],
         members: [loggedUser._id],
         proposals: [],
@@ -534,22 +549,21 @@ function initializeListenersToClubButtons() {
  * @param {User} loggedUser 
  */
 function generateClubActionButtons(club, loggedUser) {
+    if (!loggedUser) return '';
     let userButtons = '';
 
-    if (loggedUser && !club.private && !club.members.includes(loggedUser._id)) {
+    if (!club.members.includes(loggedUser._id)) {
         userButtons += `
-        <button class="joinClubButton" data-id="${club._id}">Unirse al Club</button>
-        `;}
-
-    if (loggedUser && club.members.includes(loggedUser._id)) {
+            <button class="joinClubButton" data-id="${club._id}" data-private="${club.private}">Unirse al Club</button>
+        `;
+    }
+    if (club.members.includes(loggedUser._id)) {
+        userButtons += `<button class="leaveClubButton" data-id="${club._id}">Salir del Club</button>`;
+    }
+    if (club.admins.includes(loggedUser._id)) {
         userButtons += `
-        <button class="leaveClubButton" data-id="${club._id}">Salir del Club</button>
-        `;}
-    
-    if (loggedUser && club.admins.includes(loggedUser._id)) {
-        userButtons += `
-        <button class="editClubButton" data-id="${club._id}">Editar Club</button>
-        <button class="deleteClubButton" data-id="${club._id}">Eliminar Club</button>
+            <button class="editClubButton" data-id="${club._id}">Editar Club</button>
+            <button class="deleteClubButton" data-id="${club._id}">Eliminar Club</button>
         `;}
     
     return userButtons;
@@ -645,6 +659,14 @@ async function loadClubsPage() {
         filterRadios.forEach(radio => {
             radio.addEventListener('change', updateClubsList);
         });
+
+        document.querySelectorAll('input[name="clubVisibility"]').forEach(radio => {
+            const input = /** @type {HTMLInputElement} */ (radio);
+            input.addEventListener('change', () => {
+                const clubPasswordField = document.getElementById('clubPasswordField');
+                clubPasswordField?.classList.toggle('hidden', input.value !== 'private');
+            })
+        })
     }
 }
 
@@ -721,25 +743,53 @@ async function renderClubProposals(club) {
  * add join club event listener
  */
 async function addJoinListenerToClubsList() {
-    const joinClubButton = document.querySelectorAll('.joinClubButton');
-    joinClubButton.forEach((button) => {
-        button.addEventListener('click', async (e) => {
-            const target = /** @type {HTMLElement} */ (e.target)
-            if (target) {
-                const clubId = target.getAttribute('data-id');
-                if (clubId) {
-                    await joinClub(clubId);
-                }
-            }
-        })
-    }) 
+    const joinClubButtons = document.querySelectorAll('.joinClubButton');
+
+    joinClubButtons.forEach((button) => {
+        button.removeEventListener('click', onJoinClubClick); // Eliminamos eventos previos
+        button.addEventListener('click', onJoinClubClick);
+    });
 }
 
 /**
- * join club
- * @param {string} clubId 
+ * 
+ * @param {Event} e 
+ * @returns 
  */
-async function joinClub(clubId) {
+async function onJoinClubClick(e) {
+    e.preventDefault();
+
+    const target = /** @type {HTMLElement} */ (e.target);
+    if (!target) return;
+
+    const clubId = target.getAttribute('data-id') ?? "";
+    if (!clubId) { alert("Hubo un error al intentar unirse al club."); return;
+    }
+    const isPrivate = target.getAttribute('data-private') === "true";
+    let password = "";
+
+    if (isPrivate) {
+        password = prompt("Este club es privado. Ingresa la contraseña:") ?? "";
+        if (!password.trim()) {
+            alert("Debes ingresar la contraseña para unirte a este club.");
+            return;
+        }
+    }
+    
+    try {
+        await joinClub(clubId, password);
+    } catch (error) {
+        console.error("Error al unirse al club:", error);
+        alert("Hubo un error al intentar unirse al club.");
+    }
+}
+
+
+/**
+ * @param {string} clubId
+ * @param {string | null} [password]
+ */
+async function joinClub(clubId, password = null) {
     const loggedUser = getLoggedUserData();
     if (!loggedUser) {
         alert('Debes iniciar sesión para unirte a un club');
@@ -747,9 +797,18 @@ async function joinClub(clubId) {
     }
 
     try {
-        const updateData = JSON.stringify({ userId: loggedUser._id });
+        const requestData = JSON.stringify({ userId: loggedUser._id, password });
 
-        await getAPIClubData(`${location.protocol}//${location.hostname}${API_PORT}/api/join/clubs/${clubId}`, 'PUT', updateData);
+        const response = await getAPIClubData(
+            `${location.protocol}//${location.hostname}${API_PORT}/api/join/clubs/${clubId}`, 
+            'PUT', 
+            requestData
+        );
+
+        if (!response.success) {
+            alert(response.message || "No se pudo unir al club.");
+            return;
+        }
 
         loggedUser.clubs.push(clubId);
         sessionStorage.setItem('loggedUser', JSON.stringify(loggedUser));
@@ -758,7 +817,8 @@ async function joinClub(clubId) {
         await visitClubPage(clubId);
 
     } catch (error) {
-        console.log('Error: ', error);
+        console.error("Error al unirse al club:", error);
+        alert("Hubo un error al intentar unirse al club.");
     }
 }
 
@@ -1066,7 +1126,7 @@ function createNewProduct(productData, productType) {
  * get user data from BBDD
  * @param {Object} [data]
  */
-async function getAPIUserData (apiURL = `${location.protocol}//${location.hostname}${API_PORT}/api/read/users`, method = 'GET', data) {
+export async function getAPIUserData (apiURL = `${location.protocol}//${location.hostname}${API_PORT}/api/read/users`, method = 'GET', data) {
     
     let apiUserData
     

@@ -124,7 +124,7 @@ app.put('/api/leave/clubs/:id', async (req, res) => {
 
 //TODO: MODIFICAR
 app.get('/api/filter/clubs/:name', async (req, res) => {
-  res.json(await db.clubs.get({ $text: { $search: req.params.name } }))
+  res.json(await db.clubs.getByName(req.params.name));
 })
 
 app.delete('/api/delete/clubs/:clubId/:userId', requireAuth, async (req, res) => {

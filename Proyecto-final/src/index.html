@@ -4,8 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <script type="module" src="js/components/bundle.js"></script>
     <script type="module" src="js/club-lectura-v1.js"></script>
+    <!-- <link rel="stylesheet" href="css/reset.css"> -->
     <link rel="stylesheet" href="css/club-lectura-v1-style.css">
+    
 </head>
 <body>
     <header>
@@ -26,16 +29,18 @@
         </nav>
         <section id="authForms">
             <h3>Inicia sesión o Resgistrate</h3>
-            <form id="loginForm">
+            <login-form id="loginWrapper"></login-form>
+            <!-- <form id="loginForm">
                 <h4>Iniciar Sesión: </h4>
                 <label for="loginEmail">Email: </label>
                 <input type="email" id="loginEmail" name="loginEmail" required>
                 <label for="loginPassword">Contraseña: </label>
                 <input type="password" id="loginPassword" name="loginPassword" required>
                 <button type="submit">Iniciar Sesión</button>
-            </form>
+            </form> -->
 
-            <form id="registerForm">
+            <register-form id="registerWrapper"></register-form>
+            <!-- <form id="registerForm">
                 <h4>Registrar Nuevo Usuario: </h4>
                 <label for="registerName">Nombre: </label>
                 <input type="text" id="registerName" name="registerName" required>
@@ -44,7 +49,7 @@
                 <label for="registerPassword">Contraseña: </label>
                 <input type="password" id="registerPassword" name="registerPassword" required>
                 <button type="submit">Registrarse</button>
-            </form>
+            </form> -->
         </section>
             <div id="userMenu"></div>
             <dialog id="deleteAccountPopup">

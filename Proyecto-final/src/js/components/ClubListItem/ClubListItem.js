@@ -1,4 +1,5 @@
 import { getLoggedUserData } from "../../club-lectura-v1.js";
+import { generateClubActionButtons } from "../../lib/generateClubActionButtons.js";
 
 import { importTemplate } from "../../lib/importTemplate.js";
 
@@ -78,31 +79,8 @@ export class ClubListItem extends HTMLElement {
         visitClubButton.addEventListener('click', () => this._visitClub());
 
         const actionsContainer = this.shadowRoot.getElementById('clubActions');
-        actionsContainer.innerHTML = this._generateClubActionBUttons(clubData, loggedUser);
+        actionsContainer.innerHTML = generateClubActionButtons(clubData, loggedUser);
         this._addButtonListeners();
-    }
-
-    _generateClubActionBUttons(club, loggedUser) {
-        if (!loggedUser) return "";
-        let userButtons = "";
-
-        if (!club.members.includes(loggedUser._id)) {
-            userButtons += `
-            <button class="joinClubButton" data-id="${club._id}" data-private="${club.private}">Unirse al Club</button>
-        `;
-        }
-
-        if (club.members.includes(loggedUser._id)) {
-            userButtons += `<button class="leaveClubButton" data-id="${club._id}">Salir del Club</button>`;
-        }
-
-        if (club.admins.includes(loggedUser._id)) {
-            userButtons += `
-                <button class="editClubButton" data-id="${club._id}">Editar Club</button>
-                <button class="deleteClubButton" data-id="${club._id}">Eliminar Club</button>
-            `;}
-
-        return userButtons;
     }
 
     _addButtonListeners() {

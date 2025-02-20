@@ -6,7 +6,6 @@
 // /** @typedef {import('./classes/Proposal.js').Proposal} Proposal } */
 // /** @typedef {import('./classes/Product.js').Book} Book */
 
-// /** @import {User} from  './classes/User.js' */
 /** @import {Club} from "./classes/Club.js"; */
 /** @import {Product, Book, Movie} from "./classes/Product.js" */
 /** @import {Proposal} from "./classes/Proposal.js"; */
@@ -22,9 +21,7 @@ import {User} from "./classes/User.js";
 // import {Club} from "./classes/Club.js";
 // import {Proposal} from "./classes/Proposal.js";
 
-/**
- * import simple fetch + Http Error
- */
+import { generateClubActionButtons } from "./lib/generateClubActionButtons.js";
 import { simpleFetch } from "./lib/simpleFetch.js";
 import { HttpError } from "./classes/HttpError.js";
 
@@ -552,25 +549,25 @@ function initializeListenersToClubButtons() {
  * @param {Club} club 
  * @param {User} loggedUser 
  */
-function generateClubActionButtons(club, loggedUser) {
-    if (!loggedUser) return '';
-    let userButtons = '';
+// function generateClubActionButtons(club, loggedUser) {
+//     if (!loggedUser) return '';
+//     let userButtons = '';
 
-    if (!club.members.includes(loggedUser._id)) {
-        userButtons += `
-            <button class="joinClubButton" data-id="${club._id}" data-private="${club.private}">Unirse al Club</button>`;
-    }
-    if (club.members.includes(loggedUser._id)) {
-        userButtons += `<button class="leaveClubButton" data-id="${club._id}">Salir del Club</button>`;
-    }
-    if (club.admins.includes(loggedUser._id)) {
-        userButtons += `
-            <button class="editClubButton" data-id="${club._id}">Editar Club</button>
-            <button class="deleteClubButton" data-id="${club._id}">Eliminar Club</button>
-        `;}
+//     if (!club.members.includes(loggedUser._id)) {
+//         userButtons += `
+//             <button class="joinClubButton" data-id="${club._id}" data-private="${club.private}">Unirse al Club</button>`;
+//     }
+//     if (club.members.includes(loggedUser._id)) {
+//         userButtons += `<button class="leaveClubButton" data-id="${club._id}">Salir del Club</button>`;
+//     }
+//     if (club.admins.includes(loggedUser._id)) {
+//         userButtons += `
+//             <button class="editClubButton" data-id="${club._id}">Editar Club</button>
+//             <button class="deleteClubButton" data-id="${club._id}">Eliminar Club</button>
+//         `;}
     
-    return userButtons;
-}
+//     return userButtons;
+// }
 
 /**
  * add visit club event listener
@@ -610,6 +607,7 @@ async function visitClubPage(clubId) {
         }
 
         dynamicContent.innerHTML = clubDetailPageTemplate(apiClubData._id);
+        
         const loggedUser = getLoggedUserData();
         const backToClubsListButton = document.getElementById('backToClubsListButton');
 

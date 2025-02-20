@@ -1,44 +1,45 @@
-import { getLoggedUserData } from "../../club-lectura-v1.js";
+import { getLoggedUserData, API_PORT, getAPIUserData } from "../../club-lectura-v1.js";
 import { generateClubActionButtons } from "../../lib/generateClubActionButtons.js";
 
 import { importTemplate } from "../../lib/importTemplate.js";
 
 import AppCSS from "../../../css/app.css" with { type: "css" };
-import ClubListItemCSS from "./ClubListItem.css" with { type: "css" };
+import ClubDetailCSS from "./ClubDetail.css" with { type: "css" };
 
 const TEMPLATE = {
-    id: 'clubListItemTemplate',
-    url: './js/components/ClubListItem/ClubListItem.html'
+    id: 'clubDetailTemplate',
+    url: './js/components/ClubDetail/ClubDetail.html'
 }
 
 await importTemplate(TEMPLATE.url);
 
-export class ClubListItem extends HTMLElement {
+export class ClubDetail extends HTMLElement {
 
     static observedAttributes = ['club'];
-    
-    get club() {
-        return this.getAttribute('club');
-      }
 
-    set club(newValue) {
-    this.setAttribute('club', newValue);
+    get club() {
+        return JSON.parse(this.getAttribute('club'));
     }
 
-    get template(){
+    set club(newValue) {
+        this.setAttribute('club', JSON.stringify(newValue));
+    }
+
+    get template() {
         return document.getElementById(TEMPLATE.id);
     }
 
     constructor() {
         super();
-        this.attachShadow({ mode: "open" });
+        this.attachShadow({ mode: 'open' });
     }
 
     //========Life Cycle Callbacks==========//
 
     connectedCallback() {
-        this.shadowRoot.adoptedStyleSheets.push(AppCSS, ClubListItemCSS);
-        }
+        console.log("Custom element added to page.");
+        this.shadowRoot.adoptedStyleSheets.push(AppCSS, ClubDetailCSS);
+    }
 
     adoptedCallback() {
     }
@@ -50,42 +51,68 @@ export class ClubListItem extends HTMLElement {
             this._setUpContent();
         }
     }
-
+    
     disconnectedCallback() {
     }
 
     //========Private Methods==========//
-
-    _setUpContent() {
+    
+    async _setUpContent() {
 
         if (!this.shadowRoot || !this.template || !this.club) {
             console.log ('no hay shadow root o template o club') 
             return;
         }
 
-        const clubData = JSON.parse(this.club);
-        const loggedUser = getLoggedUserData();
-
-        this.shadowRoot.innerHTML = "";
+        this.shadowRoot.innerHTML = '';
         this.shadowRoot.appendChild(this.template.content.cloneNode(true));
 
-        this.shadowRoot.getElementById('clubName').textContent = `Nombre: ${clubData.name}`;
-        this.shadowRoot.getElementById('clubDescription').textContent = `Descripción: ${clubData.description}`;
-        this.shadowRoot.getElementById('clubType').textContent = clubData.type === "book" ? "Club de Lectura" : "Club de Cine";
-        this.shadowRoot.getElementById('clubMembers').textContent = `Miembros: ${clubData.members.length || 0}`;
-
-        const visitClubButton = this.shadowRoot.querySelector('.visitClubButton');
-        visitClubButton.setAttribute('data-id', clubData._id);
-        visitClubButton.addEventListener('click', () => this._visitClub());
-
-        const actionsContainer = this.shadowRoot.getElementById('clubActions');
-        actionsContainer.innerHTML = generateClubActionButtons(clubData, loggedUser);
-        this._addClubButtonsListeners();
+        this._renderClubDetails();
+        await this._renderClubMembers();
+        this._renderClubActions();
     }
 
-    _visitClub() {
-        const clubId = JSON.parse(this.club)._id;
-        this.dispatchEvent(new CustomEvent("visit-club", { bubbles: true, composed: true, detail: { clubId}}))
+    _renderClubDetails() {
+
+        const clubData = this.club;
+
+        this.shadowRoot.getElementById('clubDetailName').textContent = clubData.name;
+        this.shadowRoot.getElementById('clubDetailDescription').textContent = clubData.description
+        this.shadowRoot.getElementById('clubDetailType').textContent = clubData.type === "book" ? "Club de Lectura" : "Club de Cine";
+    }
+
+    async _renderClubMembers() {
+        const clubData = this.club;
+        const membersList = this.shadowRoot.getElementById('clubMembersList');
+
+        if (!membersList) {
+            return;
+        }
+        try {
+            const membersData = await getAPIUserData(`${location.protocol}//${location.hostname}${API_PORT}/api/read/users`, 'POST', JSON.stringify({ ids: clubData.members }));
+
+            membersList.innerHTML = '';
+            membersList.innerHTML = membersData.map(member => 
+            `<li>${member.name} ${clubData.admins.includes(member._id) ? '(Administrador)' : '(Miembro)'}</li>`
+            ).join('');
+
+        } catch (error) {
+            console.log('Error: ', error);
+        }
+    }
+
+    _renderClubActions() {
+        const clubData = this.club;
+        const loggedUser = getLoggedUserData();
+
+        const actionsContainer = this.shadowRoot.getElementById('clubActionButtonsContainer');
+
+        if (!loggedUser || !actionsContainer) {
+            return;
+        }
+
+        actionsContainer.innerHTML = generateClubActionButtons(clubData, loggedUser);
+        this._addClubButtonsListeners();
     }
 
     _addClubButtonsListeners() {
@@ -130,4 +157,4 @@ export class ClubListItem extends HTMLElement {
     }
 }
 
-customElements.define('club-list-item', ClubListItem)
+customElements.define('club-detail', ClubDetail)

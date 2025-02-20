@@ -1,5 +1,5 @@
 //@ts-check
-
+/** @typedef {import('../js/classes/Club.js').Club} Club */
 
 export const clubPageTemplate = `
     <section id="clubsPage">
@@ -50,18 +50,12 @@ export const clubPageTemplate = `
     </section>
 `;
 
-export const clubDetailPageTemplate = (/** @type {string} */ clubId)  =>  `
-    <section id="clubDetailPage" data-id="${clubId}">
+export const clubDetailPageTemplate = (/** @type {Club} */ apiClubData)  =>  `
+    <section id="clubDetailPage" data-id="${apiClubData._id}">
     
         <button id="backToClubsListButton">Volver a la Lista de Clubs</button>
 
-        <h3 id=clubDetailName></h3>
-        <p id="clubDetailDescription"></p>
-
-        <h4>Miembros del Club:</h4>
-        <ul id="clubMembersList"></ul>
-
-        <div id="clubActionButtonsContainer"></div>
+        <club-detail club='${JSON.stringify(apiClubData)}'></club-detail>
 
         <h4>Propuestas del Club:</h4>
         <ul id="clubProposalsList"></ul>

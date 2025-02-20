@@ -5,5 +5,10 @@ export async function simpleFetch (url, options) {
   if (!result.ok) {
     throw new HttpError(result);
   }
-  return (await result.json());
+  let isJsonResponse = result.headers.get('Content-Type')?.includes('application/json');
+
+  if (isJsonResponse) {
+    return (await result.json());
+  }
+  return (await result.text());
 }

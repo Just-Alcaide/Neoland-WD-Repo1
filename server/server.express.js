@@ -108,10 +108,23 @@ app.put('/api/update/clubs/:id', async (req, res) => {
 
 app.put('/api/join/clubs/:id', async (req, res) => {
   const clubId = req.params.id
-  const userId = req.body.userId
+  const { userId, password } = req.body
 
-  const updatedClub = await db.clubs.join(clubId, userId);
-  res.json(updatedClub);
+  console.log("Recibido en Express:", { clubId, userId, password });
+
+
+  if (!clubId || clubId.length !== 24 || !userId || userId.length !== 24) {
+    return res.status(400).json({ success: false, message: "ID de club o usuario inválido" });
+  }
+
+  try {
+    const updatedClub = await db.clubs.join(clubId, userId);
+    console.log("Se unió correctamente:", updatedClub);
+    res.json(updatedClub);
+  } catch (error) {
+    console.error("Error en joinClub:", error);
+    res.status(500).json({ success: false, message: "Error del servidor" });
+  }
 });
 
 app.put('/api/leave/clubs/:id', async (req, res) => {

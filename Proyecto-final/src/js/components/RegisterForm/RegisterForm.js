@@ -53,7 +53,6 @@ export class RegisterForm extends HTMLElement {
         await this._createNewUser()
         await this._loginNewUser()
         const onFormSubmitEvent = await this._loginNewUser()
-        console.log('pachinpachinpachero: ', onFormSubmitEvent.detail)
         this.dispatchEvent(onFormSubmitEvent);
     }
 

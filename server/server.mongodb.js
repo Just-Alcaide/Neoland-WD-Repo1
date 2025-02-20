@@ -273,15 +273,30 @@ async function joinClub(clubId, userId) {
     const clubsCollection = SophiaSocialDB.collection('clubs');
     const usersCollection = SophiaSocialDB.collection('users');
 
-    const userObjectId = new ObjectId(String(userId));
-    const clubObjectId = new ObjectId(String(clubId));
+    try {
+        if (!ObjectId.isValid(clubId) || !ObjectId.isValid(userId)) {
+            throw new Error("ID de usuario o club inválido.");
+        }
 
-    const updatedClub = await clubsCollection.updateOne({ _id: clubObjectId}, { $addToSet: {members: userObjectId}});
+        const userObjectId = new ObjectId(userId);
+        const clubObjectId = new ObjectId(clubId);
 
-    const updatedUser = await usersCollection.updateOne({ _id: userObjectId}, {$addToSet: {clubs: clubObjectId}});
+        const updatedClub = await clubsCollection.updateOne(
+            { _id: clubObjectId },
+            { $addToSet: { members: userObjectId } }
+        );
 
-    console.log('db joinClub', updatedClub, updatedUser);
-    return updatedClub;
+        const updatedUser = await usersCollection.updateOne(
+            { _id: userObjectId },
+            { $addToSet: { clubs: clubObjectId } }
+        );
+
+        console.log('db joinClub:', updatedClub, updatedUser);
+        return updatedClub;
+    } catch (error) {
+        console.error("Error en joinClub:", error);
+        return { success: false, message: "Error al unirse al club" };
+    }
 }
 
 async function leaveClub(clubId, userId) {

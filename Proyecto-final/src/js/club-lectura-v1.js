@@ -14,6 +14,7 @@
 /** @typedef {import('./components/LoginForm/LoginForm.js').LoginForm} LoginForm */
 /** @typedef {import('./components/RegisterForm/RegisterForm.js').RegisterForm} RegisterForm */
 
+import  "./components/bundle.js";
 
 import {store} from "./store/redux.js";
 import {ProductFactory, PRODUCT_TYPE,} from "./classes/Product.js";
@@ -175,7 +176,7 @@ async function loginUser(apiUserData) {
  * get logged user data
  * @returns {User | null}
  */
-function getLoggedUserData() {
+export function getLoggedUserData() {
     const storedUser = sessionStorage.getItem('loggedUser');
     return storedUser ? JSON.parse(storedUser) : null
 }
@@ -510,30 +511,46 @@ async function updateClubsList() {
         });
 
         if (clubsList) {
-            clubsList.innerHTML = userClubs.map((/** @type {Club} */ club) => {
+            clubsList.innerHTML = userClubs.map((/** @type {Club} */ club) => `
+                    <club-list-item club='${JSON.stringify(club)}'></club-list-item>
+                `).join('');
 
-                const clubTypeText = club.type === 'book' ? 'Club de Lectura' : 'Club de Cine';
-                
-                return `
-                <li>
-                    <h3>Nombre: ${club.name}</h3>
-                    <p>Descripción: ${club.description}</p>
-                    <p>Tipo: ${clubTypeText}</p>
-                    <p>Miembros: ${club.members.length || 0}</p>
-                    <button class="visitClubButton" data-id="${club._id}">Visitar Club</button>
-                    ${loggedUser ? generateClubActionButtons(club, loggedUser) : ''}
-                    
-                </li>
-                `}).join('');
-                
-    
-            // event listeners to clubs list
-            addVisitListenerToClubsList()
-            initializeListenersToClubButtons()
+            initializeClubButtonsListeners(clubsList)
         }
     } catch (error) {
         console.log('Error: ', error);
     }
+}
+
+/**
+ * @param {HTMLElement} container
+ */
+function initializeClubButtonsListeners (container) {
+
+    container.addEventListener("visit-club", async (event) => {
+        const {clubId} = /** @type {CustomEvent} */ (event).detail;
+        await visitClubPage((clubId));
+    });
+
+    container.addEventListener("join-club", async (event) => {
+        const {clubId, password} = /** @type {CustomEvent} */ (event).detail;
+        await joinClub(clubId, password)
+    });
+
+    container.addEventListener("leave-club", async (event) => {
+        const {clubId} = /** @type {CustomEvent} */ (event).detail;
+        await leaveClub(clubId);
+    });
+
+    container.addEventListener("edit-club", (event) => {
+        const {clubId} = /** @type {CustomEvent} */ (event).detail;
+        editClub(clubId)
+    });
+
+    container.addEventListener("delete-club", async (event) => {
+        const {clubId} = /** @type {CustomEvent} */ (event).detail;
+        await deleteClub(clubId)
+    });
 }
 
 function initializeListenersToClubButtons() {
@@ -554,8 +571,7 @@ function generateClubActionButtons(club, loggedUser) {
 
     if (!club.members.includes(loggedUser._id)) {
         userButtons += `
-            <button class="joinClubButton" data-id="${club._id}" data-private="${club.private}">Unirse al Club</button>
-        `;
+            <button class="joinClubButton" data-id="${club._id}" data-private="${club.private}">Unirse al Club</button>`;
     }
     if (club.members.includes(loggedUser._id)) {
         userButtons += `<button class="leaveClubButton" data-id="${club._id}">Salir del Club</button>`;
@@ -572,20 +588,20 @@ function generateClubActionButtons(club, loggedUser) {
 /**
  * add visit club event listener
  */
-async function addVisitListenerToClubsList(){
-    const visitClubButton = document.querySelectorAll('.visitClubButton');
-    visitClubButton.forEach((button) => {
-        button.addEventListener('click', async (e) => {
-            const target = /** @type {HTMLElement} */ (e.target)
-            if (target) {
-                const clubId = target.getAttribute('data-id');
-                if (clubId) {
-                    await visitClubPage(clubId);
-                }
-            }
-        });
-    });
-}
+// async function addVisitListenerToClubsList(){
+//     const visitClubButton = document.querySelectorAll('.visitClubButton');
+//     visitClubButton.forEach((button) => {
+//         button.addEventListener('click', async (e) => {
+//             const target = /** @type {HTMLElement} */ (e.target)
+//             if (target) {
+//                 const clubId = target.getAttribute('data-id');
+//                 if (clubId) {
+//                     await visitClubPage(clubId);
+//                 }
+//             }
+//         });
+//     });
+// }
 
 //TODO: REVISAR CON LAS PROPOSALS
 /**
@@ -605,8 +621,8 @@ async function visitClubPage(clubId) {
         if (!apiClubData || apiClubData.length === 0) {
             throw new Error ('Club no encontrado');
         }
-        
-        dynamicContent.innerHTML = clubDetailPageTemplate(clubId);
+
+        dynamicContent.innerHTML = clubDetailPageTemplate(apiClubData._id);
         const loggedUser = getLoggedUserData();
         const backToClubsListButton = document.getElementById('backToClubsListButton');
 
@@ -805,12 +821,16 @@ async function joinClub(clubId, password = null) {
             requestData
         );
 
-        if (!response.success) {
-            alert(response.message || "No se pudo unir al club.");
+        if (!response || !response.acknowledged) {
+            console.warn("Respuesta de la API no válida:", response);
+            alert("No se pudo unir al club.");
             return;
         }
 
-        loggedUser.clubs.push(clubId);
+        if (!loggedUser.clubs.includes(clubId)) {
+            loggedUser.clubs.push(clubId);
+        }
+
         sessionStorage.setItem('loggedUser', JSON.stringify(loggedUser));
         store.user.update(loggedUser);
         store.saveState();
@@ -891,7 +911,7 @@ function addEditListenerToClubsList() {
  */
 function editClub(clubId) {
     if (clubId) {
-    alert('No tio, no me jodas. Dame un respiro, tronco. (No implementado)');
+    alert(`Editar club: ${clubId} (Funcionalidad en desarrollo)`);
     }
 }
 
@@ -924,6 +944,8 @@ async function deleteClub(clubId) {
         alert('Debes iniciar sesión para borrar un club');
         return;
     }
+
+    if (!confirm("¿Estás seguro de eliminar este club?")) return;
 
     try {
         await getAPIClubData(`${location.protocol}//${location.hostname}${API_PORT}/api/delete/clubs/${clubId}/${loggedUser._id}`, 'DELETE');
@@ -1170,7 +1192,7 @@ export async function getAPIUserData (apiURL = `${location.protocol}//${location
  * get club data from BBDD
  * @param {Object} [data]
  */
-async function getAPIClubData (apiURL = `${location.protocol}//${location.hostname}${API_PORT}/api/read/clubs`, method = 'GET', data) {
+export async function getAPIClubData (apiURL = `${location.protocol}//${location.hostname}${API_PORT}/api/read/clubs`, method = 'GET', data) {
 
     let apiClubData
 

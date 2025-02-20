@@ -24,6 +24,7 @@ export const clubPageTemplate = `
 
         <ul id="clubsList">
         </ul>
+
         <form id="createClubForm" class="hidden">
             <h4>Crear Nuevo Club</h4>
             <label for="clubName">Nombre del Club:</label>

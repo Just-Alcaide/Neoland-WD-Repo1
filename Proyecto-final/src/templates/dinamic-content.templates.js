@@ -38,6 +38,7 @@ export const clubPageTemplate = `
             <select name="clubType" id="clubType" required>
                 <option value="book">Club de Lectura</option>
                 <option value="movie">Club de Cine</option>
+                <option value="mixed">Club Mixto</option>
             </select>
             <label>Privado<input type="radio" name="clubVisibility" value="private" required></label>
             <label>Publico<input type="radio" name="clubVisibility" value="public" required></label>
@@ -63,8 +64,8 @@ export const clubDetailPageTemplate = (/** @type {Club} */ apiClubData)  =>  `
         <button id="addProposalButton" class="hidden">Agregar Propuesta</button>
 
         <form id="addProposalTypeForm" class="hidden">
-            <label><input type="radio" name="proposalType" id="bookProposal" value="bookProposal">Propuesta de Libro</label>
-            <label><input type="radio" name="proposalType" id="movieProposal" value="movieProposal">Propuesta de Película</label>
+            <label class="hidden"><input type="radio" name="proposalType" id="bookProposal" value="bookProposal">Propuesta de Libro</label>
+            <label class="hidden"><input type="radio" name="proposalType" id="movieProposal" value="movieProposal">Propuesta de Película</label>
         </form>
         <section id="createNewProposalContainer"></section>
 

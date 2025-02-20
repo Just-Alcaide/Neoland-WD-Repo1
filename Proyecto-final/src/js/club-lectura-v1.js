@@ -774,6 +774,23 @@ function onAddProposalButtonClick(e) {
     e.preventDefault();
 
     const addProposalTypeForm = document.getElementById('addProposalTypeForm');
+    if (!addProposalTypeForm) return;
+
+    /** @type {ClubDetail | null} */
+    const clubDetailComponent = document.querySelector('club-detail');
+    if (!clubDetailComponent) return;
+    const clubType = clubDetailComponent.club?.type;
+    console.log("CLUB TYPE: ", clubType);
+
+    if (clubType === "book") {
+        document.getElementById("bookProposal")?.parentElement?.classList.remove('hidden');
+    } else if (clubType === "movie") {
+        document.getElementById("movieProposal")?.parentElement?.classList.remove('hidden');
+    } else if (clubType === "mixed") {
+        document.getElementById("bookProposal")?.parentElement?.classList.remove('hidden');
+        document.getElementById("movieProposal")?.parentElement?.classList.remove('hidden');
+    }
+
     if (addProposalTypeForm) {
         addProposalTypeForm.classList.remove('hidden');
 

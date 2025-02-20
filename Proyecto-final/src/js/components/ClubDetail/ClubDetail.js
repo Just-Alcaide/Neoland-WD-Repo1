@@ -1,5 +1,6 @@
 import { getLoggedUserData, API_PORT, getAPIUserData } from "../../club-lectura-v1.js";
 import { generateClubActionButtons } from "../../lib/generateClubActionButtons.js";
+import { addClubButtonsListeners } from "../../lib/clubActions.js";
 
 import { importTemplate } from "../../lib/importTemplate.js";
 
@@ -116,44 +117,7 @@ export class ClubDetail extends HTMLElement {
     }
 
     _addClubButtonsListeners() {
-        this.shadowRoot.querySelector('.joinClubButton')?.addEventListener('click', (e) => this._joinClub(e));
-        this.shadowRoot.querySelector('.leaveClubButton')?.addEventListener('click', (e) => this._leaveClub(e));
-        this.shadowRoot.querySelector('.editClubButton')?.addEventListener('click', (e) => this._editClub(e));
-        this.shadowRoot.querySelector('.deleteClubButton')?.addEventListener('click', (e) => this._deleteClub(e));
-    }
-
-    async _joinClub(e) {
-        e.preventDefault();
-        const clubId = e.target.getAttribute('data-id');
-        const isPrivate = e.target.getAttribute('data-private') === "true";
-        let password = null;
-
-        if (isPrivate) {
-            password = prompt("Este club es privado. Ingresa la contraseña:");
-            if (!password) return;
-        }
-
-        this.dispatchEvent(new CustomEvent("join-club", { bubbles: true, composed: true, detail: { clubId, password }}));
-    }
-
-    async _leaveClub(e) {
-        e.preventDefault();
-        const clubId = e.target.getAttribute('data-id');
-
-        this.dispatchEvent(new CustomEvent("leave-club", { bubbles: true, composed: true, detail: { clubId }}));
-    } 
-
-
-    _editClub(e) {
-        const clubId = e.target.getAttribute('data-id');
-
-        this.dispatchEvent(new CustomEvent("edit-club", { bubbles: true, composed: true, detail: { clubId }}));
-    }
-
-    async _deleteClub(e) {
-        const clubId = e.target.getAttribute('data-id');
-
-        this.dispatchEvent(new CustomEvent("delete-club", { bubbles: true, composed: true, detail: { clubId }}));
+        addClubButtonsListeners(this.shadowRoot);
     }
 }
 

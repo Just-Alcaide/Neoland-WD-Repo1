@@ -6,14 +6,15 @@
 // /** @typedef {import('./classes/Proposal.js').Proposal} Proposal } */
 // /** @typedef {import('./classes/Product.js').Book} Book */
 
-// /** @import {User} from  './classes/User.js' */
 /** @import {Club} from "./classes/Club.js"; */
 /** @import {Product, Book, Movie} from "./classes/Product.js" */
 /** @import {Proposal} from "./classes/Proposal.js"; */
 
 /** @typedef {import('./components/LoginForm/LoginForm.js').LoginForm} LoginForm */
 /** @typedef {import('./components/RegisterForm/RegisterForm.js').RegisterForm} RegisterForm */
+/** @typedef {import('./components/ClubDetail/ClubDetail.js').ClubDetail} ClubDetail*/
 
+import  "./components/bundle.js";
 
 import {store} from "./store/redux.js";
 import {ProductFactory, PRODUCT_TYPE,} from "./classes/Product.js";
@@ -21,9 +22,7 @@ import {User} from "./classes/User.js";
 // import {Club} from "./classes/Club.js";
 // import {Proposal} from "./classes/Proposal.js";
 
-/**
- * import simple fetch + Http Error
- */
+// import { generateClubActionButtons } from "./lib/generateClubActionButtons.js";
 import { simpleFetch } from "./lib/simpleFetch.js";
 import { HttpError } from "./classes/HttpError.js";
 
@@ -32,6 +31,7 @@ import { HttpError } from "./classes/HttpError.js";
  * import templates
  */
 import { clubPageTemplate, clubDetailPageTemplate, bookProposalTemplate, movieProposalTemplate  } from "../templates/dinamic-content.templates.js";
+
 
 export const API_PORT = location.port ? `:${location.port}` : '';
 
@@ -175,7 +175,7 @@ async function loginUser(apiUserData) {
  * get logged user data
  * @returns {User | null}
  */
-function getLoggedUserData() {
+export function getLoggedUserData() {
     const storedUser = sessionStorage.getItem('loggedUser');
     return storedUser ? JSON.parse(storedUser) : null
 }
@@ -313,16 +313,8 @@ async function onClubsPageLinkClick(e) {
     e.preventDefault();
     const dynamicContent = document.getElementById('dynamic-content');
     if (dynamicContent) {
-    await loadClubsPage()
-
-    //event listener for search club
-    const searchClubButton = document.getElementById('searchClubButton');
-    searchClubButton?.addEventListener('click', onSearchClubButtonClick);
-
-    // event listener for create new club
-    const createClubForm = document.getElementById('createClubForm');
-    createClubForm?.addEventListener('submit', onCreateClubFormSubmit);
-    }
+    await loadClubsPage();
+}
 }
 
 /**
@@ -342,8 +334,12 @@ async function searchClubs() {
     }
     const searchValue = searchInput.value.toLowerCase().trim();
 
+    const clubsSearchResultsContainer = document.getElementById('clubsSearchResultsContainer');
     if (!searchValue) {
         console.warn ('Search value is empty');
+        if (clubsSearchResultsContainer) {
+            clubsSearchResultsContainer.innerHTML = '';
+        }
         return;
     }
 
@@ -362,7 +358,7 @@ async function searchClubs() {
  * @param {Club []} clubs 
  */
 function renderSearchResults(clubs) {
-    const loggedUser = getLoggedUserData();
+
     const clubsSearchResultsContainer = document.getElementById('clubsSearchResultsContainer');
     if (!clubsSearchResultsContainer) return;
 
@@ -372,20 +368,11 @@ function renderSearchResults(clubs) {
         clubsSearchResultsContainer.innerHTML = 'No se encontraron clubs';
     }
 
-    clubsSearchResultsContainer.innerHTML = clubs.map((club) => {
+    clubsSearchResultsContainer.innerHTML = clubs.map((club) => `
+        <club-list-item club='${JSON.stringify(club)}'></club-list-item>
+    `).join('');
 
-        return `
-            <li>
-                <h3>Nombre: ${club.name}</h3>
-                <p>Descripción: ${club.description}</p>
-                <p>Tipo: ${club.type === 'book' ? 'Club de Lectura' : 'Club de Cine'}</p>
-                <p>Miembros: ${club.members.length || 0}</p>
-                ${loggedUser ? generateClubActionButtons(club, loggedUser) : ''}
-            </li>
-        `;
-    }).join('')
-
-    addJoinListenerToClubsList()
+    initializeClubButtonsListeners(clubsSearchResultsContainer)
 }
 
 /**
@@ -510,80 +497,45 @@ async function updateClubsList() {
         });
 
         if (clubsList) {
-            clubsList.innerHTML = userClubs.map((/** @type {Club} */ club) => {
+            clubsList.innerHTML = userClubs.map((/** @type {Club} */ club) => `
+                    <club-list-item club='${JSON.stringify(club)}'></club-list-item>
+                `).join('');
 
-                const clubTypeText = club.type === 'book' ? 'Club de Lectura' : 'Club de Cine';
-                
-                return `
-                <li>
-                    <h3>Nombre: ${club.name}</h3>
-                    <p>Descripción: ${club.description}</p>
-                    <p>Tipo: ${clubTypeText}</p>
-                    <p>Miembros: ${club.members.length || 0}</p>
-                    <button class="visitClubButton" data-id="${club._id}">Visitar Club</button>
-                    ${loggedUser ? generateClubActionButtons(club, loggedUser) : ''}
-                    
-                </li>
-                `}).join('');
-                
-    
-            // event listeners to clubs list
-            addVisitListenerToClubsList()
-            initializeListenersToClubButtons()
+            initializeClubButtonsListeners(clubsList)
         }
     } catch (error) {
         console.log('Error: ', error);
     }
 }
 
-function initializeListenersToClubButtons() {
-    addJoinListenerToClubsList()
-    addLeaveListenerToClubsList()
-    addEditListenerToClubsList()
-    addDeleteListenerToClubsList()
-}
-
 /**
- * generate club action buttons
- * @param {Club} club 
- * @param {User} loggedUser 
+ * @param {HTMLElement} container
  */
-function generateClubActionButtons(club, loggedUser) {
-    if (!loggedUser) return '';
-    let userButtons = '';
+function initializeClubButtonsListeners (container) {
 
-    if (!club.members.includes(loggedUser._id)) {
-        userButtons += `
-            <button class="joinClubButton" data-id="${club._id}" data-private="${club.private}">Unirse al Club</button>
-        `;
-    }
-    if (club.members.includes(loggedUser._id)) {
-        userButtons += `<button class="leaveClubButton" data-id="${club._id}">Salir del Club</button>`;
-    }
-    if (club.admins.includes(loggedUser._id)) {
-        userButtons += `
-            <button class="editClubButton" data-id="${club._id}">Editar Club</button>
-            <button class="deleteClubButton" data-id="${club._id}">Eliminar Club</button>
-        `;}
-    
-    return userButtons;
-}
+    container.addEventListener("visit-club", async (event) => {
+        const {clubId} = /** @type {CustomEvent} */ (event).detail;
+        await visitClubPage((clubId));
+    });
 
-/**
- * add visit club event listener
- */
-async function addVisitListenerToClubsList(){
-    const visitClubButton = document.querySelectorAll('.visitClubButton');
-    visitClubButton.forEach((button) => {
-        button.addEventListener('click', async (e) => {
-            const target = /** @type {HTMLElement} */ (e.target)
-            if (target) {
-                const clubId = target.getAttribute('data-id');
-                if (clubId) {
-                    await visitClubPage(clubId);
-                }
-            }
-        });
+    container.addEventListener("join-club", async (event) => {
+        const {clubId, password} = /** @type {CustomEvent} */ (event).detail;
+        await joinClub(clubId, password)
+    });
+
+    container.addEventListener("leave-club", async (event) => {
+        const {clubId} = /** @type {CustomEvent} */ (event).detail;
+        await leaveClub(clubId);
+    });
+
+    container.addEventListener("edit-club", (event) => {
+        const {clubId} = /** @type {CustomEvent} */ (event).detail;
+        editClub(clubId)
+    });
+
+    container.addEventListener("delete-club", async (event) => {
+        const {clubId} = /** @type {CustomEvent} */ (event).detail;
+        await deleteClub(clubId)
     });
 }
 
@@ -605,31 +557,28 @@ async function visitClubPage(clubId) {
         if (!apiClubData || apiClubData.length === 0) {
             throw new Error ('Club no encontrado');
         }
-        
-        dynamicContent.innerHTML = clubDetailPageTemplate(clubId);
-        const loggedUser = getLoggedUserData();
-        const backToClubsListButton = document.getElementById('backToClubsListButton');
 
+        dynamicContent.innerHTML = clubDetailPageTemplate(apiClubData);
+
+        const backToClubsListButton = document.getElementById('backToClubsListButton');
         if (backToClubsListButton) {
             backToClubsListButton.addEventListener('click', loadClubsPage);
         }
-
-        if (loggedUser) {    
-            const clubActionButtonsContainer = document.getElementById('clubActionButtonsContainer');
-            if (clubActionButtonsContainer) {
-                clubActionButtonsContainer.innerHTML = generateClubActionButtons(apiClubData, loggedUser);
-                initializeListenersToClubButtons();
-            }
+        
+        /** @type {ClubDetail | null}  */
+        const clubDetailComponent = document.querySelector('club-detail');
+        if (clubDetailComponent) {
+            clubDetailComponent.club = apiClubData; 
+            initializeClubButtonsListeners(clubDetailComponent); 
         }
 
+        const loggedUser = getLoggedUserData();
         const addProposalButton = document.getElementById('addProposalButton');
         if (addProposalButton && loggedUser && apiClubData.members.includes(loggedUser._id)) {
             addProposalButton.classList.remove('hidden');
             addProposalButton.addEventListener('click', onAddProposalButtonClick);
         }
 
-        renderClubDetails(apiClubData);
-        renderMemberDetails(apiClubData);
         renderClubProposals(apiClubData);
 
     } catch (error) {
@@ -645,6 +594,7 @@ async function loadClubsPage() {
 
         const loggedUser = getLoggedUserData();
         const createClubForm = document.getElementById('createClubForm');
+        createClubForm?.addEventListener('submit', onCreateClubFormSubmit);
         if (loggedUser && createClubForm) {
             createClubForm.classList.remove('hidden');
         }
@@ -667,42 +617,10 @@ async function loadClubsPage() {
                 clubPasswordField?.classList.toggle('hidden', input.value !== 'private');
             })
         })
-    }
-}
 
-/**
- * render club details
- * @param {Club} club 
- */
-function renderClubDetails(club) {
-    const clubDetailName = /** @type {HTMLElement} */ document.getElementById('clubDetailName')
-    const clubDetailDescription = /** @type {HTMLElement} */document.getElementById('clubDetailDescription')
-
-    if (clubDetailName) clubDetailName.textContent = club.name;
-    if (clubDetailDescription) clubDetailDescription.textContent = club.description;
-}
-
-/**
- * render member details
- * @param {Club} club 
- */
-async function renderMemberDetails(club) {
-    const membersList = document.getElementById('clubMembersList');
-    if (!membersList) {
-        return;
-    }
-
-    try {
-        const membersData = await getAPIUserData(`${location.protocol}//${location.hostname}${API_PORT}/api/read/users`, 'POST', JSON.stringify({ids: club.members}))
-
-        membersList.innerHTML = membersData.map((/** @type User */ member) => {
-            const isAdmin = club.admins.includes(member._id);
-            return `
-        <li>${member ? member.name : ''} ${isAdmin ? '(Administrador)' : '(Miembro)'}</li>
-        `
-        }).join('');
-    } catch (error) {
-        console.log('Error: ', error)
+        //event listener for search club
+        const searchClubButton = document.getElementById('searchClubButton');
+        searchClubButton?.addEventListener('click', onSearchClubButtonClick);        
     }
 }
 
@@ -740,52 +658,6 @@ async function renderClubProposals(club) {
 }
 
 /**
- * add join club event listener
- */
-async function addJoinListenerToClubsList() {
-    const joinClubButtons = document.querySelectorAll('.joinClubButton');
-
-    joinClubButtons.forEach((button) => {
-        button.removeEventListener('click', onJoinClubClick); // Eliminamos eventos previos
-        button.addEventListener('click', onJoinClubClick);
-    });
-}
-
-/**
- * 
- * @param {Event} e 
- * @returns 
- */
-async function onJoinClubClick(e) {
-    e.preventDefault();
-
-    const target = /** @type {HTMLElement} */ (e.target);
-    if (!target) return;
-
-    const clubId = target.getAttribute('data-id') ?? "";
-    if (!clubId) { alert("Hubo un error al intentar unirse al club."); return;
-    }
-    const isPrivate = target.getAttribute('data-private') === "true";
-    let password = "";
-
-    if (isPrivate) {
-        password = prompt("Este club es privado. Ingresa la contraseña:") ?? "";
-        if (!password.trim()) {
-            alert("Debes ingresar la contraseña para unirte a este club.");
-            return;
-        }
-    }
-    
-    try {
-        await joinClub(clubId, password);
-    } catch (error) {
-        console.error("Error al unirse al club:", error);
-        alert("Hubo un error al intentar unirse al club.");
-    }
-}
-
-
-/**
  * @param {string} clubId
  * @param {string | null} [password]
  */
@@ -805,12 +677,16 @@ async function joinClub(clubId, password = null) {
             requestData
         );
 
-        if (!response.success) {
-            alert(response.message || "No se pudo unir al club.");
+        if (!response || !response.acknowledged) {
+            console.warn("Respuesta de la API no válida:", response);
+            alert("No se pudo unir al club.");
             return;
         }
 
-        loggedUser.clubs.push(clubId);
+        if (!loggedUser.clubs.includes(clubId)) {
+            loggedUser.clubs.push(clubId);
+        }
+
         sessionStorage.setItem('loggedUser', JSON.stringify(loggedUser));
         store.user.update(loggedUser);
         store.saveState();
@@ -820,24 +696,6 @@ async function joinClub(clubId, password = null) {
         console.error("Error al unirse al club:", error);
         alert("Hubo un error al intentar unirse al club.");
     }
-}
-
-/**
- * add leave club event listener
- */
-async function addLeaveListenerToClubsList() {
-    const leaveClubButton = document.querySelectorAll('.leaveClubButton');
-    leaveClubButton.forEach((button) => {
-        button.addEventListener('click', async (e) => {
-            const target = /** @type {HTMLElement} */ (e.target)
-            if (target) {
-                const clubId = target.getAttribute('data-id');
-                if (clubId) {
-                    await leaveClub(clubId);
-                }
-            }
-        })
-    });
 }
 
 /**
@@ -868,49 +726,13 @@ async function leaveClub(clubId) {
 }
 
 /**
- * add edit club event listener
- */
-function addEditListenerToClubsList() {
-    const editClubButton = document.querySelectorAll('.editClubButton');
-    editClubButton.forEach((button) => {
-        button.addEventListener('click', (e) => {
-            const target = /** @type {HTMLElement} */ (e.target)
-            if (target) {
-                const clubId = target.getAttribute('data-id');
-                if (clubId) {
-                    editClub(clubId);
-                }
-            }
-        });
-    });
-}
-
-/**
  * edit club
  * @param {string} clubId 
  */
 function editClub(clubId) {
     if (clubId) {
-    alert('No tio, no me jodas. Dame un respiro, tronco. (No implementado)');
+    alert(`Editar club: ${clubId} (Funcionalidad en desarrollo)`);
     }
-}
-
-/**
- * add delete club event listener
- */
-async function addDeleteListenerToClubsList() {
-    const deleteClubButtons = document.querySelectorAll('.deleteClubButton');
-    deleteClubButtons.forEach((button) => {
-    button.addEventListener('click', async (e) => {
-        const target = /** @type {HTMLElement} */ (e.target)
-        if (target) { 
-            const clubId = target.getAttribute('data-id');
-            if (clubId) {
-                await deleteClub(clubId);
-            }
-        }
-    });
-});
 }
 
 /**
@@ -924,6 +746,8 @@ async function deleteClub(clubId) {
         alert('Debes iniciar sesión para borrar un club');
         return;
     }
+
+    if (!confirm("¿Estás seguro de eliminar este club?")) return;
 
     try {
         await getAPIClubData(`${location.protocol}//${location.hostname}${API_PORT}/api/delete/clubs/${clubId}/${loggedUser._id}`, 'DELETE');
@@ -1170,7 +994,7 @@ export async function getAPIUserData (apiURL = `${location.protocol}//${location
  * get club data from BBDD
  * @param {Object} [data]
  */
-async function getAPIClubData (apiURL = `${location.protocol}//${location.hostname}${API_PORT}/api/read/clubs`, method = 'GET', data) {
+export async function getAPIClubData (apiURL = `${location.protocol}//${location.hostname}${API_PORT}/api/read/clubs`, method = 'GET', data) {
 
     let apiClubData
 

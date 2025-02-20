@@ -1,14 +1,16 @@
 //@ts-check
-
+/** @typedef {import('../js/classes/Club.js').Club} Club */
 
 export const clubPageTemplate = `
     <section id="clubsPage">
         <h2>Buscar un Club:</h2>
+        <form id="clubSearchForm">
         <fieldset id="clubSearch">
             <legend>Nombre del Club:</legend>
             <input type="text" name="clubSearchName" id="clubSearchName">
             <button type="submit" id="searchClubButton">Buscar</button>
         </fieldset>
+        </form>
         <ul id="clubsSearchResultsContainer"></ul>
 
         <h2>Tu Lista de Clubs:</h2>
@@ -24,6 +26,7 @@ export const clubPageTemplate = `
 
         <ul id="clubsList">
         </ul>
+
         <form id="createClubForm" class="hidden">
             <h4>Crear Nuevo Club</h4>
             <label for="clubName">Nombre del Club:</label>
@@ -47,18 +50,12 @@ export const clubPageTemplate = `
     </section>
 `;
 
-export const clubDetailPageTemplate = (/** @type {string} */ clubId)  =>  `
-    <section id="clubDetailPage" data-id="${clubId}">
+export const clubDetailPageTemplate = (/** @type {Club} */ apiClubData)  =>  `
+    <section id="clubDetailPage" data-id="${apiClubData._id}">
     
         <button id="backToClubsListButton">Volver a la Lista de Clubs</button>
 
-        <h3 id=clubDetailName></h3>
-        <p id="clubDetailDescription"></p>
-
-        <h4>Miembros del Club:</h4>
-        <ul id="clubMembersList"></ul>
-
-        <div id="clubActionButtonsContainer"></div>
+        <club-detail club='${JSON.stringify(apiClubData)}'></club-detail>
 
         <h4>Propuestas del Club:</h4>
         <ul id="clubProposalsList"></ul>

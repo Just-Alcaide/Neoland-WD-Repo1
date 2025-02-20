@@ -367,7 +367,7 @@ function renderSearchResults(clubs) {
     }
 
     clubsSearchResultsContainer.innerHTML = clubs.map((club) => `
-        <club-search-item club='${JSON.stringify(club)}'></club-search-item>
+        <club-list-item club='${JSON.stringify(club)}'></club-list-item>
     `).join('');
 
     initializeClubButtonsListeners(clubsSearchResultsContainer)
@@ -543,49 +543,6 @@ function initializeListenersToClubButtons() {
     addEditListenerToClubsList()
     addDeleteListenerToClubsList()
 }
-
-/**
- * generate club action buttons
- * @param {Club} club 
- * @param {User} loggedUser 
- */
-// function generateClubActionButtons(club, loggedUser) {
-//     if (!loggedUser) return '';
-//     let userButtons = '';
-
-//     if (!club.members.includes(loggedUser._id)) {
-//         userButtons += `
-//             <button class="joinClubButton" data-id="${club._id}" data-private="${club.private}">Unirse al Club</button>`;
-//     }
-//     if (club.members.includes(loggedUser._id)) {
-//         userButtons += `<button class="leaveClubButton" data-id="${club._id}">Salir del Club</button>`;
-//     }
-//     if (club.admins.includes(loggedUser._id)) {
-//         userButtons += `
-//             <button class="editClubButton" data-id="${club._id}">Editar Club</button>
-//             <button class="deleteClubButton" data-id="${club._id}">Eliminar Club</button>
-//         `;}
-    
-//     return userButtons;
-// }
-
-/**
- * add visit club event listener
- */
-// async function addVisitListenerToClubsList(){
-//     const visitClubButton = document.querySelectorAll('.visitClubButton');
-//     visitClubButton.forEach((button) => {
-//         button.addEventListener('click', async (e) => {
-//             const target = /** @type {HTMLElement} */ (e.target)
-//             if (target) {
-//                 const clubId = target.getAttribute('data-id');
-//                 if (clubId) {
-//                     await visitClubPage(clubId);
-//                 }
-//             }
-//         });
-//     });
-// }
 
 //TODO: REVISAR CON LAS PROPOSALS
 /**

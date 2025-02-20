@@ -4,11 +4,13 @@
 export const clubPageTemplate = `
     <section id="clubsPage">
         <h2>Buscar un Club:</h2>
+        <form id="clubSearchForm">
         <fieldset id="clubSearch">
             <legend>Nombre del Club:</legend>
             <input type="text" name="clubSearchName" id="clubSearchName">
             <button type="submit" id="searchClubButton">Buscar</button>
         </fieldset>
+        </form>
         <ul id="clubsSearchResultsContainer"></ul>
 
         <h2>Tu Lista de Clubs:</h2>

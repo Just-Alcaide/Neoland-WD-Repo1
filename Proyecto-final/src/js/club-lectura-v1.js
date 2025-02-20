@@ -314,16 +314,8 @@ async function onClubsPageLinkClick(e) {
     e.preventDefault();
     const dynamicContent = document.getElementById('dynamic-content');
     if (dynamicContent) {
-    await loadClubsPage()
-
-    //event listener for search club
-    const searchClubButton = document.getElementById('searchClubButton');
-    searchClubButton?.addEventListener('click', onSearchClubButtonClick);
-
-    // event listener for create new club
-    const createClubForm = document.getElementById('createClubForm');
-    createClubForm?.addEventListener('submit', onCreateClubFormSubmit);
-    }
+    await loadClubsPage();
+}
 }
 
 /**
@@ -343,8 +335,12 @@ async function searchClubs() {
     }
     const searchValue = searchInput.value.toLowerCase().trim();
 
+    const clubsSearchResultsContainer = document.getElementById('clubsSearchResultsContainer');
     if (!searchValue) {
         console.warn ('Search value is empty');
+        if (clubsSearchResultsContainer) {
+            clubsSearchResultsContainer.innerHTML = '';
+        }
         return;
     }
 
@@ -363,7 +359,7 @@ async function searchClubs() {
  * @param {Club []} clubs 
  */
 function renderSearchResults(clubs) {
-    const loggedUser = getLoggedUserData();
+
     const clubsSearchResultsContainer = document.getElementById('clubsSearchResultsContainer');
     if (!clubsSearchResultsContainer) return;
 
@@ -373,20 +369,11 @@ function renderSearchResults(clubs) {
         clubsSearchResultsContainer.innerHTML = 'No se encontraron clubs';
     }
 
-    clubsSearchResultsContainer.innerHTML = clubs.map((club) => {
+    clubsSearchResultsContainer.innerHTML = clubs.map((club) => `
+        <club-search-item club='${JSON.stringify(club)}'></club-search-item>
+    `).join('');
 
-        return `
-            <li>
-                <h3>Nombre: ${club.name}</h3>
-                <p>Descripción: ${club.description}</p>
-                <p>Tipo: ${club.type === 'book' ? 'Club de Lectura' : 'Club de Cine'}</p>
-                <p>Miembros: ${club.members.length || 0}</p>
-                ${loggedUser ? generateClubActionButtons(club, loggedUser) : ''}
-            </li>
-        `;
-    }).join('')
-
-    addJoinListenerToClubsList()
+    initializeClubButtonsListeners(clubsSearchResultsContainer)
 }
 
 /**
@@ -661,6 +648,7 @@ async function loadClubsPage() {
 
         const loggedUser = getLoggedUserData();
         const createClubForm = document.getElementById('createClubForm');
+        createClubForm?.addEventListener('submit', onCreateClubFormSubmit);
         if (loggedUser && createClubForm) {
             createClubForm.classList.remove('hidden');
         }
@@ -683,6 +671,10 @@ async function loadClubsPage() {
                 clubPasswordField?.classList.toggle('hidden', input.value !== 'private');
             })
         })
+
+        //event listener for search club
+        const searchClubButton = document.getElementById('searchClubButton');
+        searchClubButton?.addEventListener('click', onSearchClubButtonClick);        
     }
 }
 

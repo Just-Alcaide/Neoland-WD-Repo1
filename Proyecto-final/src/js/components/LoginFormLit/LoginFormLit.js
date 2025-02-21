@@ -32,7 +32,7 @@ export class LoginFormLit extends LitElement {
                 <input type="email" id="loginEmail" name="loginEmail" required>
                 <label for="loginPassword">Contraseña: </label>
                 <input type="password" id="loginPassword" name="loginPassword" required>
-                <button id="loginButton" type="submit" @click="${this._loginButtonCLicked}" >Iniciar Sesión</button>
+                <button id="loginButton" type="submit">Iniciar Sesión</button>
             </form>
         `;
     }
@@ -47,7 +47,7 @@ export class LoginFormLit extends LitElement {
         };
 
         let onFormSubmitEvent
-        console.log(`Desde dentro del componente Email: ${loginEmail}, Password: ${loginPassword}`);
+        console.log(`Desde dentro del componente Email: ${loginEmail?.value}, Password: ${loginPassword?.value}`);
 
         if (loginData.email !== "" && loginData.password !== "") {
             const payload = JSON.stringify(loginData);

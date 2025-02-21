@@ -74,22 +74,22 @@ export const clubDetailPageTemplate = (/** @type {Club} */ apiClubData)  =>  `
 
 export const bookProposalTemplate = `
 <fieldset>
-    <label>Nombre: <input type="text" name="name" id="name"></label>
-    <label>Año: <input type="text" name="year" id="year"></label>
-    <label>Género: <input type="text" name="genre" id="genre"> </label>
-    <label>Autor: <input type="text" name="author" id="author"></label>
-    <label>Páginas: <input type="text" name="pages" id="pages"></label>
+    <label>Nombre: <input type="text" name="name" id="name" required></label>
+    <label>Año: <input type="text" name="year" id="year" required></label>
+    <label>Género: <input type="text" name="genre" id="genre" required> </label>
+    <label>Autor: <input type="text" name="author" id="author" required></label>
+    <label>Páginas: <input type="text" name="pages" id="pages" required></label>
     <button type="submit">Enviar Propuesta</button>
 </fieldset>
 `
 
 export const movieProposalTemplate = `
 <fieldset>
-    <label>Nombre: <input type="text" name="name" id="name"></label>
-    <label>Año: <input type="text" name="year" id="year"></label>
-    <label>Género: <input type="text" name="genre" id="genre"></label>
-    <label>Director: <input type="text" name="director" id="director"></label>
-    <label>Minutos: <input type="text" name="minutes" id="minutes"></label>
+    <label>Nombre: <input type="text" name="name" id="name" required></label>
+    <label>Año: <input type="text" name="year" id="year" required></label>
+    <label>Género: <input type="text" name="genre" id="genre" required></label>
+    <label>Director: <input type="text" name="director" id="director" required></label>
+    <label>Minutos: <input type="text" name="minutes" id="minutes" required></label>
     <button type="submit">Enviar Propuesta</button>
 </fieldset>
 `

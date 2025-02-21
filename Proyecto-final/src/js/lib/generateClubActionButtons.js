@@ -10,7 +10,11 @@
  */
 
 export function generateClubActionButtons(club, loggedUser) {
-    if (!loggedUser) return '';
+    if (!loggedUser || !club) {
+        console.log('Error: Invalid club or logged user data.');
+        return '';
+    }
+
     let userButtons = '';
 
     if (!club.members.includes(loggedUser._id)) {

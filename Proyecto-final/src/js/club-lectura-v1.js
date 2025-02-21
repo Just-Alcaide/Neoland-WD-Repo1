@@ -881,6 +881,10 @@ function onCreateNewProposalSubmit(e) {
     form.reset();
 
     document.getElementById('addProposalTypeForm')?.classList.add('hidden');
+
+    const createNewProposalContainer = document.getElementById('createNewProposalContainer');
+    if (createNewProposalContainer) createNewProposalContainer.innerHTML = '';
+
     document.getElementById('addProposalButton')?.classList.remove('hidden');
 }
 
@@ -901,10 +905,12 @@ function createNewProposal() {
     const clubDetailPage = document.getElementById('clubDetailPage');
     const clubId = clubDetailPage?.getAttribute('data-id');
 
-    if (user && clubId) {
-        console.log('let me commit')
+    if (!user || !clubId) {
+        alert("Debes estar en un club para agregar una propuesta.");
+        return;
     }
 
+    //TODO, vamos a hacer antes la creación de productos.
 }
 
 //TODO: QUE LOS USER PUEDAN "CREAR PRODUCTOS" SI NO ESTÁN EN DB

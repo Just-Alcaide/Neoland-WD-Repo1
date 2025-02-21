@@ -878,7 +878,6 @@ function onCreateNewProposalSubmit(e) {
 
     createNewProposal()
 
-
     form.reset();
 
     document.getElementById('addProposalTypeForm')?.classList.add('hidden');
@@ -956,9 +955,7 @@ function createNewProduct(productData, productType) {
         return;
     }
 
-    store.product.create(newProduct);
-    store.saveState();
-    console.log(store.getState());
+    console.log('newProduct', newProduct);
 }
 
 //=====API METHODS=====//

@@ -1,8 +1,22 @@
 import { getAPIUserData, API_PORT} from "../../club-lectura-v1.js";
+import { importTemplate } from "../../lib/importTemplate.js";
+
 import AppCSS from '../../../css/app.css' with {type: 'css'} ;
 import LoginFormCSS from './LoginForm.css' with {type: 'css'} ;
 
+const TEMPLATE = {
+  id: 'loginFormTemplate',
+  url: './js/components/LoginForm/LoginForm.html'
+}
+
+await importTemplate(TEMPLATE.url);
+
 export class LoginForm extends HTMLElement {
+
+    get template(){
+      return document.getElementById(TEMPLATE.id);
+    }
+    
     constructor () {
         super()
     }
@@ -34,16 +48,16 @@ export class LoginForm extends HTMLElement {
       //Private Methods
 
       _setUpContent() {
-        this.shadowRoot.innerHTML = `
-            <form id="loginForm">
-            <h4>Iniciar Sesión: </h4>
-            <label for="loginEmail">Email: </label>
-            <input type="email" id="loginEmail" name="loginEmail" required>
-            <label for="loginPassword">Contraseña: </label>
-            <input type="password" id="loginPassword" name="loginPassword" required>
-            <button type="submit">Iniciar Sesión</button>
-            </form>
-        `
+
+        if (!this.shadowRoot) {
+            console.log ('no hay shadow root')
+        }
+        if (!this.template) {
+            console.log ('no hay template')
+        }
+
+        this.shadowRoot.innerHTML = '';
+        this.shadowRoot.appendChild(this.template.content.cloneNode(true));
       }
 
       async _onFormSubmit(e) {
@@ -89,5 +103,3 @@ export class LoginForm extends HTMLElement {
 }
 
 customElements.define('login-form', LoginForm)
-
-/*importar y exportar*/

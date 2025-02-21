@@ -25,7 +25,7 @@ export class ClubListItemLit extends LitElement {
             <p id="clubDescription">Descripción: ${this.club.description}</p>
             <p id="clubType">${this._getClubTypeText(this.club.type)}</p>
             <p id="clubMembers">Miembros: ${this.club.members.length || 0}</p>
-            <button @click=${this._visitClub}>Visitar Club</button>
+            ${!this.club.private ? html`<button @click=${this._visitClub}>Visitar Club</button>` : html``}
             <div id="clubActions">${this._renderClubActions()}</div>
         </li>
         `

@@ -780,7 +780,6 @@ function onAddProposalButtonClick(e) {
     const clubDetailComponent = document.querySelector('club-detail');
     if (!clubDetailComponent) return;
     const clubType = clubDetailComponent.club?.type;
-    console.log("CLUB TYPE: ", clubType);
 
     if (clubType === "book") {
         document.getElementById("bookProposal")?.parentElement?.classList.remove('hidden');
@@ -960,6 +959,9 @@ function createNewProduct(productData, productType) {
     } else {
         return;
     }
+
+    //TODO: ENVIAR A BASE DE DATOS
+
 
     console.log('newProduct', newProduct);
 }

@@ -79,7 +79,23 @@ export class ClubDetail extends HTMLElement {
 
         this.shadowRoot.getElementById('clubDetailName').textContent = clubData.name;
         this.shadowRoot.getElementById('clubDetailDescription').textContent = clubData.description
-        this.shadowRoot.getElementById('clubDetailType').textContent = clubData.type === "book" ? "Club de Lectura" : "Club de Cine";
+
+        let clubTypeText = "";
+        switch (clubData.type) {
+            case "book":
+                clubTypeText = "Club de Lectura";
+                break;
+            case "movie":
+                clubTypeText = "Club de Cine";
+                break;
+            case "mixed":
+                clubTypeText = "Club Mixto (Lectura y Cine)";
+                break;
+            default:
+                break;
+        }
+
+        this.shadowRoot.getElementById('clubDetailType').textContent = clubTypeText;
     }
 
     async _renderClubMembers() {

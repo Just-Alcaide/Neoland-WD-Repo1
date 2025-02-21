@@ -72,8 +72,23 @@ export class ClubListItem extends HTMLElement {
 
         this.shadowRoot.getElementById('clubName').textContent = `Nombre: ${clubData.name}`;
         this.shadowRoot.getElementById('clubDescription').textContent = `Descripción: ${clubData.description}`;
-        this.shadowRoot.getElementById('clubType').textContent = clubData.type === "book" ? "Club de Lectura" : "Club de Cine";
         this.shadowRoot.getElementById('clubMembers').textContent = `Miembros: ${clubData.members.length || 0}`;
+
+        let clubTypeText = "";
+        switch (clubData.type) {
+            case "book":
+                clubTypeText = "Club de Lectura";
+                break;
+            case "movie":
+                clubTypeText = "Club de Cine";
+                break;
+            case "mixed":
+                clubTypeText = "Club Mixto (Lectura y Cine)";
+                break;
+            default:
+                break;
+        }
+        this.shadowRoot.getElementById('clubType').textContent = clubTypeText;
 
         const visitClubButton = this.shadowRoot.querySelector('.visitClubButton');
         visitClubButton.setAttribute('data-id', clubData._id);

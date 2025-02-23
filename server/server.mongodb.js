@@ -490,7 +490,15 @@ async function createProposal(proposal) {
     const client = new MongoClient(URI)
     const SophiaSocialDB = client.db('SophiaSocial')
     const proposalsCollection = SophiaSocialDB.collection('proposals')
-    const returnValue = await proposalsCollection.insertOne(proposal)
+
+    const proposalToInsert = {
+        ...proposal,
+        productId: new ObjectId(String(proposal.productId)),
+        userId: new ObjectId(String(proposal.userId)),
+        clubId: new ObjectId(String(proposal.clubId))
+    }
+
+    const returnValue = await proposalsCollection.insertOne(proposalToInsert)
     console.log('db createProposal', returnValue, proposal._id)
     return proposal
 }

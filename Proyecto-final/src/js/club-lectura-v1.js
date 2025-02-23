@@ -849,7 +849,7 @@ function addProposalFormListener(formId) {
  * 
  * @param {SubmitEvent} e 
  */
-function onCreateNewProposalSubmit(e) {
+async function onCreateNewProposalSubmit(e) {
     e.preventDefault();
     const form = /** @type {HTMLFormElement} */ (e.target);
     const formData = getDataFromProposalForm(form)
@@ -873,18 +873,28 @@ function onCreateNewProposalSubmit(e) {
         minutes: Number(formData.minutes),
     }
 
-    createNewProduct(productData, productType);
+    try {
 
-    createNewProposal()
+        const newProduct = await createNewProduct(productData, productType);
+        console.log('producto creado y recibido: ', newProduct);
 
-    form.reset();
+        if (newProduct && newProduct._id) {
+            await createNewProposal(newProduct._id, productType);
+        } else {
+            console.log('No se pudo cargar el id del producto');
+        }
 
-    document.getElementById('addProposalTypeForm')?.classList.add('hidden');
+        form.reset();
+        document.getElementById('addProposalTypeForm')?.classList.add('hidden');
 
-    const createNewProposalContainer = document.getElementById('createNewProposalContainer');
-    if (createNewProposalContainer) createNewProposalContainer.innerHTML = '';
+        const createNewProposalContainer = document.getElementById('createNewProposalContainer');
+        if (createNewProposalContainer) createNewProposalContainer.innerHTML = '';
 
-    document.getElementById('addProposalButton')?.classList.remove('hidden');
+        document.getElementById('addProposalButton')?.classList.remove('hidden');
+
+    } catch (error) {
+        console.log('Error: ', error);
+    } 
 }
 
 /**
@@ -898,21 +908,42 @@ function getDataFromProposalForm(form) {
 
 //=====PROPOSAL METHODS=====//
 
-function createNewProposal() {
+/**
+ * @param {string} productId
+ * @param {string} productType
+ */
+
+async function createNewProposal(productId, productType) {
     const loggedUser = getLoggedUserData();
-    const user = loggedUser;
     const clubDetailPage = document.getElementById('clubDetailPage');
     const clubId = clubDetailPage?.getAttribute('data-id');
 
-    if (!user || !clubId) {
+    if (!loggedUser || !clubId) {
         alert("Debes estar en un club para agregar una propuesta.");
         return;
     }
 
-    //TODO, vamos a hacer antes la creación de productos.
+    const newProposal = {
+        productId,
+        productType,
+        userId: loggedUser._id,
+        clubId,
+    };
+
+    try {
+        const response = await getAPIProposalData(`${location.protocol}//${location.hostname}${API_PORT}/api/create/proposals`, 'POST', JSON.stringify(newProposal));
+
+        if(!response) {
+            throw new Error('No se pudo crear la propuesta.');
+        }
+
+        console.log('Propuesta creada: ', response);
+        alert('La propuesta se ha registrado correctamente.');
+    } catch (error) {
+        console.log('Error: ', error);
+    }
 }
 
-//TODO: QUE LOS USER PUEDAN "CREAR PRODUCTOS" SI NO ESTÁN EN DB
 //=====PRODUCT EVENTS=====//
 
 
@@ -937,33 +968,58 @@ function createNewProposal() {
  * @param {string} productType 
  */
 function createNewProduct(productData, productType) {
-    const productFactory = new ProductFactory();
-    let newProduct;
+    return new Promise((resolve, reject) => {
 
-    if (productType === PRODUCT_TYPE.BOOK) {
-        newProduct = productFactory.createProduct(PRODUCT_TYPE.BOOK, {
-            name: productData.name,
-            year: productData.year,
-            genre: productData.genre,
-            author: productData.author,
-            pages: productData.pages
+        const productFactory = new ProductFactory();
+        let newProduct;
+
+        if (productType === PRODUCT_TYPE.BOOK) {
+            newProduct = productFactory.createProduct(PRODUCT_TYPE.BOOK, {
+                name: productData.name,
+                year: productData.year,
+                genre: productData.genre,
+                author: productData.author,
+                pages: productData.pages
+            });
+        } else if (productType === PRODUCT_TYPE.MOVIE) {
+            newProduct = productFactory.createProduct(PRODUCT_TYPE.MOVIE, {
+                name: productData.name,
+                year: productData.year,
+                genre: productData.genre,
+                director: productData.director,
+                minutes: productData.minutes
+            });
+        } else {
+            return reject ('Product type not found');
+        }
+
+        let selectedApiFunction;
+        let requestEndpoint;
+
+        switch (productType) {
+            case PRODUCT_TYPE.BOOK:
+                selectedApiFunction = getAPIBookData;
+                requestEndpoint = `${location.protocol}//${location.hostname}${API_PORT}/api/create/books`;
+                break;
+            case PRODUCT_TYPE.MOVIE:
+                selectedApiFunction = getAPIMovieData;
+                requestEndpoint = `${location.protocol}//${location.hostname}${API_PORT}/api/create/movies`;
+                break;
+            default:
+                console.error('Product type not found');
+                return reject ('Product type not found');
+        }
+
+        selectedApiFunction?.(requestEndpoint, 'POST', JSON.stringify(newProduct))
+        .then(response => {
+            console.log("Producto creado con éxito:", response);
+            resolve(response);
+        })
+        .catch(error => {
+            console.error("Error al crear el producto:", error);
+            reject(error);
         });
-    } else if (productType === PRODUCT_TYPE.MOVIE) {
-        newProduct = productFactory.createProduct(PRODUCT_TYPE.MOVIE, {
-            name: productData.name,
-            year: productData.year,
-            genre: productData.genre,
-            director: productData.director,
-            minutes: productData.minutes
-        });
-    } else {
-        return;
-    }
-
-    //TODO: ENVIAR A BASE DE DATOS
-
-
-    console.log('newProduct', newProduct);
+    });
 }
 
 //=====API METHODS=====//

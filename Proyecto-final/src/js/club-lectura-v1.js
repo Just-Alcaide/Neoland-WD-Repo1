@@ -212,7 +212,7 @@ async function loginNewUser(apiUserData) {
  */
 function checkAuthStatus() {
     const loggedUser = getLoggedUserData();
-    const authForms = document.getElementById('authForms');
+    const authForms = document.getElementById('auth-forms');
     const userMenu = document.getElementById('userMenu');
     const welcomeMessage = document.getElementById('welcomeMessage');
 
@@ -474,7 +474,7 @@ async function updateClubsList() {
 
     try {
         /** @type {HTMLInputElement | null} */
-        const selectedTypeRadio = document.querySelector('input[name="clubTypeFilter"]:checked');
+        const selectedTypeRadio = document.querySelector('input[name="club-type-filter"]:checked');
         const selectedTypeFilter = selectedTypeRadio ? selectedTypeRadio.value : 'all';
 
         const clubNameFilter = document.getElementById('clubNameFilter');
@@ -560,7 +560,7 @@ async function visitClubPage(clubId) {
 
         dynamicContent.innerHTML = clubDetailPageTemplate(apiClubData);
 
-        const backToClubsListButton = document.getElementById('backToClubsListButton');
+        const backToClubsListButton = document.getElementById('back-to-clubs-list-button');
         if (backToClubsListButton) {
             backToClubsListButton.addEventListener('click', loadClubsPage);
         }
@@ -573,7 +573,7 @@ async function visitClubPage(clubId) {
         }
 
         const loggedUser = getLoggedUserData();
-        const addProposalButton = document.getElementById('addProposalButton');
+        const addProposalButton = document.getElementById('add-proposal-button');
         if (addProposalButton && loggedUser && apiClubData.members.includes(loggedUser._id)) {
             addProposalButton.classList.remove('hidden');
             addProposalButton.addEventListener('click', onAddProposalButtonClick);
@@ -593,7 +593,7 @@ async function loadClubsPage() {
         await updateClubsList();
 
         const loggedUser = getLoggedUserData();
-        const createClubForm = document.getElementById('createClubForm');
+        const createClubForm = document.getElementById('create-club-form');
         createClubForm?.addEventListener('submit', onCreateClubFormSubmit);
         if (loggedUser && createClubForm) {
             createClubForm.classList.remove('hidden');
@@ -604,7 +604,7 @@ async function loadClubsPage() {
             clubNameFilter.addEventListener('input', updateClubsList);
         }
 
-        const filterRadios = document.querySelectorAll('input[name="clubTypeFilter"]');
+        const filterRadios = document.querySelectorAll('input[name="club-type-filter"]');
         
         filterRadios.forEach(radio => {
             radio.addEventListener('change', updateClubsList);
@@ -629,7 +629,7 @@ async function loadClubsPage() {
  * @param {Club} club 
  */
 async function renderClubProposals(club) {
-    const proposalsList = document.getElementById('clubProposalsList');
+    const proposalsList = document.getElementById('club-proposals-list');
     if (!proposalsList) {
         return;
     }
@@ -773,7 +773,7 @@ async function deleteClub(clubId) {
 function onAddProposalButtonClick(e) {
     e.preventDefault();
 
-    const addProposalTypeForm = document.getElementById('addProposalTypeForm');
+    const addProposalTypeForm = document.getElementById('add-proposal-type-form');
     if (!addProposalTypeForm) return;
 
     /** @type {ClubDetail | null} */
@@ -796,7 +796,7 @@ function onAddProposalButtonClick(e) {
         addProposalTypeForm.addEventListener('change', onProposalTypeChange);
     }
 
-    const addProposalButton = document.getElementById('addProposalButton');
+    const addProposalButton = document.getElementById('add-proposal-button');
     if (addProposalButton) {
         addProposalButton.classList.add('hidden');
     }
@@ -808,7 +808,7 @@ function onAddProposalButtonClick(e) {
 function onProposalTypeChange(e) {
     e.preventDefault();
     const target = /** @type {HTMLInputElement} */ (e.target);
-    const createNewProposalContainer = document.getElementById('createNewProposalContainer');
+    const createNewProposalContainer = document.getElementById('create-new-proposal-container');
 
     if (!createNewProposalContainer || target.name !== 'proposalType') return;
 
@@ -885,12 +885,12 @@ async function onCreateNewProposalSubmit(e) {
         }
 
         form.reset();
-        document.getElementById('addProposalTypeForm')?.classList.add('hidden');
+        document.getElementById('add-proposal-type-form')?.classList.add('hidden');
 
-        const createNewProposalContainer = document.getElementById('createNewProposalContainer');
+        const createNewProposalContainer = document.getElementById('create-new-proposal-container');
         if (createNewProposalContainer) createNewProposalContainer.innerHTML = '';
 
-        document.getElementById('addProposalButton')?.classList.remove('hidden');
+        document.getElementById('add-proposal-button')?.classList.remove('hidden');
 
     } catch (error) {
         console.log('Error: ', error);
@@ -915,7 +915,7 @@ function getDataFromProposalForm(form) {
 
 async function createNewProposal(productId, productType) {
     const loggedUser = getLoggedUserData();
-    const clubDetailPage = document.getElementById('clubDetailPage');
+    const clubDetailPage = document.getElementById('create-detail-page');
     const clubId = clubDetailPage?.getAttribute('data-id');
 
     if (!loggedUser || !clubId) {

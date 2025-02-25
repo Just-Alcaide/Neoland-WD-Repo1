@@ -199,7 +199,8 @@ app.delete('/api/delete/movies/:id', async (req, res) => {
 //===CRUFD PROPOSALS===//
 
 app.post('/api/create/proposals', async (req, res) => {
-  res.json(await db.proposals.create(req.body))
+  const newProposal = await db.proposals.create(req.body);
+  res.json(newProposal);
 })
 
 app.get('/api/read/proposals', async (req, res) => {

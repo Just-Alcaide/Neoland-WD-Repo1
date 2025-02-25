@@ -490,6 +490,8 @@ async function createProposal(proposal) {
     const client = new MongoClient(URI)
     const SophiaSocialDB = client.db('SophiaSocial')
     const proposalsCollection = SophiaSocialDB.collection('proposals')
+    const clubsCollection = SophiaSocialDB.collection('clubs')
+    const usersCollection = SophiaSocialDB.collection('users')
 
     const proposalToInsert = {
         ...proposal,
@@ -498,9 +500,27 @@ async function createProposal(proposal) {
         clubId: new ObjectId(String(proposal.clubId))
     }
 
-    const returnValue = await proposalsCollection.insertOne(proposalToInsert)
-    console.log('db createProposal', returnValue, proposal._id)
-    return proposal
+    const result = await proposalsCollection.insertOne(proposalToInsert);
+
+    if (!result.acknowledged) {
+        throw new Error('Error al crear la propuesta');
+    }
+
+    const proposalId = result.insertedId;
+
+    await clubsCollection.updateOne(
+        {_id: new ObjectId(String(proposal.clubId))},
+        {$push: {proposals: proposalId}}
+    );
+
+    await usersCollection.updateOne(
+        {_id: new ObjectId(String(proposal.userId))},
+        {$push: {proposals: proposalId}}
+    );
+
+    console.log('propuesta creada y vinculada: ', proposalId);
+    return {...proposalToInsert, _id: proposalId};
+
 }
 
 /**

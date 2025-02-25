@@ -937,8 +937,12 @@ async function createNewProposal(productId, productType) {
             throw new Error('No se pudo crear la propuesta.');
         }
 
+        loggedUser.proposals.push(response._id);
+        sessionStorage.setItem('loggedUser', JSON.stringify(loggedUser));
+
         console.log('Propuesta creada: ', response);
         alert('La propuesta se ha registrado correctamente.');
+        
     } catch (error) {
         console.log('Error: ', error);
     }

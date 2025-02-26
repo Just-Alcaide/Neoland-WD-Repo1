@@ -490,9 +490,37 @@ async function createProposal(proposal) {
     const client = new MongoClient(URI)
     const SophiaSocialDB = client.db('SophiaSocial')
     const proposalsCollection = SophiaSocialDB.collection('proposals')
-    const returnValue = await proposalsCollection.insertOne(proposal)
-    console.log('db createProposal', returnValue, proposal._id)
-    return proposal
+    const clubsCollection = SophiaSocialDB.collection('clubs')
+    const usersCollection = SophiaSocialDB.collection('users')
+
+    const proposalToInsert = {
+        ...proposal,
+        productId: new ObjectId(String(proposal.productId)),
+        userId: new ObjectId(String(proposal.userId)),
+        clubId: new ObjectId(String(proposal.clubId))
+    }
+
+    const result = await proposalsCollection.insertOne(proposalToInsert);
+
+    if (!result.acknowledged) {
+        throw new Error('Error al crear la propuesta');
+    }
+
+    const proposalId = result.insertedId;
+
+    await clubsCollection.updateOne(
+        {_id: new ObjectId(String(proposal.clubId))},
+        {$push: {proposals: proposalId}}
+    );
+
+    await usersCollection.updateOne(
+        {_id: new ObjectId(String(proposal.userId))},
+        {$push: {proposals: proposalId}}
+    );
+
+    console.log('propuesta creada y vinculada: ', proposalId);
+    return {...proposalToInsert, _id: proposalId};
+
 }
 
 /**
@@ -522,10 +550,23 @@ async function getProposalsByIds(ids) {
     const client = new MongoClient(URI)
     const SophiaSocialDB = client.db('SophiaSocial')
     const proposalsCollection = SophiaSocialDB.collection('proposals')
+    const booksCollection = SophiaSocialDB.collection('books');
+    const moviesCollection = SophiaSocialDB.collection('movies');
+    const usersCollection = SophiaSocialDB.collection('users');
 
-    const objectIds = ids.map(id => new ObjectId(String(id)))
-    const proposals = await proposalsCollection.find({ _id: { $in: objectIds } }).toArray()
+    const objectIds = ids.map(id => new ObjectId(String(id)));
+    const proposals = await proposalsCollection.find({ _id: { $in: objectIds } }).toArray();
 
+    for (let proposal of proposals) {
+        if (proposal.productType === 'book') {
+            proposal.productData = await booksCollection.findOne({ _id: new ObjectId(String(proposal.productId)) });
+        } else if (proposal.productType === 'movie') {
+            proposal.productData = await moviesCollection.findOne({ _id: new ObjectId(String(proposal.productId)) });
+        }
+        const user = await usersCollection.findOne({ _id: new ObjectId(String(proposal.userId)) });
+        proposal.userName = user ? user.name : 'Usuario desconocido';
+    }
+    
     return proposals
 }
 

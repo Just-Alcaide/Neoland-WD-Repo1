@@ -212,7 +212,7 @@ async function loginNewUser(apiUserData) {
  */
 function checkAuthStatus() {
     const loggedUser = getLoggedUserData();
-    const authForms = document.getElementById('authForms');
+    const authForms = document.getElementById('auth-forms');
     const userMenu = document.getElementById('userMenu');
     const welcomeMessage = document.getElementById('welcomeMessage');
 
@@ -474,7 +474,7 @@ async function updateClubsList() {
 
     try {
         /** @type {HTMLInputElement | null} */
-        const selectedTypeRadio = document.querySelector('input[name="clubTypeFilter"]:checked');
+        const selectedTypeRadio = document.querySelector('input[name="club-type-filter"]:checked');
         const selectedTypeFilter = selectedTypeRadio ? selectedTypeRadio.value : 'all';
 
         const clubNameFilter = document.getElementById('clubNameFilter');
@@ -560,7 +560,7 @@ async function visitClubPage(clubId) {
 
         dynamicContent.innerHTML = clubDetailPageTemplate(apiClubData);
 
-        const backToClubsListButton = document.getElementById('backToClubsListButton');
+        const backToClubsListButton = document.getElementById('back-to-clubs-list-button');
         if (backToClubsListButton) {
             backToClubsListButton.addEventListener('click', loadClubsPage);
         }
@@ -573,7 +573,7 @@ async function visitClubPage(clubId) {
         }
 
         const loggedUser = getLoggedUserData();
-        const addProposalButton = document.getElementById('addProposalButton');
+        const addProposalButton = document.getElementById('add-proposal-button');
         if (addProposalButton && loggedUser && apiClubData.members.includes(loggedUser._id)) {
             addProposalButton.classList.remove('hidden');
             addProposalButton.addEventListener('click', onAddProposalButtonClick);
@@ -593,7 +593,7 @@ async function loadClubsPage() {
         await updateClubsList();
 
         const loggedUser = getLoggedUserData();
-        const createClubForm = document.getElementById('createClubForm');
+        const createClubForm = document.getElementById('create-club-form');
         createClubForm?.addEventListener('submit', onCreateClubFormSubmit);
         if (loggedUser && createClubForm) {
             createClubForm.classList.remove('hidden');
@@ -604,7 +604,7 @@ async function loadClubsPage() {
             clubNameFilter.addEventListener('input', updateClubsList);
         }
 
-        const filterRadios = document.querySelectorAll('input[name="clubTypeFilter"]');
+        const filterRadios = document.querySelectorAll('input[name="club-type-filter"]');
         
         filterRadios.forEach(radio => {
             radio.addEventListener('change', updateClubsList);
@@ -618,21 +618,38 @@ async function loadClubsPage() {
             })
         })
 
-        //event listener for search club
+        
         const searchClubButton = document.getElementById('searchClubButton');
         searchClubButton?.addEventListener('click', onSearchClubButtonClick);        
     }
 }
 
+
+/**
+ * @typedef {Object} apiProposal
+ * @property {string} _id
+ * @property {string} productId
+ * @property {'book' | 'movie'} productType
+ * @property {string} userId
+ * @property {string} clubId
+ * @property {string} [userName]
+ * @property {Object} [productData]
+ * @property {string} productData._id
+ * @property {string} productData.name
+ * @property {string} productData.genre
+ * @property {number} productData.year
+ * @property {string} [productData.author]
+ * @property {string} [productData.director]
+ * @property {number} [productData.pages]
+ * @property {number} [productData.minutes]
+ */
 /**
  * render club proposals
  * @param {Club} club 
  */
 async function renderClubProposals(club) {
-    const proposalsList = document.getElementById('clubProposalsList');
-    if (!proposalsList) {
-        return;
-    }
+    const proposalsList = document.getElementById('club-proposals-list');
+    if (!proposalsList) return;
 
     try {
         const apiProposalData = await getAPIProposalData(`${location.protocol}//${location.hostname}${API_PORT}/api/read/proposals`, 'POST', JSON.stringify({ids: club.proposals}));
@@ -642,19 +659,65 @@ async function renderClubProposals(club) {
             return;
         }
 
-        proposalsList.innerHTML = apiProposalData.map((/** @type {Proposal} */ proposal) => {
+        proposalsList.innerHTML = apiProposalData.map(( /** @type {apiProposal} */ apiProposal) => {
+            const product = apiProposal.productData
+            if (!product) return '';
+
             return `
-                <li>
-                <-- TODO: METER LOS DATOS DE LAS PROPUESTAS. ${proposal} -->
+                <li class="proposal-item">
+                    <p><strong>Nombre: </strong>${product.name}</p>
+                    <p>${apiProposal.productType === 'book' ? 'Libro' : 'Película'}</p>
+                    <p><strong>Propuesta de:</strong> ${apiProposal.userName || 'Usuario desconocido'}</p>
+                    <button class="toggleProposalDetailsButton" data-id="${apiProposal._id}">Ver más</button>
+                    <div id="proposal-details-${apiProposal._id}" class="proposal-details hidden">
+                        <p><strong>${apiProposal.productType === 'book' ? 'Autor' : 'Director'}:</strong> ${product.author || product.director}</p>
+                        <p><strong>Año:</strong> ${product.year}</p>
+                        <p><strong>Género:</strong> ${product.genre}</p>
+                        ${
+                            apiProposal.productType === 'book'
+                                ? `<p><strong>Páginas:</strong> ${product.pages}</p>`
+                                : `<p><strong>Minutos:</strong> ${product.minutes} min</p>`
+                        }
+                    </div>
+                    <button class="voteProposalButton" data-id="${apiProposal._id}">+1 Voto</button>    
                 </li>
             `;
         }).join('');
 
-        //TODO: METER LISTENERS PARA VOTACIONES
+        proposalsList.querySelectorAll('.toggleProposalDetailsButton').forEach(button => {
+            button.addEventListener('click', (e) => {
+            const target = /**@type {HTMLElement} */ (e.target);
+            const proposalId = target.getAttribute('data-id');
+            const detailsElement = document.getElementById(`proposal-details-${proposalId}`);
+            
+            if (detailsElement) {
+                detailsElement.classList.toggle('hidden');
+                const target = /**@type {HTMLElement} */ (e.target);
+                target.textContent = detailsElement.classList.contains('hidden') ? 'Ver más' : 'Ver menos';
+                }
+            });
+        });
+
+        proposalsList.querySelectorAll('.voteProposalButton').forEach(button => {
+            button.addEventListener('click', async (e) => {
+                const target = /**@type {HTMLElement} */ (e.target);
+                const proposalId = target.getAttribute('data-id');
+                if (proposalId) await voteForProposal(proposalId);
+            });
+        });
 
     } catch (error) {
         console.log('Error: ', error);
     }
+}
+
+/**
+ * @param {string} proposalId - id de la propuesta
+ */
+async function voteForProposal(proposalId) {
+    const loggedUser = getLoggedUserData();
+    if (!loggedUser) return;
+    console.log(`${loggedUser._id} votando por la propuesta ${proposalId}`);
 }
 
 /**
@@ -773,7 +836,7 @@ async function deleteClub(clubId) {
 function onAddProposalButtonClick(e) {
     e.preventDefault();
 
-    const addProposalTypeForm = document.getElementById('addProposalTypeForm');
+    const addProposalTypeForm = document.getElementById('add-proposal-type-form');
     if (!addProposalTypeForm) return;
 
     /** @type {ClubDetail | null} */
@@ -796,7 +859,7 @@ function onAddProposalButtonClick(e) {
         addProposalTypeForm.addEventListener('change', onProposalTypeChange);
     }
 
-    const addProposalButton = document.getElementById('addProposalButton');
+    const addProposalButton = document.getElementById('add-proposal-button');
     if (addProposalButton) {
         addProposalButton.classList.add('hidden');
     }
@@ -808,7 +871,7 @@ function onAddProposalButtonClick(e) {
 function onProposalTypeChange(e) {
     e.preventDefault();
     const target = /** @type {HTMLInputElement} */ (e.target);
-    const createNewProposalContainer = document.getElementById('createNewProposalContainer');
+    const createNewProposalContainer = document.getElementById('create-new-proposal-container');
 
     if (!createNewProposalContainer || target.name !== 'proposalType') return;
 
@@ -849,7 +912,7 @@ function addProposalFormListener(formId) {
  * 
  * @param {SubmitEvent} e 
  */
-function onCreateNewProposalSubmit(e) {
+async function onCreateNewProposalSubmit(e) {
     e.preventDefault();
     const form = /** @type {HTMLFormElement} */ (e.target);
     const formData = getDataFromProposalForm(form)
@@ -873,18 +936,47 @@ function onCreateNewProposalSubmit(e) {
         minutes: Number(formData.minutes),
     }
 
-    createNewProduct(productData, productType);
+    try {
 
-    createNewProposal()
+        const newProduct = await createNewProduct(productData, productType);
+        console.log('producto creado y recibido: ', newProduct);
 
-    form.reset();
+        if (newProduct && newProduct._id) {
+            await createNewProposal(newProduct._id, productType);
+        } else {
+            console.log('No se pudo cargar el id del producto');
+        }
 
-    document.getElementById('addProposalTypeForm')?.classList.add('hidden');
+        const clubDetailPage = document.getElementById('create-detail-page');
+        const clubId = clubDetailPage?.getAttribute('data-id');
 
-    const createNewProposalContainer = document.getElementById('createNewProposalContainer');
-    if (createNewProposalContainer) createNewProposalContainer.innerHTML = '';
+        if (clubId) {
+            const updatedClubData = await getAPIClubData(
+                `${location.protocol}//${location.hostname}${API_PORT}/api/read/clubs/${clubId}`
+            );
+        
+            console.log("Club actualizado con nuevas propuestas:", updatedClubData);
+        
+            if (updatedClubData) {
+                renderClubProposals(updatedClubData);
+            } else {
+                console.log("No se encontraron datos actualizados del club");
+            }
+        }
 
-    document.getElementById('addProposalButton')?.classList.remove('hidden');
+        form.reset();
+        document.getElementById('add-proposal-type-form')?.classList.add('hidden');
+
+        const createNewProposalContainer = document.getElementById('create-new-proposal-container');
+        if (createNewProposalContainer) createNewProposalContainer.innerHTML = '';
+
+        document.getElementById('add-proposal-button')?.classList.remove('hidden');
+
+        
+
+    } catch (error) {
+        console.log('Error: ', error);
+    } 
 }
 
 /**
@@ -898,21 +990,48 @@ function getDataFromProposalForm(form) {
 
 //=====PROPOSAL METHODS=====//
 
-function createNewProposal() {
+/**
+ * @param {string} productId
+ * @param {string} productType
+ */
+
+async function createNewProposal(productId, productType) {
     const loggedUser = getLoggedUserData();
-    const user = loggedUser;
-    const clubDetailPage = document.getElementById('clubDetailPage');
+    const clubDetailPage = document.getElementById('create-detail-page');
     const clubId = clubDetailPage?.getAttribute('data-id');
 
-    if (!user || !clubId) {
+    if (!loggedUser || !clubId) {
         alert("Debes estar en un club para agregar una propuesta.");
         return;
     }
 
-    //TODO, vamos a hacer antes la creación de productos.
+    const newProposal = {
+        productId,
+        productType,
+        userId: loggedUser._id,
+        clubId,
+    };
+
+    try {
+        const response = await getAPIProposalData(`${location.protocol}//${location.hostname}${API_PORT}/api/create/proposals`, 'POST', JSON.stringify(newProposal));
+
+
+        if(!response) {
+            throw new Error('No se pudo crear la propuesta.');
+        }
+
+        loggedUser.proposals.push(response._id);
+        sessionStorage.setItem('loggedUser', JSON.stringify(loggedUser));
+
+        console.log('Propuesta creada: ', response);
+        alert('La propuesta se ha registrado correctamente.');
+        return response;
+
+    } catch (error) {
+        console.log('Error: ', error);
+    }
 }
 
-//TODO: QUE LOS USER PUEDAN "CREAR PRODUCTOS" SI NO ESTÁN EN DB
 //=====PRODUCT EVENTS=====//
 
 
@@ -937,33 +1056,58 @@ function createNewProposal() {
  * @param {string} productType 
  */
 function createNewProduct(productData, productType) {
-    const productFactory = new ProductFactory();
-    let newProduct;
+    return new Promise((resolve, reject) => {
 
-    if (productType === PRODUCT_TYPE.BOOK) {
-        newProduct = productFactory.createProduct(PRODUCT_TYPE.BOOK, {
-            name: productData.name,
-            year: productData.year,
-            genre: productData.genre,
-            author: productData.author,
-            pages: productData.pages
+        const productFactory = new ProductFactory();
+        let newProduct;
+
+        if (productType === PRODUCT_TYPE.BOOK) {
+            newProduct = productFactory.createProduct(PRODUCT_TYPE.BOOK, {
+                name: productData.name,
+                year: productData.year,
+                genre: productData.genre,
+                author: productData.author,
+                pages: productData.pages
+            });
+        } else if (productType === PRODUCT_TYPE.MOVIE) {
+            newProduct = productFactory.createProduct(PRODUCT_TYPE.MOVIE, {
+                name: productData.name,
+                year: productData.year,
+                genre: productData.genre,
+                director: productData.director,
+                minutes: productData.minutes
+            });
+        } else {
+            return reject ('Product type not found');
+        }
+
+        let selectedApiFunction;
+        let requestEndpoint;
+
+        switch (productType) {
+            case PRODUCT_TYPE.BOOK:
+                selectedApiFunction = getAPIBookData;
+                requestEndpoint = `${location.protocol}//${location.hostname}${API_PORT}/api/create/books`;
+                break;
+            case PRODUCT_TYPE.MOVIE:
+                selectedApiFunction = getAPIMovieData;
+                requestEndpoint = `${location.protocol}//${location.hostname}${API_PORT}/api/create/movies`;
+                break;
+            default:
+                console.error('Product type not found');
+                return reject ('Product type not found');
+        }
+
+        selectedApiFunction?.(requestEndpoint, 'POST', JSON.stringify(newProduct))
+        .then(response => {
+            console.log("Producto creado con éxito:", response);
+            resolve(response);
+        })
+        .catch(error => {
+            console.error("Error al crear el producto:", error);
+            reject(error);
         });
-    } else if (productType === PRODUCT_TYPE.MOVIE) {
-        newProduct = productFactory.createProduct(PRODUCT_TYPE.MOVIE, {
-            name: productData.name,
-            year: productData.year,
-            genre: productData.genre,
-            director: productData.director,
-            minutes: productData.minutes
-        });
-    } else {
-        return;
-    }
-
-    //TODO: ENVIAR A BASE DE DATOS
-
-
-    console.log('newProduct', newProduct);
+    });
 }
 
 //=====API METHODS=====//

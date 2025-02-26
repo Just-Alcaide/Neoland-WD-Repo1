@@ -2,10 +2,10 @@
 /** @typedef {import('../js/classes/Club.js').Club} Club */
 
 export const clubPageTemplate = `
-    <section id="clubsPage">
+    <section id="clubs-page">
         <h2>Buscar un Club:</h2>
         <form id="clubSearchForm">
-        <fieldset id="clubSearch">
+        <fieldset id="clubs-search">
             <legend>Nombre del Club:</legend>
             <input type="text" name="clubSearchName" id="clubSearchName">
             <button type="submit" id="searchClubButton">Buscar</button>
@@ -15,11 +15,11 @@ export const clubPageTemplate = `
 
         <h2>Tu Lista de Clubs:</h2>
 
-        <fieldset id="clubTypeFilter">
+        <fieldset id="club-type-filter">
             <legend>Filtrar Clubs por Tipo:</legend>
-            <label><input type="radio" name="clubTypeFilter" value="all" checked> Todos </label>
-            <label><input type="radio" name="clubTypeFilter" value="book"> Clubs de Lectura </label>
-            <label><input type="radio" name="clubTypeFilter" value="movie"> Clubs de Cine </label>
+            <label><input type="radio" name="club-type-filter" value="all" checked> Todos </label>
+            <label><input type="radio" name="club-type-filter" value="book"> Clubs de Lectura </label>
+            <label><input type="radio" name="club-type-filter" value="movie"> Clubs de Cine </label>
             <legend>Filtrar Clubs por Nombre:</legend>
             <input type="text" name="clubNameFilter" id="clubNameFilter" placeholder="Filtrar por Nombre">
         </fieldset>
@@ -27,7 +27,7 @@ export const clubPageTemplate = `
         <ul id="clubsList">
         </ul>
 
-        <form id="createClubForm" class="hidden">
+        <form id="create-club-form" class="hidden">
             <h4>Crear Nuevo Club</h4>
             <label for="clubName">Nombre del Club:</label>
             <input type="text" name="clubName" id="clubName" required>
@@ -52,22 +52,22 @@ export const clubPageTemplate = `
 `;
 
 export const clubDetailPageTemplate = (/** @type {Club} */ apiClubData)  =>  `
-    <section id="clubDetailPage" data-id="${apiClubData._id}">
+    <section id="create-detail-page" data-id="${apiClubData._id}">
     
-        <button id="backToClubsListButton">Volver a la Lista de Clubs</button>
+        <button id="back-to-clubs-list-button">Volver a la Lista de Clubs</button>
 
         <club-detail club='${JSON.stringify(apiClubData)}'></club-detail>
 
         <h4>Propuestas del Club:</h4>
-        <ul id="clubProposalsList"></ul>
+        <ul id="club-proposals-list"></ul>
 
-        <button id="addProposalButton" class="hidden">Agregar Propuesta</button>
+        <button id="add-proposal-button" class="hidden">Agregar Propuesta</button>
 
-        <form id="addProposalTypeForm" class="hidden">
+        <form id="add-proposal-type-form" class="hidden">
             <label class="hidden"><input type="radio" name="proposalType" id="bookProposal" value="bookProposal">Propuesta de Libro</label>
             <label class="hidden"><input type="radio" name="proposalType" id="movieProposal" value="movieProposal">Propuesta de Película</label>
         </form>
-        <section id="createNewProposalContainer"></section>
+        <section id="create-new-proposal-container"></section>
 
     </section>
 `

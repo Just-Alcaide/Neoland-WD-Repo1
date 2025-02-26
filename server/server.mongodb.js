@@ -550,10 +550,23 @@ async function getProposalsByIds(ids) {
     const client = new MongoClient(URI)
     const SophiaSocialDB = client.db('SophiaSocial')
     const proposalsCollection = SophiaSocialDB.collection('proposals')
+    const booksCollection = SophiaSocialDB.collection('books');
+    const moviesCollection = SophiaSocialDB.collection('movies');
+    const usersCollection = SophiaSocialDB.collection('users');
 
-    const objectIds = ids.map(id => new ObjectId(String(id)))
-    const proposals = await proposalsCollection.find({ _id: { $in: objectIds } }).toArray()
+    const objectIds = ids.map(id => new ObjectId(String(id)));
+    const proposals = await proposalsCollection.find({ _id: { $in: objectIds } }).toArray();
 
+    for (let proposal of proposals) {
+        if (proposal.productType === 'book') {
+            proposal.productData = await booksCollection.findOne({ _id: new ObjectId(String(proposal.productId)) });
+        } else if (proposal.productType === 'movie') {
+            proposal.productData = await moviesCollection.findOne({ _id: new ObjectId(String(proposal.productId)) });
+        }
+        const user = await usersCollection.findOne({ _id: new ObjectId(String(proposal.userId)) });
+        proposal.userName = user ? user.name : 'Usuario desconocido';
+    }
+    
     return proposals
 }
 

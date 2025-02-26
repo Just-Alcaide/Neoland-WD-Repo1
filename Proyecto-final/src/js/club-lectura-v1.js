@@ -618,21 +618,38 @@ async function loadClubsPage() {
             })
         })
 
-        //event listener for search club
+        
         const searchClubButton = document.getElementById('searchClubButton');
         searchClubButton?.addEventListener('click', onSearchClubButtonClick);        
     }
 }
 
+
+/**
+ * @typedef {Object} apiProposal
+ * @property {string} _id
+ * @property {string} productId
+ * @property {'book' | 'movie'} productType
+ * @property {string} userId
+ * @property {string} clubId
+ * @property {string} [userName]
+ * @property {Object} [productData]
+ * @property {string} productData._id
+ * @property {string} productData.name
+ * @property {string} productData.genre
+ * @property {number} productData.year
+ * @property {string} [productData.author]
+ * @property {string} [productData.director]
+ * @property {number} [productData.pages]
+ * @property {number} [productData.minutes]
+ */
 /**
  * render club proposals
  * @param {Club} club 
  */
 async function renderClubProposals(club) {
     const proposalsList = document.getElementById('club-proposals-list');
-    if (!proposalsList) {
-        return;
-    }
+    if (!proposalsList) return;
 
     try {
         const apiProposalData = await getAPIProposalData(`${location.protocol}//${location.hostname}${API_PORT}/api/read/proposals`, 'POST', JSON.stringify({ids: club.proposals}));
@@ -642,19 +659,65 @@ async function renderClubProposals(club) {
             return;
         }
 
-        proposalsList.innerHTML = apiProposalData.map((/** @type {Proposal} */ proposal) => {
+        proposalsList.innerHTML = apiProposalData.map(( /** @type {apiProposal} */ apiProposal) => {
+            const product = apiProposal.productData
+            if (!product) return '';
+
             return `
-                <li>
-                <-- TODO: METER LOS DATOS DE LAS PROPUESTAS. ${proposal} -->
+                <li class="proposal-item">
+                    <p><strong>Nombre: </strong>${product.name}</p>
+                    <p>${apiProposal.productType === 'book' ? 'Libro' : 'Película'}</p>
+                    <p><strong>Propuesta de:</strong> ${apiProposal.userName || 'Usuario desconocido'}</p>
+                    <button class="toggleProposalDetailsButton" data-id="${apiProposal._id}">Ver más</button>
+                    <div id="proposal-details-${apiProposal._id}" class="proposal-details hidden">
+                        <p><strong>${apiProposal.productType === 'book' ? 'Autor' : 'Director'}:</strong> ${product.author || product.director}</p>
+                        <p><strong>Año:</strong> ${product.year}</p>
+                        <p><strong>Género:</strong> ${product.genre}</p>
+                        ${
+                            apiProposal.productType === 'book'
+                                ? `<p><strong>Páginas:</strong> ${product.pages}</p>`
+                                : `<p><strong>Minutos:</strong> ${product.minutes} min</p>`
+                        }
+                    </div>
+                    <button class="voteProposalButton" data-id="${apiProposal._id}">+1 Voto</button>    
                 </li>
             `;
         }).join('');
 
-        //TODO: METER LISTENERS PARA VOTACIONES
+        proposalsList.querySelectorAll('.toggleProposalDetailsButton').forEach(button => {
+            button.addEventListener('click', (e) => {
+            const target = /**@type {HTMLElement} */ (e.target);
+            const proposalId = target.getAttribute('data-id');
+            const detailsElement = document.getElementById(`proposal-details-${proposalId}`);
+            
+            if (detailsElement) {
+                detailsElement.classList.toggle('hidden');
+                const target = /**@type {HTMLElement} */ (e.target);
+                target.textContent = detailsElement.classList.contains('hidden') ? 'Ver más' : 'Ver menos';
+                }
+            });
+        });
+
+        proposalsList.querySelectorAll('.voteProposalButton').forEach(button => {
+            button.addEventListener('click', async (e) => {
+                const target = /**@type {HTMLElement} */ (e.target);
+                const proposalId = target.getAttribute('data-id');
+                if (proposalId) await voteForProposal(proposalId);
+            });
+        });
 
     } catch (error) {
         console.log('Error: ', error);
     }
+}
+
+/**
+ * @param {string} proposalId - id de la propuesta
+ */
+async function voteForProposal(proposalId) {
+    const loggedUser = getLoggedUserData();
+    if (!loggedUser) return;
+    console.log(`${loggedUser._id} votando por la propuesta ${proposalId}`);
 }
 
 /**
@@ -884,6 +947,23 @@ async function onCreateNewProposalSubmit(e) {
             console.log('No se pudo cargar el id del producto');
         }
 
+        const clubDetailPage = document.getElementById('create-detail-page');
+        const clubId = clubDetailPage?.getAttribute('data-id');
+
+        if (clubId) {
+            const updatedClubData = await getAPIClubData(
+                `${location.protocol}//${location.hostname}${API_PORT}/api/read/clubs/${clubId}`
+            );
+        
+            console.log("Club actualizado con nuevas propuestas:", updatedClubData);
+        
+            if (updatedClubData) {
+                renderClubProposals(updatedClubData);
+            } else {
+                console.log("No se encontraron datos actualizados del club");
+            }
+        }
+
         form.reset();
         document.getElementById('add-proposal-type-form')?.classList.add('hidden');
 
@@ -891,6 +971,8 @@ async function onCreateNewProposalSubmit(e) {
         if (createNewProposalContainer) createNewProposalContainer.innerHTML = '';
 
         document.getElementById('add-proposal-button')?.classList.remove('hidden');
+
+        
 
     } catch (error) {
         console.log('Error: ', error);
@@ -933,6 +1015,7 @@ async function createNewProposal(productId, productType) {
     try {
         const response = await getAPIProposalData(`${location.protocol}//${location.hostname}${API_PORT}/api/create/proposals`, 'POST', JSON.stringify(newProposal));
 
+
         if(!response) {
             throw new Error('No se pudo crear la propuesta.');
         }
@@ -942,7 +1025,8 @@ async function createNewProposal(productId, productType) {
 
         console.log('Propuesta creada: ', response);
         alert('La propuesta se ha registrado correctamente.');
-        
+        return response;
+
     } catch (error) {
         console.log('Error: ', error);
     }

@@ -38,17 +38,14 @@ export class ClubDetail extends HTMLElement {
     //========Life Cycle Callbacks==========//
 
     connectedCallback() {
-        console.log("Custom element added to page.");
         this.shadowRoot.adoptedStyleSheets.push(AppCSS, ClubDetailCSS);
     }
 
     adoptedCallback() {
     }
 
-    attributeChangedCallback(name, oldValue, newValue) {
+    attributeChangedCallback(name) {
         if (name === 'club') {
-            console.log(`Attribute ${name} has changed.`, oldValue, newValue);
-
             this._setUpContent();
         }
     }

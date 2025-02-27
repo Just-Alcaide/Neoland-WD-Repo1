@@ -45,6 +45,7 @@ export const db = {
         get: getProposals,
         getByIds: getProposalsByIds,
         update: updateProposal,
+        vote: voteProposal,
         delete: deleteProposal,
     },
     votes: {
@@ -586,6 +587,17 @@ async function updateProposal(id, updates) {
     return returnValue
 }
 
+async function voteProposal(proposalId) {
+    const client = new MongoClient(URI);
+    const SophiaSocialDB = client.db('SophiaSocial');
+    const proposalsCollection = SophiaSocialDB.collection('proposals');
+
+    return await proposalsCollection.updateOne(
+        {_id: new ObjectId(String(proposalId))},
+        {$inc: {votes: 1}}
+    )
+}
+
 /**
  * Deletes a proposal by id.
  * @param {string} id The id of the proposal to be deleted.
@@ -612,9 +624,15 @@ async function createVote(vote) {
     const client = new MongoClient(URI)
     const SophiaSocialDB = client.db('SophiaSocial')
     const votesCollection = SophiaSocialDB.collection('votes')
-    const returnValue = await votesCollection.insertOne(vote)
-    console.log('db createVote', returnValue, vote._id)
-    return vote
+
+    const voteToInsert = {
+        proposal_Id: new ObjectId(String(vote.proposalId)),
+        user_Id: new ObjectId(String(vote.userId)),
+    }
+    console.log("ingresado voto en base de datos: ", voteToInsert);
+
+    const returnValue = await votesCollection.insertOne(voteToInsert);
+    return returnValue
 }
 
 /**

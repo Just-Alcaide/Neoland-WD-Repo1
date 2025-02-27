@@ -2,6 +2,7 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import {db} from "./server.mongodb.js";
 import {Oauth2} from "./server.oauth.js";
+import { ObjectId } from 'mongodb';
 
 const app = express();
 const port = process.env.PORT;
@@ -230,7 +231,30 @@ app.delete('/api/delete/proposals/:id', async (req, res) => {
 //===CRUFD VOTES===//
 
 app.post('/api/create/votes', async (req, res) => {
-  res.json(await db.votes.create(req.body))
+  let { proposalId, userId } = req.body;
+
+  if (!proposalId || !userId) {
+    return res.status(400).json({ success: false, message: "ID de propuesta o usuario inválido" });
+  }
+
+  try {
+    proposalId = new ObjectId(String(proposalId));
+    userId = new ObjectId(String(userId));
+
+    const alreadyVoted = await db.votes.get({ proposalId, userId });
+
+    if (alreadyVoted.length > 0) {
+      return res.status(400).json({ success: false, message: "El usuario ya ha votado esta propuesta" });
+    }
+
+    const newVote = await db.votes.create({ proposalId, userId });
+    await db.proposals.vote(proposalId);
+    res.json(newVote);
+
+  } catch (error) {
+    console.error( "Error al registrar el voto:", error);
+    res.status(500).json({ success: false, message: "Error al registrar el voto" });
+  }
 })
 
 app.get('/api/read/votes', async (req, res) => {

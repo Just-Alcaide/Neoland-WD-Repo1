@@ -633,6 +633,7 @@ async function loadClubsPage() {
  * @property {string} userId
  * @property {string} clubId
  * @property {string} [userName]
+ * @property {number} votes
  * @property {Object} [productData]
  * @property {string} productData._id
  * @property {string} productData.name
@@ -666,8 +667,9 @@ async function renderClubProposals(club) {
             return `
                 <li class="proposal-item">
                     <p><strong>Nombre: </strong>${product.name}</p>
-                    <p>${apiProposal.productType === 'book' ? 'Libro' : 'Película'}</p>
+                    <p>${apiProposal.productType === 'book' ? 'Libro' : 'Película'}</p>
                     <p><strong>Propuesta de:</strong> ${apiProposal.userName || 'Usuario desconocido'}</p>
+                    <p><strong>Votos: </strong><span class="voteCount">${apiProposal.votes || 0}</span></p>
                     <button class="toggleProposalDetailsButton" data-id="${apiProposal._id}">Ver más</button>
                     <div id="proposal-details-${apiProposal._id}" class="proposal-details hidden">
                         <p><strong>${apiProposal.productType === 'book' ? 'Autor' : 'Director'}:</strong> ${product.author || product.director}</p>
@@ -716,8 +718,54 @@ async function renderClubProposals(club) {
  */
 async function voteForProposal(proposalId) {
     const loggedUser = getLoggedUserData();
-    if (!loggedUser) return;
-    console.log(`${loggedUser._id} votando por la propuesta ${proposalId}`);
+    if (!loggedUser) {
+        alert('Debes iniciar sesión para votar por una propuesta');
+        return;
+    }
+
+    try {
+        const response = await getAPIVotesData(`${location.protocol}//${location.hostname}${API_PORT}/api/create/votes`, 'POST', JSON.stringify({proposalId: proposalId, userId: loggedUser._id}));
+
+        console.log('respuesta de la api: ', response);
+
+        const data = response;
+
+        if (data.acknowledged) {
+            console.log('Voto registrado con exito', data.insertedId);
+            updateVoteUI(proposalId);
+        } else {
+            console.error('Error al registrar el voto');
+        }
+        
+        
+        
+
+    } catch (error) {
+        console.log('Error al votar: ', error);
+    }
+}
+
+
+/**
+ * 
+ * @param {string} proposalId 
+ */
+function updateVoteUI(proposalId) {
+    const voteButton = document.querySelector(`.voteProposalButton[data-id="${proposalId}"]`);
+    if (voteButton) {
+        const proposalItem = voteButton.closest('.proposal-item');
+        const voteCountElement = proposalItem?.querySelector('.vote-count');
+
+        if (voteCountElement && voteCountElement.textContent !== null) {
+            let currentVotes = parseInt(voteCountElement.textContent, 10) || 0;
+            voteCountElement.textContent = String(currentVotes + 1);
+        }
+
+        if (voteButton instanceof HTMLButtonElement) {
+            voteButton.disabled = true;
+        }
+        voteButton.classList.add('hidden');
+    }
 }
 
 /**
@@ -1260,6 +1308,12 @@ async function getAPIBookData (apiURL = `${location.protocol}//${location.hostna
         if (data) {
           headers.append('Content-Length', String(JSON.stringify(data).length))
         }
+
+        const loggedUser = getLoggedUserData();
+        if (loggedUser) {
+            headers.append('Authorization', `Bearer ${loggedUser.token}`)
+        }
+
         apiBookData = await simpleFetch(apiURL, {
             signal: AbortSignal.timeout(3000),
             method: method,
@@ -1299,6 +1353,12 @@ async function getAPIMovieData (apiURL = `${location.protocol}//${location.hostn
         if (data) {
           headers.append('Content-Length', String(JSON.stringify(data).length))
         }
+
+        const loggedUser = getLoggedUserData();
+        if (loggedUser) {
+            headers.append('Authorization', `Bearer ${loggedUser.token}`)
+        }
+
         apiMovieData = await simpleFetch(apiURL, {
             signal: AbortSignal.timeout(3000),
             method: method,
@@ -1321,6 +1381,51 @@ async function getAPIMovieData (apiURL = `${location.protocol}//${location.hostn
     console.log('apiMovieData', apiMovieData)
     return apiMovieData
 }
+
+/**
+ * get votes data from BBDD
+ * @param {Object} [data]
+ */
+async function getAPIVotesData (apiURL = `${location.protocol}//${location.hostname}${API_PORT}/api/read/votes`, method = 'GET', data) {
+
+    let apiVotesData
+
+    try {
+        let headers = new Headers();
+
+        headers.append('Content-Type', 'application/json')
+        headers.append('Access-Control-Allow-Origin', '*')
+        if (data) {
+          headers.append('Content-Length', String(JSON.stringify(data).length))
+        }
+
+        const loggedUser = getLoggedUserData();
+        if (loggedUser) {
+            headers.append('Authorization', `Bearer ${loggedUser.token}`)
+        }
+
+        apiVotesData = await simpleFetch(apiURL, {
+            signal: AbortSignal.timeout(3000),
+            method: method,
+            body: data ?? undefined,
+            headers: headers
+        });
+    } catch (/** @type {any | HttpError} */ err){
+        if (err.name === 'AbortError') {
+            console.error('Fetch abortado');
+        }
+        if (err instanceof HttpError) {
+            if (err.response.status === 404) {
+                console.error('Error 404: Not Found');
+            }
+            if (err.response.status === 500) {
+                console.error('Error 500: Internal Server Error');
+            }
+        }
+    }
+    return apiVotesData
+}
+
 
 function letMeCommit(){
     getAPIBookData();

@@ -10,6 +10,7 @@
  * @property {string[]=} [clubs]
  * @property {string[]=} [products]
  * @property {string[]=} [proposals] // yes? no? maybe? i dont know? can you repeat the question?
+ * @property {string[]=} [votes]
  */
 export class User {
     _id
@@ -19,7 +20,8 @@ export class User {
     token
     clubs
     products
-    proposals 
+    proposals
+    votes 
     /**
      * @param {userData} userData 
      */
@@ -32,5 +34,6 @@ export class User {
         this.clubs = userData.clubs || []
         this.products = userData.products || []
         this.proposals = userData.proposals || []
+        this.votes = userData.votes || []
     }
 }

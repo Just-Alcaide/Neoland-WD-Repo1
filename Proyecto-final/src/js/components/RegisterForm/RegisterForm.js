@@ -8,7 +8,6 @@ export class RegisterForm extends HTMLElement {
     }
 
     connectedCallback () {
-        console.log("Custom element added to page.");
         this.attachShadow({ mode: "open" });
 
         this.shadowRoot.adoptedStyleSheets.push(AppCSS, RegisterFormCSS);
@@ -20,15 +19,14 @@ export class RegisterForm extends HTMLElement {
     }
 
     disconnectedCallback() {
-        console.log("Custom element removed from page.");
       }
     
       adoptedCallback() {
-        console.log("Custom element moved to new page.");
+
       }
     
-      attributeChangedCallback(name, oldValue, newValue) {
-        console.log(`Attribute ${name} has changed.`, oldValue, newValue);
+      attributeChangedCallback() {
+
       }
 
     //Private Methods
@@ -69,6 +67,7 @@ export class RegisterForm extends HTMLElement {
             clubs: [],
             products: [],
             proposals: [],
+            votes: [],
         };
 
         const payload = JSON.stringify(newUser);
@@ -85,7 +84,6 @@ export class RegisterForm extends HTMLElement {
         };
 
         let onFormSubmitEvent
-        console.log(`Desde dentro del componente Email: ${registerEmail}, Password: ${registerPassword}`);
 
         if (loginData.email !== "" && loginData.password !== "") {
             const payload = JSON.stringify(loginData);

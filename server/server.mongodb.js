@@ -624,14 +624,21 @@ async function createVote(vote) {
     const client = new MongoClient(URI)
     const SophiaSocialDB = client.db('SophiaSocial')
     const votesCollection = SophiaSocialDB.collection('votes')
+    const usersCollection = SophiaSocialDB.collection('users')
 
     const voteToInsert = {
         proposal_Id: new ObjectId(String(vote.proposalId)),
         user_Id: new ObjectId(String(vote.userId)),
     }
-    console.log("ingresado voto en base de datos: ", voteToInsert);
+    
 
     const returnValue = await votesCollection.insertOne(voteToInsert);
+
+    await usersCollection.updateOne(
+        { _id: new ObjectId(String(vote.userId)) },
+        { $push: { votes: returnValue.insertedId } }
+    )
+
     return returnValue
 }
 

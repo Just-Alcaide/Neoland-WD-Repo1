@@ -154,8 +154,6 @@ async function loginUser(apiUserData) {
         return;
     }
 
-    console.log(`Desde fuera del componente: `, apiUserData);
-
     const loggedUserData = {
         _id: apiUserData._id,
         email: apiUserData.email,
@@ -164,6 +162,7 @@ async function loginUser(apiUserData) {
         clubs: apiUserData.clubs || [],
         products: apiUserData.products || [],
         proposals: apiUserData.proposals || [],
+        votes: apiUserData.votes || [],
     };
 
     sessionStorage.setItem('loggedUser', JSON.stringify(loggedUserData));
@@ -190,8 +189,6 @@ async function loginNewUser(apiUserData) {
         return;
     }
 
-    console.log(`Desde fuera del componente: `, apiUserData);
-
         const loggedUserData = {
             _id: apiUserData._id,
             email: apiUserData.email,
@@ -200,6 +197,7 @@ async function loginNewUser(apiUserData) {
             clubs: apiUserData.clubs || [],
             products: apiUserData.products || [],
             proposals: apiUserData.proposals || [],
+            votes: apiUserData.votes || [],
         };
 
         sessionStorage.setItem('loggedUser', JSON.stringify(loggedUserData));
@@ -660,16 +658,20 @@ async function renderClubProposals(club) {
             return;
         }
 
+        
         proposalsList.innerHTML = apiProposalData.map(( /** @type {apiProposal} */ apiProposal) => {
             const product = apiProposal.productData
             if (!product) return '';
+
+            const loggedUser = getLoggedUserData();
+            const hasVoted = loggedUser?.votes.includes(apiProposal._id);
 
             return `
                 <li class="proposal-item">
                     <p><strong>Nombre: </strong>${product.name}</p>
                     <p>${apiProposal.productType === 'book' ? 'Libro' : 'Película'}</p>
                     <p><strong>Propuesta de:</strong> ${apiProposal.userName || 'Usuario desconocido'}</p>
-                    <p><strong>Votos: </strong><span class="voteCount">${apiProposal.votes || 0}</span></p>
+                    <p><strong>Votos: </strong><span class="vote-count">${apiProposal.votes || 0}</span></p>
                     <button class="toggleProposalDetailsButton" data-id="${apiProposal._id}">Ver más</button>
                     <div id="proposal-details-${apiProposal._id}" class="proposal-details hidden">
                         <p><strong>${apiProposal.productType === 'book' ? 'Autor' : 'Director'}:</strong> ${product.author || product.director}</p>
@@ -681,21 +683,20 @@ async function renderClubProposals(club) {
                                 : `<p><strong>Minutos:</strong> ${product.minutes} min</p>`
                         }
                     </div>
-                    <button class="voteProposalButton" data-id="${apiProposal._id}">+1 Voto</button>    
+                    ${hasVoted ? '' : `<button class="voteProposalButton" data-id="${apiProposal._id}">+1 Voto</button>`}
                 </li>
             `;
         }).join('');
 
         proposalsList.querySelectorAll('.toggleProposalDetailsButton').forEach(button => {
             button.addEventListener('click', (e) => {
-            const target = /**@type {HTMLElement} */ (e.target);
-            const proposalId = target.getAttribute('data-id');
-            const detailsElement = document.getElementById(`proposal-details-${proposalId}`);
-            
-            if (detailsElement) {
-                detailsElement.classList.toggle('hidden');
                 const target = /**@type {HTMLElement} */ (e.target);
-                target.textContent = detailsElement.classList.contains('hidden') ? 'Ver más' : 'Ver menos';
+                const proposalId = target.getAttribute('data-id');
+                const detailsElement = document.getElementById(`proposal-details-${proposalId}`);
+
+                if (detailsElement) {
+                    detailsElement.classList.toggle('hidden');
+                    target.textContent = detailsElement.classList.contains('hidden') ? 'Ver más' : 'Ver menos';
                 }
             });
         });
@@ -704,7 +705,10 @@ async function renderClubProposals(club) {
             button.addEventListener('click', async (e) => {
                 const target = /**@type {HTMLElement} */ (e.target);
                 const proposalId = target.getAttribute('data-id');
-                if (proposalId) await voteForProposal(proposalId);
+
+                if (proposalId) {
+                    await voteForProposal(proposalId);
+                }                    
             });
         });
 
@@ -726,20 +730,17 @@ async function voteForProposal(proposalId) {
     try {
         const response = await getAPIVotesData(`${location.protocol}//${location.hostname}${API_PORT}/api/create/votes`, 'POST', JSON.stringify({proposalId: proposalId, userId: loggedUser._id}));
 
-        console.log('respuesta de la api: ', response);
-
         const data = response;
 
         if (data.acknowledged) {
-            console.log('Voto registrado con exito', data.insertedId);
             updateVoteUI(proposalId);
+            loggedUser.votes.push(proposalId);
+            sessionStorage.setItem('loggedUser', JSON.stringify(loggedUser));
+
         } else {
             console.error('Error al registrar el voto');
         }
         
-        
-        
-
     } catch (error) {
         console.log('Error al votar: ', error);
     }
@@ -987,7 +988,6 @@ async function onCreateNewProposalSubmit(e) {
     try {
 
         const newProduct = await createNewProduct(productData, productType);
-        console.log('producto creado y recibido: ', newProduct);
 
         if (newProduct && newProduct._id) {
             await createNewProposal(newProduct._id, productType);
@@ -1002,8 +1002,6 @@ async function onCreateNewProposalSubmit(e) {
             const updatedClubData = await getAPIClubData(
                 `${location.protocol}//${location.hostname}${API_PORT}/api/read/clubs/${clubId}`
             );
-        
-            console.log("Club actualizado con nuevas propuestas:", updatedClubData);
         
             if (updatedClubData) {
                 renderClubProposals(updatedClubData);
@@ -1071,7 +1069,6 @@ async function createNewProposal(productId, productType) {
         loggedUser.proposals.push(response._id);
         sessionStorage.setItem('loggedUser', JSON.stringify(loggedUser));
 
-        console.log('Propuesta creada: ', response);
         alert('La propuesta se ha registrado correctamente.');
         return response;
 
@@ -1148,7 +1145,6 @@ function createNewProduct(productData, productType) {
 
         selectedApiFunction?.(requestEndpoint, 'POST', JSON.stringify(newProduct))
         .then(response => {
-            console.log("Producto creado con éxito:", response);
             resolve(response);
         })
         .catch(error => {
@@ -1333,7 +1329,6 @@ async function getAPIBookData (apiURL = `${location.protocol}//${location.hostna
             }
         }
     }
-    console.log('apiBookData', apiBookData)
     return apiBookData
 }
 
@@ -1378,7 +1373,6 @@ async function getAPIMovieData (apiURL = `${location.protocol}//${location.hostn
             }
         }
     }
-    console.log('apiMovieData', apiMovieData)
     return apiMovieData
 }
 

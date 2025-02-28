@@ -28,7 +28,11 @@ function requireAuth (req, res, next) {
 //===CRUFD USERS===//
 
 app.post('/api/create/users', async (req, res) => {
-  res.json(await db.users.create(req.body))
+  const newUser = await db.users.create(req.body);
+  if (newUser.error) {
+    return res.status(400).json({ message: newUser.error });
+  }
+  res.json(newUser)
 })
 
 app.get('/api/read/users', async (req, res) => {

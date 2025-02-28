@@ -48,7 +48,11 @@ export class RegisterForm extends HTMLElement {
 
     async _onFormSubmit(e) {
         e.preventDefault();
-        await this._createNewUser()
+        const newUser = await this._createNewUser()
+        if (!newUser) {
+            this.cleanUpRegisterForm()
+            return
+        }
         await this._loginNewUser()
         const onFormSubmitEvent = await this._loginNewUser()
         this.dispatchEvent(onFormSubmitEvent);
@@ -71,7 +75,14 @@ export class RegisterForm extends HTMLElement {
         };
 
         const payload = JSON.stringify(newUser);
-        await getAPIUserData(`${location.protocol}//${location.hostname}${API_PORT}/api/create/users`, 'POST',  payload);
+        const response = await getAPIUserData(`${location.protocol}//${location.hostname}${API_PORT}/api/create/users`, 'POST',  payload);
+
+        if (!response) {
+            alert("Hubo un error al registrar el usuario.");
+            return null;
+        }
+
+        return response;
     }
 
     async _loginNewUser() {

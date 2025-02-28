@@ -21,6 +21,7 @@ export const db = {
         getByType: getClubsByType,
         getByName: getClubsByName,
         update: updateClub,
+        addAdmin: addAdmin,
         join: joinClub,
         leave: leaveClub,
         delete: deleteClub,
@@ -272,6 +273,20 @@ async function updateClub(id, updates) {
 
     console.log('db updateClub', returnValue, id, updates);
     return returnValue;
+}
+
+async function addAdmin(clubId, userId) {
+    const client = new MongoClient(URI);
+    const SophiaSocialDB = client.db('SophiaSocial');
+    const clubsCollection = SophiaSocialDB.collection('clubs');
+    
+    await clubsCollection.updateOne(
+        { _id: new ObjectId(String(clubId)) },
+        { $addToSet: { admins: new ObjectId(String(userId)) } }
+    );
+    
+    const updatedClub = await clubsCollection.findOne({ _id: new ObjectId(String(clubId)) });
+    return updatedClub;
 }
 
 async function joinClub(clubId, userId) {

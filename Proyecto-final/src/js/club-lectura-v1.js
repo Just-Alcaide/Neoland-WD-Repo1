@@ -842,6 +842,9 @@ async function leaveClub(clubId) {
 async function editClub(clubId) {
     const club = await getAPIClubData(`${location.protocol}//${location.hostname}${API_PORT}/api/read/clubs/${clubId}`);
 
+    const membersData = await getAPIUserData(`${location.protocol}//${location.hostname}${API_PORT}/api/read/users`, 'POST', JSON.stringify({ids: club.members}));
+
+
     let dialog = document.getElementById('edit-club-dialog');
     if (!dialog) {
         dialog = document.createElement('dialog');
@@ -853,12 +856,44 @@ async function editClub(clubId) {
                 <input type="text" id="editClubName" value="${club.name}" required>
                 <label>Descripción:</label>
                 <textarea id="editClubDescription">${club.description}</textarea>
-                <button id="saveClubChanges">Guardar cambios</button>
-                <button id="closeDialog">Cancelar</button>
+                
+                <h3>Nombrar nuevos administradores</h3>
+                <ul id="nonAdminsList">
+                    ${membersData
+                        .filter((/** @type {User} */ member) => !club.admins.includes(member._id))
+                        .map((/** @type {User} */ member) => `<li>${member.name} <button class="assignAdminButton" data-user-id="${member._id}">Nombrar Admin</button></li>`)
+                        .join("")}
+                </ul>
+
+                <button type="submit" id="saveClubChanges">Guardar cambios</button>
+                <button type="button" id="closeDialog">Cancelar</button>
             </form>
         `;
         document.body.appendChild(dialog);
     }
+
+    document.querySelectorAll(".assignAdminButton").forEach((button) => {
+        /** @type {HTMLButtonElement} */
+        const assignAdminButton = /** @type {HTMLButtonElement} */ (button);
+    
+        assignAdminButton.onclick = async (event) => {
+            const target = event.target;
+    
+            if (!(target instanceof HTMLElement)) {
+                console.error("Error: event.target no es un HTMLElement.");
+                return;
+            }
+    
+            const userId = target.dataset.userId || "";
+    
+            if (!userId.trim()) {
+                console.error("Error: userId no es válido.");
+                return;
+            }
+    
+            await assignAdmin(clubId, userId);
+        };
+    });
 
     if (dialog instanceof HTMLDialogElement) dialog.showModal();
 
@@ -905,6 +940,20 @@ async function saveClubChanges(clubId) {
     }
 }
 
+
+
+/**
+ * @param {string} clubId - The ID of the club.
+ * @param {string} userId - The ID of the user to be assigned as admin.
+ */
+
+async function assignAdmin(clubId, userId) {
+    const payload = JSON.stringify({ userId });
+    await getAPIClubData(`${location.protocol}//${location.hostname}${API_PORT}/api/update/clubs/${clubId}/admins`, 'PUT', payload);
+
+    alert('Admin asignado correctamente');
+}
+
 /**
  * delete club
  * @param {string} clubId
@@ -933,7 +982,6 @@ async function deleteClub(clubId) {
     }
 }
 
-//TODO: PUES ESO, HACERLO XD
 //=====PROPOSAL EVENTS=====//
 
 /**

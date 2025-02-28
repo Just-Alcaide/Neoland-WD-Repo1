@@ -103,11 +103,19 @@ app.post('/api/read/clubs', async (req, res) => {
   res.json(await db.clubs.getByType(type));
 })
 
-app.put('/api/update/clubs/:id', async (req, res) => {
+app.put('/api/update/clubs/:id', requireAuth, async (req, res) => {
   const clubId = req.params.id;
   const updates = req.body;
 
   const updatedClub = await db.clubs.update(clubId, updates);
+  res.json(updatedClub);
+})
+
+app.put('/api/update/clubs/:id/admins', requireAuth, async (req, res) => {
+  const clubId = req.params.id;
+  const { userId } = req.body;
+
+  const updatedClub = await db.clubs.addAdmin(clubId, userId);
   res.json(updatedClub);
 })
 

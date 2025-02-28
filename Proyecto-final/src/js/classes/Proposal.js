@@ -7,6 +7,7 @@
  * @property {string} productType
  * @property {string} user_id
  * @property {string} club_id
+ * @property {number} votes
  */
 export class Proposal {
     _id
@@ -14,6 +15,7 @@ export class Proposal {
     productType
     user_id
     club_id
+    votes
     /**
      * @param {proposalData} proposalData 
      */
@@ -23,5 +25,6 @@ export class Proposal {
         this.product_id = proposalData.product_id
         this.user_id = proposalData.user_id
         this.club_id = proposalData.club_id
+        this.votes = proposalData.votes
     }
 }

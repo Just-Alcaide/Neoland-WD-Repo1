@@ -839,9 +839,69 @@ async function leaveClub(clubId) {
  * edit club
  * @param {string} clubId 
  */
-function editClub(clubId) {
-    if (clubId) {
-    alert(`Editar club:  (Funcionalidad en desarrollo)`);
+async function editClub(clubId) {
+    const club = await getAPIClubData(`${location.protocol}//${location.hostname}${API_PORT}/api/read/clubs/${clubId}`);
+
+    let dialog = document.getElementById('edit-club-dialog');
+    if (!dialog) {
+        dialog = document.createElement('dialog');
+        dialog.id = 'edit-club-dialog';
+        dialog.innerHTML = `
+            <form method="dialog">
+                <h2>Editar Club</h2>
+                <label>Nombre:</label>
+                <input type="text" id="editClubName" value="${club.name}" required>
+                <label>Descripción:</label>
+                <textarea id="editClubDescription">${club.description}</textarea>
+                <button id="saveClubChanges">Guardar cambios</button>
+                <button id="closeDialog">Cancelar</button>
+            </form>
+        `;
+        document.body.appendChild(dialog);
+    }
+
+    if (dialog instanceof HTMLDialogElement) dialog.showModal();
+
+    const saveButton = document.getElementById("saveClubChanges");
+    if (saveButton) {
+        saveButton.onclick = () => saveClubChanges(clubId);  
+    } 
+    
+    const closeDialog = document.getElementById("closeDialog");
+    if (closeDialog && dialog instanceof HTMLDialogElement) {
+        closeDialog.onclick = () => dialog.close();
+    } 
+}
+
+/**
+ * 
+ * @param {String} clubId 
+ */
+async function saveClubChanges(clubId) {
+
+    const editClubName = document.getElementById('editClubName')
+
+    const editClubDescription = document.getElementById('editClubDescription')
+
+    if (editClubName instanceof HTMLInputElement && editClubDescription instanceof HTMLInputElement) {
+        
+        const updatedClub = {
+            name: editClubName.value,
+            description: editClubDescription.value, 
+        };
+
+        const response = await getAPIClubData(`${location.protocol}//${location.hostname}${API_PORT}/api/update/clubs/${clubId}`, 'PUT', JSON.stringify(updatedClub));
+
+        if(!response){
+            alert('Hubo un error al actualizar el club');
+            return;
+        }
+
+        alert('Club actualizado correctamente');
+
+        const editClubDialog = document.getElementById('edit-club-dialog');
+        if (editClubDialog instanceof HTMLDialogElement) editClubDialog.close();
+        await loadClubsPage();
     }
 }
 

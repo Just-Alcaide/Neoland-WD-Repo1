@@ -9,7 +9,7 @@
  * @property {string} token
  * @property {string[]=} [clubs]
  * @property {string[]=} [products]
- * @property {string[]=} [proposals] // yes? no? maybe? i dont know? can you repeat the question?
+ * @property {string[]=} [proposals]
  * @property {string[]=} [votes]
  */
 export class User {

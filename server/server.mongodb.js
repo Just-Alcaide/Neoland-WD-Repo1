@@ -76,8 +76,14 @@ async function createUser(user) {
     const client = new MongoClient(URI)
     const SophiaSocialDB = client.db('SophiaSocial');
     const usersCollection = SophiaSocialDB.collection('users');
+
+    const existingUser = await usersCollection.findOne({ email: user.email });
+    if (existingUser) {
+        return {error: 'El email ya existe'};
+    } 
+
     const returnValue = await usersCollection.insertOne(user);
-    console.log('db createUser', returnValue, user._id);
+    console.log('db createUser', returnValue, user);
     return user;
 }
 

@@ -166,8 +166,6 @@ async function loginUser(apiUserData) {
     };
 
     sessionStorage.setItem('loggedUser', JSON.stringify(loggedUserData));
-    store.user.create(new User(loggedUserData));
-    store.saveState();
 }
 
 /**
@@ -843,7 +841,7 @@ async function leaveClub(clubId) {
  */
 function editClub(clubId) {
     if (clubId) {
-    alert(`Editar club: ${clubId} (Funcionalidad en desarrollo)`);
+    alert(`Editar club:  (Funcionalidad en desarrollo)`);
     }
 }
 

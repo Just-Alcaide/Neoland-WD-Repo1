@@ -1,5 +1,5 @@
 import { LitElement, html } from 'https://cdn.jsdelivr.net/gh/lit/dist@3/all/lit-all.min.js';
-import { getAPIUserData, API_PORT} from "../../club-lectura-v1.js";
+import { getAPIUserData, API_PORT} from "../../main.js";
 
 import AppCSS from '../../../css/app.css' with { type: "css" };
 import LoginFormLitCSS from './LoginFormLit.css' with { type: "css" };

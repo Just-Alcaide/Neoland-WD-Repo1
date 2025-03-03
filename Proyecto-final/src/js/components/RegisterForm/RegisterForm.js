@@ -1,4 +1,4 @@
-import { getAPIUserData, API_PORT} from "../../club-lectura-v1.js";
+import { getAPIUserData, API_PORT} from "../../main.js";
 import AppCSS from '../../../css/app.css' with {type: 'css'} ;
 import RegisterFormCSS from './RegisterForm.css' with {type: 'css'} ;
 

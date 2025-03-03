@@ -65,7 +65,7 @@ app.post('/api/validate/users', requireAuth, async (req, res) => {
 
 app.delete('/api/delete/users/:id', requireAuth, async (req, res) => {
   res.json(await db.users.delete(req.params.id))
-  //TODO: En adelante, tendrá que borrar datos del user en clubs, propuestas...
+
 })
 
 app.post('/api/login/users', async (req, res) => {
@@ -275,7 +275,6 @@ app.get('/api/read/votes', async (req, res) => {
 
 app.post('/api/read/votes', async (req, res) => {
   const {user_id} = req.body;
-  console.log("ID de usuario proporcionado:", user_id);
   const userVotes = await db.votes.getByUser(user_id);
   res.json(userVotes);
 });

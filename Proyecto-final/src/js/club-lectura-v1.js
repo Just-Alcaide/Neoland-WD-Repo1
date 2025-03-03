@@ -1103,9 +1103,7 @@ async function onCreateNewProposalSubmit(e) {
 
         if (newProduct && newProduct._id) {
             await createNewProposal(newProduct._id, productType);
-        } else {
-            console.log('No se pudo cargar el id del producto');
-        }
+        } 
 
         const clubDetailPage = document.getElementById('create-detail-page');
         const clubId = clubDetailPage?.getAttribute('data-id');
@@ -1117,8 +1115,6 @@ async function onCreateNewProposalSubmit(e) {
         
             if (updatedClubData) {
                 renderClubProposals(updatedClubData);
-            } else {
-                console.log("No se encontraron datos actualizados del club");
             }
         }
 

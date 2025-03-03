@@ -360,20 +360,44 @@ async function deleteClub(clubId, userId) {
 
     const clubsCollection = SophiaSocialDB.collection('clubs');
     const usersCollection = SophiaSocialDB.collection('users');
+    const proposalsCollection = SophiaSocialDB.collection('proposals');
+    const votesCollection = SophiaSocialDB.collection('votes');
 
     const club = await clubsCollection.findOne({ _id: new ObjectId(String(clubId)) });
-    if (!club) return null
-    if (!club.admins.some(adminId => adminId.toString() === userId)) return null
+    if (!club.admins.some(adminId => adminId.toString() === userId)) {
+        return { success: false };
+    }
+    
+    const clubProposals = await proposalsCollection.find({ clubId: new ObjectId(String(clubId)) }).toArray();
+    const proposalIds = clubProposals.map(proposal => new ObjectId(String(proposal._id))); 
+
+    if (proposalIds.length > 0) {
+        const votesToDelete = await votesCollection.find({ proposalId: { $in: proposalIds } }).toArray();
+        const voteIds = votesToDelete.map(vote => vote._id); 
+
+        await usersCollection.updateMany(
+            { votes: { $in: voteIds } },
+            { $pull: { votes: { $in: voteIds } } }
+        );
+
+        await votesCollection.deleteMany({ _id: { $in: voteIds } });
+
+        await usersCollection.updateMany(
+            { proposals: { $in: proposalIds } },
+            { $pull: { proposals: { $in: proposalIds } } }
+        );
+
+        await proposalsCollection.deleteMany({ clubId: new ObjectId(clubId) });
+    }
 
     await usersCollection.updateMany(
-        { _id: {$in: club.members.map(id => new ObjectId(String(id)))}},
-        {$pull: {clubs: new ObjectId(String(clubId))}}
+        { _id: { $in: club.members.map(id => new ObjectId(String(id))) } },
+        { $pull: { clubs: new ObjectId(String(clubId)) } }
     );
 
-    const returnValue = await clubsCollection.deleteOne({ _id: new ObjectId(String(clubId))});
+    const clubDeleteResult = await clubsCollection.deleteOne({ _id: new ObjectId(String(clubId)) });
 
-    console.log('db deleteClub', returnValue, clubId);
-    return returnValue;
+    return clubDeleteResult;
 }
 
 //===CRUD BOOKS===//
@@ -550,8 +574,6 @@ async function createProposal(proposal) {
         {_id: new ObjectId(String(proposal.userId))},
         {$push: {proposals: proposalId}}
     );
-
-    console.log('propuesta creada y vinculada: ', proposalId);
     return {...proposalToInsert, _id: proposalId};
 
 }

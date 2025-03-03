@@ -304,7 +304,9 @@ export const db = {
         get: getClubs,
         getById: getClubById,
         getByType: getClubsByType,
+        getByName: getClubsByName,
         update: updateClub,
+        addAdmin: addAdmin,
         join: joinClub,
         leave: leaveClub,
         delete: deleteClub,
@@ -329,12 +331,14 @@ export const db = {
         get: getProposals,
         getByIds: getProposalsByIds,
         update: updateProposal,
+        vote: voteProposal,
         delete: deleteProposal,
     },
     votes: {
         create: createVote,
         count: countVotes,
         get: getVotes,
+        getByUser: getVotesByUser,
         update: updateVote,
         delete: deleteVote,
     },
@@ -359,8 +363,14 @@ async function createUser(user) {
     const client = new MongoClient(URI)
     const SophiaSocialDB = client.db('SophiaSocial');
     const usersCollection = SophiaSocialDB.collection('users');
+
+    const existingUser = await usersCollection.findOne({ email: user.email });
+    if (existingUser) {
+        return {error: 'El email ya existe'};
+    } 
+
     const returnValue = await usersCollection.insertOne(user);
-    console.log('db createUser', returnValue, user._id);
+    console.log('db createUser', returnValue, user);
     return user;
 }
 
@@ -424,9 +434,19 @@ async function deleteUser(id) {
     const client = new MongoClient(URI)
     const SophiaSocialDB = client.db('SophiaSocial');
     const usersCollection = SophiaSocialDB.collection('users');
-    const returnValue = await usersCollection.deleteOne({_id: new ObjectId(String(id))});
-    console.log('db deleteUser', returnValue, id);
-    return id;
+    const votesCollection = SophiaSocialDB.collection('votes');
+    const proposalsCollection = SophiaSocialDB.collection('proposals');
+    const clubsCollection = SophiaSocialDB.collection('clubs');
+
+    await votesCollection.deleteMany({ userId: new ObjectId(id) });
+    await proposalsCollection.deleteMany({ userId: new ObjectId(id) });
+    await clubsCollection.updateMany(
+        {},
+        { $pull: { members: new ObjectId(id), admins: new ObjectId(id) } }
+    );
+    const userDeleteResult = await usersCollection.deleteOne({ _id: new ObjectId(id) });
+
+    return userDeleteResult
 }
 
 /**
@@ -523,6 +543,16 @@ async function getClubsByType(type){
     return clubs;
 }
 
+async function getClubsByName(name){
+    const client = new MongoClient(URI);
+    const SophiaSocialDB = client.db('SophiaSocial');
+    const clubsCollection = SophiaSocialDB.collection('clubs');
+
+    const clubs = await clubsCollection.find({ $text: { $search: name } }).toArray();
+    
+    return clubs;
+}
+
 /**
  * Updates a club with the provided _id.
  * @param {string} id - The ObjectID of the club to update.
@@ -541,21 +571,50 @@ async function updateClub(id, updates) {
     return returnValue;
 }
 
+async function addAdmin(clubId, userId) {
+    const client = new MongoClient(URI);
+    const SophiaSocialDB = client.db('SophiaSocial');
+    const clubsCollection = SophiaSocialDB.collection('clubs');
+    
+    await clubsCollection.updateOne(
+        { _id: new ObjectId(String(clubId)) },
+        { $addToSet: { admins: new ObjectId(String(userId)) } }
+    );
+    
+    const updatedClub = await clubsCollection.findOne({ _id: new ObjectId(String(clubId)) });
+    return updatedClub;
+}
+
 async function joinClub(clubId, userId) {
     const client = new MongoClient(URI);
     const SophiaSocialDB = client.db('SophiaSocial');
     const clubsCollection = SophiaSocialDB.collection('clubs');
     const usersCollection = SophiaSocialDB.collection('users');
 
-    const userObjectId = new ObjectId(String(userId));
-    const clubObjectId = new ObjectId(String(clubId));
+    try {
+        if (!ObjectId.isValid(clubId) || !ObjectId.isValid(userId)) {
+            throw new Error("ID de usuario o club inválido.");
+        }
 
-    const updatedClub = await clubsCollection.updateOne({ _id: clubObjectId}, { $addToSet: {members: userObjectId}});
+        const userObjectId = new ObjectId(userId);
+        const clubObjectId = new ObjectId(clubId);
 
-    const updatedUser = await usersCollection.updateOne({ _id: userObjectId}, {$addToSet: {clubs: clubObjectId}});
+        const updatedClub = await clubsCollection.updateOne(
+            { _id: clubObjectId },
+            { $addToSet: { members: userObjectId } }
+        );
 
-    console.log('db joinClub', updatedClub, updatedUser);
-    return updatedClub;
+        const updatedUser = await usersCollection.updateOne(
+            { _id: userObjectId },
+            { $addToSet: { clubs: clubObjectId } }
+        );
+
+        console.log('db joinClub:', updatedClub, updatedUser);
+        return updatedClub;
+    } catch (error) {
+        console.error("Error en joinClub:", error);
+        return { success: false, message: "Error al unirse al club" };
+    }
 }
 
 async function leaveClub(clubId, userId) {
@@ -586,20 +645,44 @@ async function deleteClub(clubId, userId) {
 
     const clubsCollection = SophiaSocialDB.collection('clubs');
     const usersCollection = SophiaSocialDB.collection('users');
+    const proposalsCollection = SophiaSocialDB.collection('proposals');
+    const votesCollection = SophiaSocialDB.collection('votes');
 
     const club = await clubsCollection.findOne({ _id: new ObjectId(String(clubId)) });
-    if (!club) return null
-    if (!club.admins.some(adminId => adminId.toString() === userId)) return null
+    if (!club.admins.some(adminId => adminId.toString() === userId)) {
+        return { success: false };
+    }
+    
+    const clubProposals = await proposalsCollection.find({ clubId: new ObjectId(String(clubId)) }).toArray();
+    const proposalIds = clubProposals.map(proposal => new ObjectId(String(proposal._id))); 
+
+    if (proposalIds.length > 0) {
+        const votesToDelete = await votesCollection.find({ proposalId: { $in: proposalIds } }).toArray();
+        const voteIds = votesToDelete.map(vote => vote._id); 
+
+        await usersCollection.updateMany(
+            { votes: { $in: voteIds } },
+            { $pull: { votes: { $in: voteIds } } }
+        );
+
+        await votesCollection.deleteMany({ _id: { $in: voteIds } });
+
+        await usersCollection.updateMany(
+            { proposals: { $in: proposalIds } },
+            { $pull: { proposals: { $in: proposalIds } } }
+        );
+
+        await proposalsCollection.deleteMany({ clubId: new ObjectId(clubId) });
+    }
 
     await usersCollection.updateMany(
-        { _id: {$in: club.members.map(id => new ObjectId(String(id)))}},
-        {$pull: {clubs: new ObjectId(String(clubId))}}
+        { _id: { $in: club.members.map(id => new ObjectId(String(id))) } },
+        { $pull: { clubs: new ObjectId(String(clubId)) } }
     );
 
-    const returnValue = await clubsCollection.deleteOne({ _id: new ObjectId(String(clubId))});
+    const clubDeleteResult = await clubsCollection.deleteOne({ _id: new ObjectId(String(clubId)) });
 
-    console.log('db deleteClub', returnValue, clubId);
-    return returnValue;
+    return clubDeleteResult;
 }
 
 //===CRUD BOOKS===//
@@ -749,9 +832,35 @@ async function createProposal(proposal) {
     const client = new MongoClient(URI)
     const SophiaSocialDB = client.db('SophiaSocial')
     const proposalsCollection = SophiaSocialDB.collection('proposals')
-    const returnValue = await proposalsCollection.insertOne(proposal)
-    console.log('db createProposal', returnValue, proposal._id)
-    return proposal
+    const clubsCollection = SophiaSocialDB.collection('clubs')
+    const usersCollection = SophiaSocialDB.collection('users')
+
+    const proposalToInsert = {
+        ...proposal,
+        productId: new ObjectId(String(proposal.productId)),
+        userId: new ObjectId(String(proposal.userId)),
+        clubId: new ObjectId(String(proposal.clubId))
+    }
+
+    const result = await proposalsCollection.insertOne(proposalToInsert);
+
+    if (!result.acknowledged) {
+        throw new Error('Error al crear la propuesta');
+    }
+
+    const proposalId = result.insertedId;
+
+    await clubsCollection.updateOne(
+        {_id: new ObjectId(String(proposal.clubId))},
+        {$push: {proposals: proposalId}}
+    );
+
+    await usersCollection.updateOne(
+        {_id: new ObjectId(String(proposal.userId))},
+        {$push: {proposals: proposalId}}
+    );
+    return {...proposalToInsert, _id: proposalId};
+
 }
 
 /**
@@ -781,10 +890,23 @@ async function getProposalsByIds(ids) {
     const client = new MongoClient(URI)
     const SophiaSocialDB = client.db('SophiaSocial')
     const proposalsCollection = SophiaSocialDB.collection('proposals')
+    const booksCollection = SophiaSocialDB.collection('books');
+    const moviesCollection = SophiaSocialDB.collection('movies');
+    const usersCollection = SophiaSocialDB.collection('users');
 
-    const objectIds = ids.map(id => new ObjectId(String(id)))
-    const proposals = await proposalsCollection.find({ _id: { $in: objectIds } }).toArray()
+    const objectIds = ids.map(id => new ObjectId(String(id)));
+    const proposals = await proposalsCollection.find({ _id: { $in: objectIds } }).toArray();
 
+    for (let proposal of proposals) {
+        if (proposal.productType === 'book') {
+            proposal.productData = await booksCollection.findOne({ _id: new ObjectId(String(proposal.productId)) });
+        } else if (proposal.productType === 'movie') {
+            proposal.productData = await moviesCollection.findOne({ _id: new ObjectId(String(proposal.productId)) });
+        }
+        const user = await usersCollection.findOne({ _id: new ObjectId(String(proposal.userId)) });
+        proposal.userName = user ? user.name : 'Usuario desconocido';
+    }
+    
     return proposals
 }
 
@@ -802,6 +924,17 @@ async function updateProposal(id, updates) {
     const returnValue = await proposalsCollection.updateOne({ _id: new ObjectId(String(id))}, { $set: updates })
     console.log('db updateProposal', returnValue, id, updates)
     return returnValue
+}
+
+async function voteProposal(proposalId) {
+    const client = new MongoClient(URI);
+    const SophiaSocialDB = client.db('SophiaSocial');
+    const proposalsCollection = SophiaSocialDB.collection('proposals');
+
+    return await proposalsCollection.updateOne(
+        {_id: new ObjectId(String(proposalId))},
+        {$inc: {votes: 1}}
+    )
 }
 
 /**
@@ -830,9 +963,22 @@ async function createVote(vote) {
     const client = new MongoClient(URI)
     const SophiaSocialDB = client.db('SophiaSocial')
     const votesCollection = SophiaSocialDB.collection('votes')
-    const returnValue = await votesCollection.insertOne(vote)
-    console.log('db createVote', returnValue, vote._id)
-    return vote
+    const usersCollection = SophiaSocialDB.collection('users')
+
+    const voteToInsert = {
+        proposalId: new ObjectId(String(vote.proposalId)),
+        userId: new ObjectId(String(vote.userId)),
+    }
+    
+
+    const returnValue = await votesCollection.insertOne(voteToInsert);
+
+    await usersCollection.updateOne(
+        { _id: new ObjectId(String(vote.userId)) },
+        { $push: { votes: returnValue.insertedId } }
+    )
+
+    return returnValue
 }
 
 /**
@@ -856,6 +1002,15 @@ async function getVotes(filter) {
     const SophiaSocialDB = client.db('SophiaSocial')
     const votesCollection = SophiaSocialDB.collection('votes')
     return await votesCollection.find(filter).toArray()
+}
+
+async function getVotesByUser(userId) {
+    const client = new MongoClient(URI);
+    const SophiaSocialDB = client.db('SophiaSocial');
+    const votesCollection = SophiaSocialDB.collection('votes');
+
+    const userVotes = await votesCollection.find({ userId: new ObjectId(String(userId)) }).toArray();
+    return userVotes.map(vote => ({ proposalId: String(vote.proposalId) })); 
 }
 
 /**

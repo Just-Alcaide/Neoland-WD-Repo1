@@ -1,7 +1,7 @@
 import { LitElement, html, unsafeHTML } from 'https://cdn.jsdelivr.net/gh/lit/dist@3/all/lit-all.min.js';
 import { generateClubActionButtons } from "../../lib/generateClubActionButtons.js";
 import { addClubButtonsListeners } from "../../lib/clubActions.js";
-import { getLoggedUserData } from '../../club-lectura-v1.js';
+import { getLoggedUserData } from '../../main.js';
 
 import AppCSS from '../../../css/app.css' with { type: "css" };
 import ClubListItemCSS from "../ClubListItem/ClubListItem.css" with { type: "css" };

@@ -1,4 +1,4 @@
-import { getAPIUserData, API_PORT} from "../../club-lectura-v1.js";
+import { getAPIUserData, API_PORT} from "../../main.js";
 import { importTemplate } from "../../lib/importTemplate.js";
 
 import AppCSS from '../../../css/app.css' with {type: 'css'} ;

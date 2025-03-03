@@ -1,4 +1,4 @@
-import { getLoggedUserData, API_PORT, getAPIUserData } from "../../club-lectura-v1.js";
+import { getLoggedUserData, API_PORT, getAPIUserData } from "../../main.js";
 import { generateClubActionButtons } from "../../lib/generateClubActionButtons.js";
 import { addClubButtonsListeners } from "../../lib/clubActions.js";
 

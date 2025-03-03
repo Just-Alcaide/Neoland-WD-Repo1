@@ -125,7 +125,6 @@ app.put('/api/join/clubs/:id', async (req, res) => {
 
   console.log("Recibido en Express:", { clubId, userId, password });
 
-
   if (!clubId || clubId.length !== 24 || !userId || userId.length !== 24) {
     return res.status(400).json({ success: false, message: "ID de club o usuario inválido" });
   }

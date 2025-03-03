@@ -649,8 +649,8 @@ async function createVote(vote) {
     const usersCollection = SophiaSocialDB.collection('users')
 
     const voteToInsert = {
-        proposal_Id: new ObjectId(String(vote.proposalId)),
-        user_Id: new ObjectId(String(vote.userId)),
+        proposalId: new ObjectId(String(vote.proposalId)),
+        userId: new ObjectId(String(vote.userId)),
     }
     
 
@@ -692,9 +692,8 @@ async function getVotesByUser(userId) {
     const SophiaSocialDB = client.db('SophiaSocial');
     const votesCollection = SophiaSocialDB.collection('votes');
 
-    const userVotes = await votesCollection.find({ user_Id: new ObjectId(String(userId)) }).toArray();
-    
-    return userVotes.map(vote => ({ proposal_Id: String(vote.proposal_Id) }));
+    const userVotes = await votesCollection.find({ userId: new ObjectId(String(userId)) }).toArray();
+    return userVotes.map(vote => ({ proposalId: String(vote.proposalId) })); 
 }
 
 /**

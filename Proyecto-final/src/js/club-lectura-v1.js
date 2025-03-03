@@ -662,7 +662,7 @@ async function renderClubProposals(club) {
         const userVotes = await getAPIVotesData(`${location.protocol}//${location.hostname}${API_PORT}/api/read/votes`, 'POST', JSON.stringify({ user_id: loggedUser?._id }));
 
 
-        const votedProposals = userVotes.map((/** @type {{ proposal_Id: string; }} */ vote) => vote.proposal_Id);
+        const votedProposals = userVotes.map((/** @type {{ proposalId: string }} */ vote) => vote.proposalId);
 
         proposalsList.innerHTML = apiProposalData.map((/** @type {apiProposal} */ apiProposal) => {
             const product = apiProposal.productData;

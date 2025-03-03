@@ -18,17 +18,22 @@ export class ClubListItemLit extends LitElement {
         this.club = {};
     }
 
-    render () {
+    render() {
+        const loggedUser = getLoggedUserData();
+        const isMember = this.club.members.includes(loggedUser?._id);
+        const isAdmin = this.club.admins.includes(loggedUser?._id);
+        const canVisit = isMember || isAdmin;
+    
         return html`
         <li>
             <h3 id="clubName">Nombre: ${this.club.name}</h3>
             <p id="clubDescription">Descripción: ${this.club.description}</p>
             <p id="clubType">${this._getClubTypeText(this.club.type)}</p>
             <p id="clubMembers">Miembros: ${this.club.members.length || 0}</p>
-            ${!this.club.private ? html`<button @click=${this._visitClub}>Visitar Club</button>` : html``}
+            ${canVisit ? html`<button @click=${this._visitClub}>Visitar Club</button>` : html``}
             <div id="clubActions">${this._renderClubActions()}</div>
         </li>
-        `
+        `;
     }
 
     _getClubTypeText(type) {

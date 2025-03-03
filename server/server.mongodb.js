@@ -149,9 +149,19 @@ async function deleteUser(id) {
     const client = new MongoClient(URI)
     const SophiaSocialDB = client.db('SophiaSocial');
     const usersCollection = SophiaSocialDB.collection('users');
-    const returnValue = await usersCollection.deleteOne({_id: new ObjectId(String(id))});
-    console.log('db deleteUser', returnValue, id);
-    return id;
+    const votesCollection = SophiaSocialDB.collection('votes');
+    const proposalsCollection = SophiaSocialDB.collection('proposals');
+    const clubsCollection = SophiaSocialDB.collection('clubs');
+
+    await votesCollection.deleteMany({ userId: new ObjectId(id) });
+    await proposalsCollection.deleteMany({ userId: new ObjectId(id) });
+    await clubsCollection.updateMany(
+        {},
+        { $pull: { members: new ObjectId(id), admins: new ObjectId(id) } }
+    );
+    const userDeleteResult = await usersCollection.deleteOne({ _id: new ObjectId(id) });
+
+    return userDeleteResult
 }
 
 /**

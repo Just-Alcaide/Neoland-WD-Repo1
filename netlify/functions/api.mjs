@@ -2,7 +2,7 @@ import express, { Router } from 'express';
 import bodyParser from 'body-parser';
 import serverless from 'serverless-http';
 import { MongoClient, ObjectId } from "mongodb";
-// export { ObjectId };
+
 
 const URI = process.env.MONGO_ATLAS;
 const api = express();
@@ -20,10 +20,14 @@ function requireAuth (req, res, next) {
   }
 }
 
-//===CRUFD USERS===//
+//===USERS===//
 
 router.post('/create/users', async (req, res) => {
-  res.json(await db.users.create(req.body))
+  const newUser = await db.users.create(req.body);
+  if (newUser.error) {
+    return res.status(400).json({ message: newUser.error });
+  }
+  res.json(newUser)
 })
 
 router.get('/read/users', async (req, res) => {
@@ -40,7 +44,6 @@ router.put('/update/users/:id', async (req, res) => {
   res.json(await db.users.update(req.params.id, req.body))
 })
 
-//TODO: MODIFICAR
 router.get('/filter/users/:name', async (req, res) => {
   res.json(await db.users.get({ $text: { $search: req.params.name } }))
 })
@@ -56,7 +59,7 @@ router.post('/validate/users', requireAuth, async (req, res) => {
 
 router.delete('/delete/users/:id', requireAuth, async (req, res) => {
   res.json(await db.users.delete(req.params.id))
-  //TODO: En adelante, tendrá que borrar datos del user en clubs, propuestas...
+
 })
 
 router.post('/login/users', async (req, res) => {
@@ -70,7 +73,7 @@ router.post('/login/users', async (req, res) => {
 })
 
 
-//===CRUFD CLUBS===//
+//===CLUBS===//
 
 router.post('/create/clubs', requireAuth, async (req, res) => {
   const {userId, ...clubData} = req.body
@@ -78,23 +81,20 @@ router.post('/create/clubs', requireAuth, async (req, res) => {
   res.json(newClub)
 })
 
-//read all clubs
 router.get('/read/clubs', async (req, res) => {
   res.json(await db.clubs.get())
 })
 
-//read clubs by id
 router.get('/read/clubs/:id', async (req, res) => {
   res.json(await db.clubs.getById(req.params.id))
 })
 
-//read clubs by type
 router.post('/read/clubs', async (req, res) => {
   const {type} = req.body;
   res.json(await db.clubs.getByType(type));
 })
 
-router.put('/update/clubs/:id', async (req, res) => {
+router.put('/update/clubs/:id', requireAuth, async (req, res) => {
   const clubId = req.params.id;
   const updates = req.body;
 
@@ -102,12 +102,32 @@ router.put('/update/clubs/:id', async (req, res) => {
   res.json(updatedClub);
 })
 
+router.put('/update/clubs/:id/admins', requireAuth, async (req, res) => {
+  const clubId = req.params.id;
+  const { userId } = req.body;
+
+  const updatedClub = await db.clubs.addAdmin(clubId, userId);
+  res.json(updatedClub);
+})
+
 router.put('/join/clubs/:id', async (req, res) => {
   const clubId = req.params.id
-  const userId = req.body.userId
+  const { userId, password } = req.body
 
-  const updatedClub = await db.clubs.join(clubId, userId);
-  res.json(updatedClub);
+  console.log("Recibido en Express:", { clubId, userId, password });
+
+  if (!clubId || clubId.length !== 24 || !userId || userId.length !== 24) {
+    return res.status(400).json({ success: false, message: "ID de club o usuario inválido" });
+  }
+
+  try {
+    const updatedClub = await db.clubs.join(clubId, userId);
+    console.log("Se unió correctamente:", updatedClub);
+    res.json(updatedClub);
+  } catch (error) {
+    console.error("Error en joinClub:", error);
+    res.status(500).json({ success: false, message: "Error del servidor" });
+  }
 });
 
 router.put('/leave/clubs/:id', async (req, res) => {
@@ -118,9 +138,8 @@ router.put('/leave/clubs/:id', async (req, res) => {
   res.json(updatedClub);
 })
 
-//TODO: MODIFICAR
 router.get('/filter/clubs/:name', async (req, res) => {
-  res.json(await db.clubs.get({ $text: { $search: req.params.name } }))
+  res.json(await db.clubs.getByName(req.params.name));
 })
 
 router.delete('/delete/clubs/:clubId/:userId', requireAuth, async (req, res) => {
@@ -130,8 +149,6 @@ router.delete('/delete/clubs/:clubId/:userId', requireAuth, async (req, res) => 
   res.json(result);
 });
 
-
-//===CRUFD BOOKS===//
 
 router.post('/create/books', async (req, res) => {
   res.json(await db.books.create(req.body))
@@ -145,7 +162,6 @@ router.put('/update/books/:id', async (req, res) => {
   res.json(await db.books.update(req.params.id, req.body))
 })
 
-//TODO: MODIFICAR
 router.get('/filter/books/:name', async (req, res) => {
   res.json(await db.books.get({ $text: { $search: req.params.name } }))
 })
@@ -154,8 +170,6 @@ router.delete('/delete/books/:id', async (req, res) => {
   res.json(await db.books.delete(req.params.id))
 })
 
-
-//===CRUFD MOVIES===//
 
 router.post('/create/movies', async (req, res) => {
   res.json(await db.movies.create(req.body))
@@ -169,7 +183,6 @@ router.put('/update/movies/:id', async (req, res) => {
   res.json(await db.movies.update(req.params.id, req.body))
 })
 
-//TODO: MODIFICAR
 router.get('/filter/movies/:name', async (req, res) => {
   res.json(await db.movies.get({ $text: { $search: req.params.name } }))
 })
@@ -179,10 +192,11 @@ router.delete('/delete/movies/:id', async (req, res) => {
 })
 
 
-//===CRUFD PROPOSALS===//
+//===PROPOSALS===//
 
 router.post('/create/proposals', async (req, res) => {
-  res.json(await db.proposals.create(req.body))
+  const newProposal = await db.proposals.create(req.body);
+  res.json(newProposal);
 })
 
 router.get('/read/proposals', async (req, res) => {
@@ -199,7 +213,6 @@ router.put('/update/proposals/:id', async (req, res) => {
   res.json(await db.proposals.update(req.params.id, req.body))
 })
 
-//TODO: MODIFICAR
 router.get('/filter/proposals/:name', async (req, res) => {
   res.json(await db.proposals.get({ $text: { $search: req.params.name } }))
 })
@@ -209,21 +222,49 @@ router.delete('/delete/proposals/:id', async (req, res) => {
 })
 
 
-//===CRUFD VOTES===//
+//===VOTES===//
 
 router.post('/create/votes', async (req, res) => {
-  res.json(await db.votes.create(req.body))
+  let { proposalId, userId } = req.body;
+
+  if (!proposalId || !userId) {
+    return res.status(400).json({ success: false, message: "ID de propuesta o usuario inválido" });
+  }
+
+  try {
+    proposalId = new ObjectId(String(proposalId));
+    userId = new ObjectId(String(userId));
+
+    const alreadyVoted = await db.votes.get({ proposalId, userId });
+
+    if (alreadyVoted.length > 0) {
+      return res.status(400).json({ success: false, message: "El usuario ya ha votado esta propuesta" });
+    }
+
+    const newVote = await db.votes.create({ proposalId, userId });
+    await db.proposals.vote(proposalId);
+    res.json(newVote);
+
+  } catch (error) {
+    console.error( "Error al registrar el voto:", error);
+    res.status(500).json({ success: false, message: "Error al registrar el voto" });
+  }
 })
 
 router.get('/read/votes', async (req, res) => {
   res.json(await db.votes.get())
 })
 
+router.post('/read/votes', async (req, res) => {
+  const {user_id} = req.body;
+  const userVotes = await db.votes.getByUser(user_id);
+  res.json(userVotes);
+});
+
 router.put('/update/votes/:id', async (req, res) => {
   res.json(await db.votes.update(req.params.id, req.body))
 })
 
-//TODO: MODIFICAR
 router.get('/filter/votes/:name', async (req, res) => {
   res.json(await db.votes.get({ $text: { $search: req.params.name } }))
 })
@@ -231,6 +272,7 @@ router.get('/filter/votes/:name', async (req, res) => {
 router.delete('/delete/votes/:id', async (req, res) => {
   res.json(await db.votes.delete(req.params.id))
 })
+
 
 
 // for parsing application/json

@@ -25,7 +25,7 @@ function requireAuth (req, res, next) {
   }
 }
 
-//===CRUFD USERS===//
+//===USERS===//
 
 app.post('/api/create/users', async (req, res) => {
   const newUser = await db.users.create(req.body);
@@ -49,7 +49,6 @@ app.put('/api/update/users/:id', async (req, res) => {
   res.json(await db.users.update(req.params.id, req.body))
 })
 
-//TODO: MODIFICAR
 app.get('/api/filter/users/:name', async (req, res) => {
   res.json(await db.users.get({ $text: { $search: req.params.name } }))
 })
@@ -79,7 +78,7 @@ app.post('/api/login/users', async (req, res) => {
 })
 
 
-//===CRUFD CLUBS===//
+//===CLUBS===//
 
 app.post('/api/create/clubs', requireAuth, async (req, res) => {
   const {userId, ...clubData} = req.body
@@ -87,17 +86,14 @@ app.post('/api/create/clubs', requireAuth, async (req, res) => {
   res.json(newClub)
 })
 
-//read all clubs
 app.get('/api/read/clubs', async (req, res) => {
   res.json(await db.clubs.get())
 })
 
-//read clubs by id
 app.get('/api/read/clubs/:id', async (req, res) => {
   res.json(await db.clubs.getById(req.params.id))
 })
 
-//read clubs by type
 app.post('/api/read/clubs', async (req, res) => {
   const {type} = req.body;
   res.json(await db.clubs.getByType(type));
@@ -147,7 +143,6 @@ app.put('/api/leave/clubs/:id', async (req, res) => {
   res.json(updatedClub);
 })
 
-//TODO: MODIFICAR
 app.get('/api/filter/clubs/:name', async (req, res) => {
   res.json(await db.clubs.getByName(req.params.name));
 })
@@ -160,7 +155,7 @@ app.delete('/api/delete/clubs/:clubId/:userId', requireAuth, async (req, res) =>
 });
 
 
-//===CRUFD BOOKS===//
+//===BOOKS===//
 
 app.post('/api/create/books', async (req, res) => {
   res.json(await db.books.create(req.body))
@@ -174,7 +169,6 @@ app.put('/api/update/books/:id', async (req, res) => {
   res.json(await db.books.update(req.params.id, req.body))
 })
 
-//TODO: MODIFICAR
 app.get('/api/filter/books/:name', async (req, res) => {
   res.json(await db.books.get({ $text: { $search: req.params.name } }))
 })
@@ -184,7 +178,7 @@ app.delete('/api/delete/books/:id', async (req, res) => {
 })
 
 
-//===CRUFD MOVIES===//
+//===MOVIES===//
 
 app.post('/api/create/movies', async (req, res) => {
   res.json(await db.movies.create(req.body))
@@ -198,7 +192,6 @@ app.put('/api/update/movies/:id', async (req, res) => {
   res.json(await db.movies.update(req.params.id, req.body))
 })
 
-//TODO: MODIFICAR
 app.get('/api/filter/movies/:name', async (req, res) => {
   res.json(await db.movies.get({ $text: { $search: req.params.name } }))
 })
@@ -208,7 +201,7 @@ app.delete('/api/delete/movies/:id', async (req, res) => {
 })
 
 
-//===CRUFD PROPOSALS===//
+//===PROPOSALS===//
 
 app.post('/api/create/proposals', async (req, res) => {
   const newProposal = await db.proposals.create(req.body);
@@ -229,7 +222,6 @@ app.put('/api/update/proposals/:id', async (req, res) => {
   res.json(await db.proposals.update(req.params.id, req.body))
 })
 
-//TODO: MODIFICAR
 app.get('/api/filter/proposals/:name', async (req, res) => {
   res.json(await db.proposals.get({ $text: { $search: req.params.name } }))
 })
@@ -239,7 +231,7 @@ app.delete('/api/delete/proposals/:id', async (req, res) => {
 })
 
 
-//===CRUFD VOTES===//
+//===VOTES===//
 
 app.post('/api/create/votes', async (req, res) => {
   let { proposalId, userId } = req.body;
@@ -282,7 +274,6 @@ app.put('/api/update/votes/:id', async (req, res) => {
   res.json(await db.votes.update(req.params.id, req.body))
 })
 
-//TODO: MODIFICAR
 app.get('/api/filter/votes/:name', async (req, res) => {
   res.json(await db.votes.get({ $text: { $search: req.params.name } }))
 })

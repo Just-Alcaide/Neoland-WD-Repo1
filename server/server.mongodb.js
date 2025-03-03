@@ -53,6 +53,7 @@ export const db = {
         create: createVote,
         count: countVotes,
         get: getVotes,
+        getByUser: getVotesByUser,
         update: updateVote,
         delete: deleteVote,
     },
@@ -684,6 +685,16 @@ async function getVotes(filter) {
     const SophiaSocialDB = client.db('SophiaSocial')
     const votesCollection = SophiaSocialDB.collection('votes')
     return await votesCollection.find(filter).toArray()
+}
+
+async function getVotesByUser(userId) {
+    const client = new MongoClient(URI);
+    const SophiaSocialDB = client.db('SophiaSocial');
+    const votesCollection = SophiaSocialDB.collection('votes');
+
+    const userVotes = await votesCollection.find({ user_Id: new ObjectId(String(userId)) }).toArray();
+    
+    return userVotes.map(vote => ({ proposal_Id: String(vote.proposal_Id) }));
 }
 
 /**

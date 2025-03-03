@@ -273,6 +273,13 @@ app.get('/api/read/votes', async (req, res) => {
   res.json(await db.votes.get())
 })
 
+app.post('/api/read/votes', async (req, res) => {
+  const {user_id} = req.body;
+  console.log("ID de usuario proporcionado:", user_id);
+  const userVotes = await db.votes.getByUser(user_id);
+  res.json(userVotes);
+});
+
 app.put('/api/update/votes/:id', async (req, res) => {
   res.json(await db.votes.update(req.params.id, req.body))
 })

@@ -6,9 +6,11 @@
 // /** @typedef {import('./classes/Proposal.js').Proposal} Proposal } */
 // /** @typedef {import('./classes/Product.js').Book} Book */
 
+
 /** @import {Club} from "./classes/Club.js"; */
 /** @import {Product, Book, Movie} from "./classes/Product.js" */
 /** @import {Proposal} from "./classes/Proposal.js"; */
+/** @import {Votes} from "./classes/Votes.js"; */
 
 /** @typedef {import('./components/LoginForm/LoginForm.js').LoginForm} LoginForm */
 /** @typedef {import('./components/RegisterForm/RegisterForm.js').RegisterForm} RegisterForm */
@@ -620,7 +622,6 @@ async function loadClubsPage() {
     }
 }
 
-
 /**
  * @typedef {Object} apiProposal
  * @property {string} _id
@@ -656,13 +657,18 @@ async function renderClubProposals(club) {
             return;
         }
 
-        
-        proposalsList.innerHTML = apiProposalData.map(( /** @type {apiProposal} */ apiProposal) => {
-            const product = apiProposal.productData
-            if (!product) return '';
+        const loggedUser = getLoggedUserData();
 
-            const loggedUser = getLoggedUserData();
-            const hasVoted = loggedUser?.votes.includes(apiProposal._id);
+        const userVotes = await getAPIVotesData(`${location.protocol}//${location.hostname}${API_PORT}/api/read/votes`, 'POST', JSON.stringify({ user_id: loggedUser?._id }));
+
+
+        const votedProposals = userVotes.map((/** @type {{ proposal_Id: string; }} */ vote) => vote.proposal_Id);
+
+        proposalsList.innerHTML = apiProposalData.map((/** @type {apiProposal} */ apiProposal) => {
+            const product = apiProposal.productData;
+            if (!product) return '';
+            
+            const hasVoted = votedProposals.map((/** @type {string} */ id) => String(id)).includes(String(apiProposal._id));
 
             return `
                 <li class="proposal-item">

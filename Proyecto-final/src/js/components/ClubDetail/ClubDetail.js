@@ -1,7 +1,6 @@
 import { API_PORT, getAPIData } from "../../utils/apiService.js";
 import { getLoggedUserData } from "../../utils/authService.js";
-import { generateClubActionButtons } from "../../utils/generateClubActionButtons.js";
-import { addClubButtonsListeners } from "../../utils/clubActions.js";
+import { generateClubActionButtons, addClubButtonsListeners } from "../../utils/clubActions.js";
 
 import { importTemplate } from "../../lib/importTemplate.js";
 

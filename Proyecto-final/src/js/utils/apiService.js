@@ -1,3 +1,5 @@
+//@ts-check
+
 import { simpleFetch } from "../lib/simpleFetch.js";
 import { HttpError } from "../classes/HttpError.js";
 import { getLoggedUserData } from "./authService.js";

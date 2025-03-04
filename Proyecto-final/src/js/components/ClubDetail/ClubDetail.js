@@ -1,6 +1,7 @@
-import { getLoggedUserData, API_PORT, getAPIUserData } from "../../main.js";
-import { generateClubActionButtons } from "../../lib/generateClubActionButtons.js";
-import { addClubButtonsListeners } from "../../lib/clubActions.js";
+import { API_PORT, getAPIData } from "../../utils/getApiData.js";
+import { getLoggedUserData } from "../../utils/getLoggedUserData.js";
+import { generateClubActionButtons } from "../../utils/generateClubActionButtons.js";
+import { addClubButtonsListeners } from "../../utils/clubActions.js";
 
 import { importTemplate } from "../../lib/importTemplate.js";
 
@@ -103,7 +104,7 @@ export class ClubDetail extends HTMLElement {
             return;
         }
         try {
-            const membersData = await getAPIUserData(`${location.protocol}//${location.hostname}${API_PORT}/api/read/users`, 'POST', JSON.stringify({ ids: clubData.members }));
+            const membersData = await getAPIData(`${location.protocol}//${location.hostname}${API_PORT}/api/read/users`, 'POST', JSON.stringify({ ids: clubData.members }));
 
             membersList.innerHTML = '';
             membersList.innerHTML = membersData.map(member => 

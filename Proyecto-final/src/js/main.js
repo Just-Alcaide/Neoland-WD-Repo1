@@ -1,16 +1,6 @@
 // @ts-check
 
-
-// /** @typedef {import('./classes/Product.js').Product} Product */
-// /** @typedef {import('./classes/Product.js').Movie} Movie */
-// /** @typedef {import('./classes/Proposal.js').Proposal} Proposal } */
-// /** @typedef {import('./classes/Product.js').Book} Book */
-
-
 /** @import {Club} from "./classes/Club.js"; */
-/** @import {Product, Book, Movie} from "./classes/Product.js" */
-/** @import {Proposal} from "./classes/Proposal.js"; */
-/** @import {Votes} from "./classes/Votes.js"; */
 
 /** @typedef {import('./components/LoginForm/LoginForm.js').LoginForm} LoginForm */
 /** @typedef {import('./components/RegisterForm/RegisterForm.js').RegisterForm} RegisterForm */
@@ -21,32 +11,30 @@ import  "./components/bundle.js";
 import {store} from "./store/redux.js";
 import {ProductFactory, PRODUCT_TYPE,} from "./classes/Product.js";
 import {User} from "./classes/User.js";
-// import {Club} from "./classes/Club.js";
-// import {Proposal} from "./classes/Proposal.js";
 
-// import { generateClubActionButtons } from "./lib/generateClubActionButtons.js";
-import { simpleFetch } from "./lib/simpleFetch.js";
-import { HttpError } from "./classes/HttpError.js";
-
+import { getAPIData, API_PORT } from "./utils/getApiData.js";
+import { getLoggedUserData } from "./utils/getLoggedUserData.js";
 
 /**
  * import templates
  */
 import { clubPageTemplate, clubDetailPageTemplate, bookProposalTemplate, movieProposalTemplate  } from "../templates/dinamic-content.templates.js";
 
-
-export const API_PORT = location.port ? `:${location.port}` : '';
-
 /**
  *  DOM Content Loaded
  */
+
+if (document.readyState === "complete" || document.readyState === "interactive") {
+    onDomContentLoaded();
+} else {
+    document.addEventListener("DOMContentLoaded", onDomContentLoaded);
+}
 
 document.addEventListener('DOMContentLoaded', onDomContentLoaded)
 
 //========EVENTS========//
 
 function onDomContentLoaded() {
-
     /**
      * load state
      */
@@ -78,7 +66,7 @@ function onDomContentLoaded() {
     window.addEventListener('login-form-submit', (event) => {
         onLoginComponentSubmit(/** @type {CustomEvent} */ (event).detail)
     })
-
+    
     //register web component listener
     window.addEventListener('register-form-submit', (event) => {
         onRegisterComponentSubmit(/** @type {CustomEvent} */ (event).detail)
@@ -93,7 +81,13 @@ function onDomContentLoaded() {
  * @returns void
  */
 async function onLoginComponentSubmit(apiUserData) {
+    if (!apiUserData) {
+        console.error("No se ha recibido usuario válido en onLoginComponentSubmit");
+        return;
+
+    }
     await loginUser(apiUserData)
+
 
     const loginWrapper = /** @type {LoginForm | null} */ (document.getElementById('loginWrapper'))
     loginWrapper?.cleanUpLoginForm();
@@ -174,10 +168,10 @@ async function loginUser(apiUserData) {
  * get logged user data
  * @returns {User | null}
  */
-export function getLoggedUserData() {
-    const storedUser = sessionStorage.getItem('loggedUser');
-    return storedUser ? JSON.parse(storedUser) : null
-}
+// export function getLoggedUserData() {
+//     const storedUser = sessionStorage.getItem('loggedUser');
+//     return storedUser ? JSON.parse(storedUser) : null
+// }
 
 /**
  * login new user
@@ -281,14 +275,14 @@ async function deleteUser() {
     try {
         const validationData = JSON.stringify({email: deleteUserEmail, password: deleteUserPassword});
 
-        const validationResponse = await getAPIUserData(`${location.protocol}//${location.hostname}${API_PORT}/api/validate/users`, 'POST', validationData);
+        const validationResponse = await getAPIData(`${location.protocol}//${location.hostname}${API_PORT}/api/validate/users`, 'POST', validationData);
 
         if (!validationResponse.success) {
             alert(validationResponse.message);
             throw new Error(validationResponse.message);
         }
 
-        await getAPIUserData (`${location.protocol}//${location.hostname}${API_PORT}/api/delete/users/${loggedUser?._id}`, 'DELETE');
+        await getAPIData (`${location.protocol}//${location.hostname}${API_PORT}/api/delete/users/${loggedUser?._id}`, 'DELETE');
 
         store.user.delete(loggedUser);
         store.saveState();
@@ -342,7 +336,7 @@ async function searchClubs() {
     }
 
     try {
-        const clubs = await getAPIClubData(`${location.protocol}//${location.hostname}${API_PORT}/api/filter/clubs/${searchValue}`, 'GET');
+        const clubs = await getAPIData(`${location.protocol}//${location.hostname}${API_PORT}/api/filter/clubs/${searchValue}`, 'GET');
 
         renderSearchResults(clubs);
 
@@ -434,7 +428,7 @@ async function createNewClub() {
     const payload = JSON.stringify({...newClub, userId});
 
     try {
-        const apiClubData = await getAPIClubData(`${location.protocol}//${location.hostname}${API_PORT}/api/create/clubs`, 'POST',  payload);
+        const apiClubData = await getAPIData(`${location.protocol}//${location.hostname}${API_PORT}/api/create/clubs`, 'POST',  payload);
 
         if (!apiClubData) {
             throw new Error('Error al crear el club');
@@ -480,7 +474,7 @@ async function updateClubsList() {
         ? clubNameFilter.value.toLowerCase().trim() 
         : '';
 
-        const apiClubsData = await getAPIClubData(`${location.protocol}//${location.hostname}${API_PORT}/api/read/clubs`, 'POST', JSON.stringify({type: selectedTypeFilter !== "all" ? selectedTypeFilter : undefined}));
+        const apiClubsData = await getAPIData(`${location.protocol}//${location.hostname}${API_PORT}/api/read/clubs`, 'POST', JSON.stringify({type: selectedTypeFilter !== "all" ? selectedTypeFilter : undefined}));
         
         const filteredClubs = apiClubsData.filter((/** @type {Club} */ club) => 
             club.name.toLowerCase().includes(filterValue)
@@ -549,7 +543,7 @@ async function visitClubPage(clubId) {
     }
 
     try {
-        const apiClubData = await getAPIClubData(
+        const apiClubData = await getAPIData(
             `${location.protocol}//${location.hostname}${API_PORT}/api/read/clubs/${clubId}`);
 
         if (!apiClubData || apiClubData.length === 0) {
@@ -650,7 +644,7 @@ async function renderClubProposals(club) {
     if (!proposalsList) return;
 
     try {
-        const apiProposalData = await getAPIProposalData(`${location.protocol}//${location.hostname}${API_PORT}/api/read/proposals`, 'POST', JSON.stringify({ids: club.proposals}));
+        const apiProposalData = await getAPIData(`${location.protocol}//${location.hostname}${API_PORT}/api/read/proposals`, 'POST', JSON.stringify({ids: club.proposals}));
 
         if (!apiProposalData || apiProposalData.length === 0) {
             proposalsList.innerHTML = 'No hay propuestas';
@@ -659,7 +653,7 @@ async function renderClubProposals(club) {
 
         const loggedUser = getLoggedUserData();
 
-        const userVotes = await getAPIVotesData(`${location.protocol}//${location.hostname}${API_PORT}/api/read/votes`, 'POST', JSON.stringify({ user_id: loggedUser?._id }));
+        const userVotes = await getAPIData(`${location.protocol}//${location.hostname}${API_PORT}/api/read/votes`, 'POST', JSON.stringify({ user_id: loggedUser?._id }));
 
 
         const votedProposals = userVotes.map((/** @type {{ proposalId: string }} */ vote) => vote.proposalId);
@@ -732,7 +726,7 @@ async function voteForProposal(proposalId) {
     }
 
     try {
-        const response = await getAPIVotesData(`${location.protocol}//${location.hostname}${API_PORT}/api/create/votes`, 'POST', JSON.stringify({proposalId: proposalId, userId: loggedUser._id}));
+        const response = await getAPIData(`${location.protocol}//${location.hostname}${API_PORT}/api/create/votes`, 'POST', JSON.stringify({proposalId: proposalId, userId: loggedUser._id}));
 
         const data = response;
 
@@ -787,7 +781,7 @@ async function joinClub(clubId, password = null) {
     try {
         const requestData = JSON.stringify({ userId: loggedUser._id, password });
 
-        const response = await getAPIClubData(
+        const response = await getAPIData(
             `${location.protocol}//${location.hostname}${API_PORT}/api/join/clubs/${clubId}`, 
             'PUT', 
             requestData
@@ -828,9 +822,10 @@ async function leaveClub(clubId) {
     try {
         const updateData = JSON.stringify({ userId: loggedUser._id });
 
-        await getAPIClubData(`${location.protocol}//${location.hostname}${API_PORT}/api/leave/clubs/${clubId}`, 'PUT', updateData);
+        await getAPIData(`${location.protocol}//${location.hostname}${API_PORT}/api/leave/clubs/${clubId}`, 'PUT', updateData);
 
-        loggedUser.clubs = loggedUser.clubs.filter((id) => id !== clubId);
+        
+        loggedUser.clubs = loggedUser.clubs.filter((/** @type {string} */ id) => id !== clubId);
         sessionStorage.setItem('loggedUser', JSON.stringify(loggedUser));
         store.user.update(loggedUser);
         store.saveState();
@@ -846,9 +841,9 @@ async function leaveClub(clubId) {
  * @param {string} clubId 
  */
 async function editClub(clubId) {
-    const club = await getAPIClubData(`${location.protocol}//${location.hostname}${API_PORT}/api/read/clubs/${clubId}`);
+    const club = await getAPIData(`${location.protocol}//${location.hostname}${API_PORT}/api/read/clubs/${clubId}`);
 
-    const membersData = await getAPIUserData(`${location.protocol}//${location.hostname}${API_PORT}/api/read/users`, 'POST', JSON.stringify({ids: club.members}));
+    const membersData = await getAPIData(`${location.protocol}//${location.hostname}${API_PORT}/api/read/users`, 'POST', JSON.stringify({ids: club.members}));
 
 
     let dialog = document.getElementById('edit-club-dialog');
@@ -931,7 +926,7 @@ async function saveClubChanges(clubId) {
             description: editClubDescription.value, 
         };
 
-        const response = await getAPIClubData(`${location.protocol}//${location.hostname}${API_PORT}/api/update/clubs/${clubId}`, 'PUT', JSON.stringify(updatedClub));
+        const response = await getAPIData(`${location.protocol}//${location.hostname}${API_PORT}/api/update/clubs/${clubId}`, 'PUT', JSON.stringify(updatedClub));
 
         if(!response){
             alert('Hubo un error al actualizar el club');
@@ -955,7 +950,7 @@ async function saveClubChanges(clubId) {
 
 async function assignAdmin(clubId, userId) {
     const payload = JSON.stringify({ userId });
-    await getAPIClubData(`${location.protocol}//${location.hostname}${API_PORT}/api/update/clubs/${clubId}/admins`, 'PUT', payload);
+    await getAPIData(`${location.protocol}//${location.hostname}${API_PORT}/api/update/clubs/${clubId}/admins`, 'PUT', payload);
 
     alert('Admin asignado correctamente');
 }
@@ -975,9 +970,9 @@ async function deleteClub(clubId) {
     if (!confirm("¿Estás seguro de eliminar este club?")) return;
 
     try {
-        await getAPIClubData(`${location.protocol}//${location.hostname}${API_PORT}/api/delete/clubs/${clubId}/${loggedUser._id}`, 'DELETE');
+        await getAPIData(`${location.protocol}//${location.hostname}${API_PORT}/api/delete/clubs/${clubId}/${loggedUser._id}`, 'DELETE');
 
-        loggedUser.clubs = loggedUser.clubs.filter(id => id !== clubId);
+        loggedUser.clubs = loggedUser.clubs.filter((/** @type {string} */ id) => id !== clubId);
         sessionStorage.setItem('loggedUser', JSON.stringify(loggedUser));
         store.user.update(loggedUser);
         store.saveState();
@@ -1109,7 +1104,7 @@ async function onCreateNewProposalSubmit(e) {
         const clubId = clubDetailPage?.getAttribute('data-id');
 
         if (clubId) {
-            const updatedClubData = await getAPIClubData(
+            const updatedClubData = await getAPIData(
                 `${location.protocol}//${location.hostname}${API_PORT}/api/read/clubs/${clubId}`
             );
         
@@ -1167,7 +1162,7 @@ async function createNewProposal(productId, productType) {
     };
 
     try {
-        const response = await getAPIProposalData(`${location.protocol}//${location.hostname}${API_PORT}/api/create/proposals`, 'POST', JSON.stringify(newProposal));
+        const response = await getAPIData(`${location.protocol}//${location.hostname}${API_PORT}/api/create/proposals`, 'POST', JSON.stringify(newProposal));
 
 
         if(!response) {
@@ -1239,11 +1234,11 @@ function createNewProduct(productData, productType) {
 
         switch (productType) {
             case PRODUCT_TYPE.BOOK:
-                selectedApiFunction = getAPIBookData;
+                selectedApiFunction = getAPIData;
                 requestEndpoint = `${location.protocol}//${location.hostname}${API_PORT}/api/create/books`;
                 break;
             case PRODUCT_TYPE.MOVIE:
-                selectedApiFunction = getAPIMovieData;
+                selectedApiFunction = getAPIData;
                 requestEndpoint = `${location.protocol}//${location.hostname}${API_PORT}/api/create/movies`;
                 break;
             default:
@@ -1261,335 +1256,3 @@ function createNewProduct(productData, productType) {
         });
     });
 }
-
-//=====API METHODS=====//
-
-/**
- * get user data from BBDD
- * @param {Object} [data]
- */
-export async function getAPIUserData (apiURL = `${location.protocol}//${location.hostname}${API_PORT}/api/read/users`, method = 'GET', data) {
-    
-    let apiUserData
-    
-    try {
-        let headers = new Headers();
-        headers.append('Content-Type', 'application/json')
-        headers.append('Access-Control-Allow-Origin', '*')
-        if (data) {
-          headers.append('Content-Length', String(JSON.stringify(data).length))
-        }
-        
-        const loggedUser = getLoggedUserData();
-        if (loggedUser) {
-            headers.append('Authorization', `Bearer ${loggedUser.token}`)
-        }
-
-        apiUserData = await simpleFetch(apiURL, {
-            signal: AbortSignal.timeout(3000),
-            method: method,
-            body: data ?? undefined,
-            headers: headers
-        });
-    } catch (/** @type {any | HttpError} */ err){
-        if (err.name === 'AbortError') {
-            console.error('Fetch abortado');
-        }
-        if (err instanceof HttpError) {
-            if (err.response.status === 404) {
-                console.error('Error 404: Not Found');
-            }
-            if (err.response.status === 500) {
-                console.error('Error 500: Internal Server Error');
-            }
-        }
-    }
-
-    return apiUserData
-}
-
-/**
- * get club data from BBDD
- * @param {Object} [data]
- */
-export async function getAPIClubData (apiURL = `${location.protocol}//${location.hostname}${API_PORT}/api/read/clubs`, method = 'GET', data) {
-
-    let apiClubData
-
-    try {
-        let headers = new Headers();
-
-        headers.append('Content-Type', 'application/json')
-        headers.append('Access-Control-Allow-Origin', '*')
-        if (data) {
-          headers.append('Content-Length', String(JSON.stringify(data).length))
-        }
-
-        const loggedUser = getLoggedUserData();
-        if (loggedUser) {
-            headers.append('Authorization', `Bearer ${loggedUser.token}`)
-        }
-
-        apiClubData = await simpleFetch(apiURL, {
-            signal: AbortSignal.timeout(3000),
-            method: method,
-            body: data ?? undefined,
-            headers: headers
-        });
-    } catch (/** @type {any | HttpError} */ err){
-        if (err.name === 'AbortError') {
-            console.error('Fetch abortado');
-        }
-        if (err instanceof HttpError) {
-            if (err.response.status === 404) {
-                console.error('Error 404: Not Found');
-            }
-            if (err.response.status === 500) {
-                console.error('Error 500: Internal Server Error');
-            }
-        }
-    }
-    return apiClubData
-}
-
-/**
- * get proposal data from BBDD
- * @param {Object} [data]
- */
-async function getAPIProposalData (apiURL = `${location.protocol}//${location.hostname}${API_PORT}/api/read/proposals`, method = 'GET', data) {
-    let apiProposalData
-
-    try {
-        let headers = new Headers();
-
-        headers.append('Content-Type', 'application/json')
-        headers.append('Access-Control-Allow-Origin', '*')
-        if (data) {
-          headers.append('Content-Length', String(JSON.stringify(data).length))
-        }
-
-        const loggedUser = getLoggedUserData();
-        if (loggedUser) {
-            headers.append('Authorization', `Bearer ${loggedUser.token}`)
-        }
-
-        apiProposalData = await simpleFetch(apiURL, {
-            signal: AbortSignal.timeout(3000),
-            method: method,
-            body: data ?? undefined,
-            headers: headers
-        });
-    } catch (/** @type {any | HttpError} */ err){
-        if (err.name === 'AbortError') {
-            console.error('Fetch abortado');
-        }
-        if (err instanceof HttpError) {
-            if (err.response.status === 404) {
-                console.error('Error 404: Not Found');
-            }
-            if (err.response.status === 500) {
-                console.error('Error 500: Internal Server Error');
-            }
-        }
-    }
-    
-    return apiProposalData
-}
-
-/**
- * get book data from BBDD
- * @param {Object} [data]
- */
-async function getAPIBookData (apiURL = `${location.protocol}//${location.hostname}${API_PORT}/api/read/books`, method = 'GET', data) {
-
-    let apiBookData
-
-    try {
-        let headers = new Headers();
-
-        headers.append('Content-Type', 'application/json')
-        headers.append('Access-Control-Allow-Origin', '*')
-        if (data) {
-          headers.append('Content-Length', String(JSON.stringify(data).length))
-        }
-
-        const loggedUser = getLoggedUserData();
-        if (loggedUser) {
-            headers.append('Authorization', `Bearer ${loggedUser.token}`)
-        }
-
-        apiBookData = await simpleFetch(apiURL, {
-            signal: AbortSignal.timeout(3000),
-            method: method,
-            body: data ?? undefined,
-            headers: headers
-        });
-    } catch (/** @type {any | HttpError} */ err){
-        if (err.name === 'AbortError') {
-            console.error('Fetch abortado');
-        }
-        if (err instanceof HttpError) {
-            if (err.response.status === 404) {
-                console.error('Error 404: Not Found');
-            }
-            if (err.response.status === 500) {
-                console.error('Error 500: Internal Server Error');
-            }
-        }
-    }
-    return apiBookData
-}
-
-/**
- * get movie data from BBDD
- * @param {Object} [data]
- */
-async function getAPIMovieData (apiURL = `${location.protocol}//${location.hostname}${API_PORT}/api/read/movies`, method = 'GET', data) {
-
-    let apiMovieData
-
-    try {
-        let headers = new Headers();
-
-        headers.append('Content-Type', 'application/json')
-        headers.append('Access-Control-Allow-Origin', '*')
-        if (data) {
-          headers.append('Content-Length', String(JSON.stringify(data).length))
-        }
-
-        const loggedUser = getLoggedUserData();
-        if (loggedUser) {
-            headers.append('Authorization', `Bearer ${loggedUser.token}`)
-        }
-
-        apiMovieData = await simpleFetch(apiURL, {
-            signal: AbortSignal.timeout(3000),
-            method: method,
-            body: data ?? undefined,
-            headers: headers
-        });
-    } catch (/** @type {any | HttpError} */ err){
-        if (err.name === 'AbortError') {
-            console.error('Fetch abortado');
-        }
-        if (err instanceof HttpError) {
-            if (err.response.status === 404) {
-                console.error('Error 404: Not Found');
-            }
-            if (err.response.status === 500) {
-                console.error('Error 500: Internal Server Error');
-            }
-        }
-    }
-    return apiMovieData
-}
-
-/**
- * get votes data from BBDD
- * @param {Object} [data]
- */
-async function getAPIVotesData (apiURL = `${location.protocol}//${location.hostname}${API_PORT}/api/read/votes`, method = 'GET', data) {
-
-    let apiVotesData
-
-    try {
-        let headers = new Headers();
-
-        headers.append('Content-Type', 'application/json')
-        headers.append('Access-Control-Allow-Origin', '*')
-        if (data) {
-          headers.append('Content-Length', String(JSON.stringify(data).length))
-        }
-
-        const loggedUser = getLoggedUserData();
-        if (loggedUser) {
-            headers.append('Authorization', `Bearer ${loggedUser.token}`)
-        }
-
-        apiVotesData = await simpleFetch(apiURL, {
-            signal: AbortSignal.timeout(3000),
-            method: method,
-            body: data ?? undefined,
-            headers: headers
-        });
-    } catch (/** @type {any | HttpError} */ err){
-        if (err.name === 'AbortError') {
-            console.error('Fetch abortado');
-        }
-        if (err instanceof HttpError) {
-            if (err.response.status === 404) {
-                console.error('Error 404: Not Found');
-            }
-            if (err.response.status === 500) {
-                console.error('Error 500: Internal Server Error');
-            }
-        }
-    }
-    return apiVotesData
-}
-
-
-function letMeCommit(){
-    getAPIBookData();
-    getAPIMovieData();
-}
-
-letMeCommit()
-
-/**
- * process Book Data
- */
-// async function processBookData () {
-//     const apiBookData = await getAPIBookData ();
-//     const factory = new ProductFactory ();
-//     apiBookData.map(( /** @type {Book} */ product) => {
-//         const productData = {
-//             id: product._id,
-//             name: product.name,
-//             year: product.year, 
-//             genre: product.genre,
-//             author: product.author,
-//             pages: product.pages,
-//         }
-
-//         const bookInstance = factory.createProduct (PRODUCT_TYPE.BOOK, productData);
-//         store.product.create(bookInstance);
-
-//     });
-// }
-
-/**
- * process Movie Data
- */
-// async function processMovieData () {
-//     const apiMovieData = await getAPIMovieData();
-//     const factory = new ProductFactory();
-//     apiMovieData.map(( /** @type {Movie} */ product) => {
-//         const productData = {
-
-//             name: product.name,
-//             year: product.year, 
-//             genre: product.genre,
-//             director: product.director,
-//             minutes: product.minutes
-//         }
-        
-//         const movieInstance = factory.createProduct (PRODUCT_TYPE.MOVIE, productData);
-//         store.product.create(movieInstance);
-//     }); 
-// }
-
-/**
- * process products Data
- */
-// async function processData() {
-//     const isApiDataProcessed = localStorage.getItem('isApiDataProcessed')
-//     if (!isApiDataProcessed) {
-//         await processBookData()
-//         await processMovieData()
-//         localStorage.setItem('isApiDataProcessed', 'true')
-//         store.saveState()
-//     }  
-
-//     console.log('store state: ', store.getState())
-// }

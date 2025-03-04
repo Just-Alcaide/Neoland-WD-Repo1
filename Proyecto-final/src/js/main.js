@@ -24,13 +24,8 @@ import { clubPageTemplate, clubDetailPageTemplate, bookProposalTemplate, moviePr
  *  DOM Content Loaded
  */
 
-if (document.readyState === "complete" || document.readyState === "interactive") {
-    onDomContentLoaded();
-} else {
-    document.addEventListener("DOMContentLoaded", onDomContentLoaded);
-}
-
 document.addEventListener('DOMContentLoaded', onDomContentLoaded)
+
 
 //========EVENTS========//
 
@@ -41,11 +36,7 @@ function onDomContentLoaded() {
      */
     checkAuthStatus()
     
-    /**
-     * show templates
-     */
-    const clubsPageLink = document.getElementById('clubsPageLink')
-    clubsPageLink?.addEventListener('click', onClubsPageLinkClick)
+
     
     // ==EVENT LISTENERS==//
 
@@ -58,6 +49,10 @@ function onDomContentLoaded() {
     window.addEventListener('register-form-submit', (event) => {
         onRegisterComponentSubmit(/** @type {CustomEvent} */ (event).detail)
     })
+
+    //show club template
+    const clubsPageLink = document.getElementById('clubsPageLink')
+    clubsPageLink?.addEventListener('click', onClubsPageLinkClick)
 }
 
 
@@ -68,13 +63,7 @@ function onDomContentLoaded() {
  * @returns void
  */
 async function onLoginComponentSubmit(apiUserData) {
-    if (!apiUserData) {
-        console.error("No se ha recibido usuario válido en onLoginComponentSubmit");
-        return;
-
-    }
     await handleLogin(apiUserData)
-
 
     const loginWrapper = /** @type {LoginForm | null} */ (document.getElementById('loginWrapper'))
     loginWrapper?.cleanUpLoginForm();

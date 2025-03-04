@@ -2,17 +2,9 @@ import { API_PORT, getAPIData } from "../../utils/apiService.js";
 import { getLoggedUserData } from "../../utils/authService.js";
 import { generateClubActionButtons, addClubButtonsListeners } from "../../utils/clubActions.js";
 
-import { importTemplate } from "../../lib/importTemplate.js";
-
 import AppCSS from "../../../css/app.css" with { type: "css" };
 import ClubDetailCSS from "./ClubDetail.css" with { type: "css" };
 
-const TEMPLATE = {
-    id: 'clubDetailTemplate',
-    url: './js/components/ClubDetail/ClubDetail.html'
-}
-
-await importTemplate(TEMPLATE.url);
 
 export class ClubDetail extends HTMLElement {
 
@@ -24,10 +16,6 @@ export class ClubDetail extends HTMLElement {
 
     set club(newValue) {
         this.setAttribute('club', JSON.stringify(newValue));
-    }
-
-    get template() {
-        return document.getElementById(TEMPLATE.id);
     }
 
     constructor() {
@@ -57,13 +45,18 @@ export class ClubDetail extends HTMLElement {
     
     async _setUpContent() {
 
-        if (!this.shadowRoot || !this.template || !this.club) {
-            console.log ('no hay shadow root o template o club') 
-            return;
-        }
+        this.shadowRoot.innerHTML = `    
+        <h3 id=clubDetailName></h3>
+        <p id="clubDetailDescription"></p>
 
-        this.shadowRoot.innerHTML = '';
-        this.shadowRoot.appendChild(this.template.content.cloneNode(true));
+        <h4>Tipo de Club:</h4>
+        <p id="clubDetailType"></p>
+
+        <h4>Miembros del Club:</h4>
+        <ul id="clubMembersList"></ul>
+
+        <div id="clubActionButtonsContainer"></div>`;
+ 
 
         this._renderClubDetails();
         await this._renderClubMembers();

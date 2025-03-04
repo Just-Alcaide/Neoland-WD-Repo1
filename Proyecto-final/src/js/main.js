@@ -1,6 +1,7 @@
 // @ts-check
 
 /** @import {Club} from "./classes/Club.js"; */
+/** @import {User} from "./classes/User.js"; */
 
 /** @typedef {import('./components/LoginForm/LoginForm.js').LoginForm} LoginForm */
 /** @typedef {import('./components/RegisterForm/RegisterForm.js').RegisterForm} RegisterForm */
@@ -10,10 +11,9 @@ import  "./components/bundle.js";
 
 import {store} from "./store/redux.js";
 import {ProductFactory, PRODUCT_TYPE,} from "./classes/Product.js";
-import {User} from "./classes/User.js";
 
-import { getAPIData, API_PORT } from "./utils/getApiData.js";
-import { getLoggedUserData } from "./utils/getLoggedUserData.js";
+import { getAPIData, API_PORT } from "./utils/apiService.js";
+import { handleLogin, getLoggedUserData, checkAuthStatus, } from "./utils/authService.js";
 
 /**
  * import templates
@@ -35,24 +35,11 @@ document.addEventListener('DOMContentLoaded', onDomContentLoaded)
 //========EVENTS========//
 
 function onDomContentLoaded() {
-    /**
-     * load state
-     */
-    store.loadState();
-
-
-    /**
-     * load APIS and JSON if not done previously
-     */
-    // processData()
     
     /**
      * check auth status
      */
     checkAuthStatus()
-
-    
-
     
     /**
      * show templates
@@ -74,7 +61,7 @@ function onDomContentLoaded() {
 }
 
 
-//=====USER EVENTS=====//
+//=====USER=====//
 
 /**
  * @param {User} apiUserData
@@ -86,7 +73,7 @@ async function onLoginComponentSubmit(apiUserData) {
         return;
 
     }
-    await loginUser(apiUserData)
+    await handleLogin(apiUserData)
 
 
     const loginWrapper = /** @type {LoginForm | null} */ (document.getElementById('loginWrapper'))
@@ -101,197 +88,13 @@ async function onLoginComponentSubmit(apiUserData) {
  * @returns void
  */
 async function onRegisterComponentSubmit(apiUserData) {
-    await loginNewUser(apiUserData)
+    await handleLogin(apiUserData)
 
     const registerWrapper = /** @type {RegisterForm | null} */ (document.getElementById('registerWrapper'))
     registerWrapper?.cleanUpRegisterForm();
 
     checkAuthStatus()
     await updateClubsList()    
-}
-
-/**
- * on logout button click
- * @param {MouseEvent} e
- */
-function onLogoutButtonClick(e) {
-    e.preventDefault();
-    logoutUser();
-}
-
-/**
- * on delete account button click
- * @param {MouseEvent} e 
- */
-function ondeleteAccountButtonClick(e) {
-    e.preventDefault();
-    deleteAccountForm();
-}
-
-/**
- * on delete user button click
- * @param {MouseEvent} e 
- */
-async function onDeleteUserButtonClick(e) {
-    e.preventDefault();
-    await deleteUser()
-    location.reload();
-}
-
-//=====USER METHODS=====//
-
-/**
- * login user
- * @param {User} apiUserData
- */
-async function loginUser(apiUserData) {
-    if (!apiUserData) {
-        alert ('Email o Contraseña incorrectos');
-        return;
-    }
-
-    const loggedUserData = {
-        _id: apiUserData._id,
-        email: apiUserData.email,
-        name: apiUserData.name,
-        token: apiUserData.token,
-        clubs: apiUserData.clubs || [],
-        products: apiUserData.products || [],
-        proposals: apiUserData.proposals || [],
-        votes: apiUserData.votes || [],
-    };
-
-    sessionStorage.setItem('loggedUser', JSON.stringify(loggedUserData));
-}
-
-/**
- * get logged user data
- * @returns {User | null}
- */
-// export function getLoggedUserData() {
-//     const storedUser = sessionStorage.getItem('loggedUser');
-//     return storedUser ? JSON.parse(storedUser) : null
-// }
-
-/**
- * login new user
- * @param {User} apiUserData
- */
-async function loginNewUser(apiUserData) {
-    if (!apiUserData) {
-        alert ('Email o Contraseña incorrectos');
-        return;
-    }
-
-        const loggedUserData = {
-            _id: apiUserData._id,
-            email: apiUserData.email,
-            name: apiUserData.name,
-            token: apiUserData.token,
-            clubs: apiUserData.clubs || [],
-            products: apiUserData.products || [],
-            proposals: apiUserData.proposals || [],
-            votes: apiUserData.votes || [],
-        };
-
-        sessionStorage.setItem('loggedUser', JSON.stringify(loggedUserData));
-        store.user.create(new User(loggedUserData));
-        store.saveState();
-}
-
-/**
- * check auth status
- */
-function checkAuthStatus() {
-    const loggedUser = getLoggedUserData();
-    const authForms = document.getElementById('auth-forms');
-    const userMenu = document.getElementById('userMenu');
-    const welcomeMessage = document.getElementById('welcomeMessage');
-
-    if (loggedUser) {
-        if (authForms) {
-            authForms.classList.add('hidden');
-        }
-
-        if (userMenu) {
-            userMenu.innerHTML = `
-            <p>Bienvenid@, ${loggedUser.name}</p>
-            <button id="logoutButton">Cerrar Sesión</button>
-            <button id='deleteAccountButton'>Eliminar Cuenta</button>
-            `;
-    
-            const logoutButton = document.getElementById('logoutButton');
-            logoutButton?.addEventListener('click', onLogoutButtonClick);
-
-            const deleteAccountButton = document.getElementById('deleteAccountButton');
-            deleteAccountButton?.addEventListener('click', ondeleteAccountButtonClick);
-        }
-
-        if (welcomeMessage) {
-            welcomeMessage.innerText = `Bienvenid@, ${loggedUser.name}, a Sophia Social, tu comuniad de lectura y cine.`;
-        }
-    }
-}
-
-/**
- * logout user
- */
-function logoutUser() {
-    sessionStorage.removeItem('loggedUser');
-    localStorage.removeItem('storedData');
-    localStorage.removeItem('isApiDataProcessed');
-    location.reload();
-}
-
-/**
- * delete account form
- */
-function deleteAccountForm() {
-    const popup = document.getElementById("deleteAccountPopup");
-    if (popup instanceof HTMLDialogElement) {
-        popup.showModal();
-    }
-
-    document.getElementById('cancelDeleteAccountButton')?.addEventListener('click', () => {
-        const popup = document.getElementById("deleteAccountPopup");
-        if (popup instanceof HTMLDialogElement) {
-            popup.close();
-        }
-    })
-    
-    const deleteUserButton = document.getElementById('deleteUserButton');
-    deleteUserButton?.addEventListener('click', onDeleteUserButtonClick);
-}
-
-/**
- * delete user
- */
-async function deleteUser() {
-    const loggedUser = getLoggedUserData();
-
-    const deleteUserEmail = /** @type {HTMLInputElement} */ (document.getElementById('deleteUserEmail')).value
-    const deleteUserPassword = /** @type {HTMLInputElement} */ (document.getElementById('deleteUserPassword')).value
-
-    try {
-        const validationData = JSON.stringify({email: deleteUserEmail, password: deleteUserPassword});
-
-        const validationResponse = await getAPIData(`${location.protocol}//${location.hostname}${API_PORT}/api/validate/users`, 'POST', validationData);
-
-        if (!validationResponse.success) {
-            alert(validationResponse.message);
-            throw new Error(validationResponse.message);
-        }
-
-        await getAPIData (`${location.protocol}//${location.hostname}${API_PORT}/api/delete/users/${loggedUser?._id}`, 'DELETE');
-
-        store.user.delete(loggedUser);
-        store.saveState();
-        sessionStorage.removeItem('loggedUser');
-        alert('Cuenta eliminada con exito');
-
-    } catch (error) {
-        console.log('Error: ', error);
-    }
 }
 
 
@@ -306,7 +109,7 @@ async function onClubsPageLinkClick(e) {
     const dynamicContent = document.getElementById('dynamic-content');
     if (dynamicContent) {
     await loadClubsPage();
-}
+    }
 }
 
 /**
@@ -380,10 +183,6 @@ async function onCreateClubFormSubmit(e) {
 
 
 //=====CLUB METHODS=====//
-//TODO: QUE PASA SI UN ADMIN SE VA DEL GRUPO?
-//TODO: PONER QUE ADMIN NOMBRE OTROS ADMINS
-//TODO: PONER QUE CLUB SE ELIMINE SI ULTIMO USER SE VA
-//TODO: AVISO SI EL ULTIMO USER SE QUIERE IR, CONFIRMAR ELIMINAR EL CLUB
 
 /**
  * create new club

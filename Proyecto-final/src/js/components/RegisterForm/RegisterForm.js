@@ -1,4 +1,4 @@
-import { getAPIData, API_PORT} from "../../utils/getApiData.js";
+import { getAPIData, API_PORT} from "../../utils/apiService.js";
 import AppCSS from '../../../css/app.css' with {type: 'css'} ;
 import RegisterFormCSS from './RegisterForm.css' with {type: 'css'} ;
 

@@ -4,7 +4,7 @@ import { generateClubActionButtons, addClubButtonsListeners } from "../../utils/
 import { getLoggedUserData } from '../../utils/authService.js';
 
 import AppCSS from '../../../css/app.css' with { type: "css" };
-import ClubListItemCSS from "../ClubListItem/ClubListItem.css" with { type: "css" };
+import ClubListItemCSS from "./ClubListItemLit.css" with { type: "css" };
 
 export class ClubListItemLit extends LitElement {
     static styles = [AppCSS, ClubListItemCSS]

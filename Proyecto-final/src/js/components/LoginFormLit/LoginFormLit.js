@@ -1,5 +1,5 @@
 import { LitElement, html } from 'https://cdn.jsdelivr.net/gh/lit/dist@3/all/lit-all.min.js';
-import { getAPIUserData, API_PORT} from "../../main.js";
+import { getAPIData, API_PORT} from "../../utils/getApiData.js";
 
 import AppCSS from '../../../css/app.css' with { type: "css" };
 import LoginFormLitCSS from './LoginFormLit.css' with { type: "css" };
@@ -47,15 +47,14 @@ export class LoginFormLit extends LitElement {
         };
 
         let onFormSubmitEvent
-        console.log(`Desde dentro del componente Email: ${loginEmail?.value}, Password: ${loginPassword?.value}`);
 
         if (loginData.email !== "" && loginData.password !== "") {
             const payload = JSON.stringify(loginData);
-            const apiData = await getAPIUserData(`${location.protocol}//${location.hostname}${API_PORT}/api/login/users`, 'POST', payload);
+            const apiData = await getAPIData(`${location.protocol}//${location.hostname}${API_PORT}/api/login/users`, 'POST', payload);
             onFormSubmitEvent = new CustomEvent("login-form-submit", {bubbles: true,
+            composed: true,
             detail: apiData
             }); 
-            
 
         } else {
             onFormSubmitEvent = new CustomEvent("login-form-submit", {bubbles: true,

@@ -1,4 +1,4 @@
-import { getAPIUserData, API_PORT} from "../../main.js";
+import { getAPIData, API_PORT} from "../../utils/getApiData.js";
 import AppCSS from '../../../css/app.css' with {type: 'css'} ;
 import RegisterFormCSS from './RegisterForm.css' with {type: 'css'} ;
 
@@ -75,7 +75,7 @@ export class RegisterForm extends HTMLElement {
         };
 
         const payload = JSON.stringify(newUser);
-        const response = await getAPIUserData(`${location.protocol}//${location.hostname}${API_PORT}/api/create/users`, 'POST',  payload);
+        const response = await getAPIData(`${location.protocol}//${location.hostname}${API_PORT}/api/create/users`, 'POST',  payload);
 
         if (!response) {
             alert("Hubo un error al registrar el usuario.");
@@ -98,7 +98,7 @@ export class RegisterForm extends HTMLElement {
 
         if (loginData.email !== "" && loginData.password !== "") {
             const payload = JSON.stringify(loginData);
-            const apiData = await getAPIUserData(`${location.protocol}//${location.hostname}${API_PORT}/api/login/users`, 'POST', payload);
+            const apiData = await getAPIData(`${location.protocol}//${location.hostname}${API_PORT}/api/login/users`, 'POST', payload);
             onFormSubmitEvent = new CustomEvent("register-form-submit", {bubbles: true, 
             detail: apiData
             });

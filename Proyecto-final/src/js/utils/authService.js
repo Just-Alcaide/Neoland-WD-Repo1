@@ -1,4 +1,5 @@
 // @ts-check
+
 import { getAPIData, API_PORT } from './apiService.js';
 /** @typedef {import("../classes/User.js").User} User */
 

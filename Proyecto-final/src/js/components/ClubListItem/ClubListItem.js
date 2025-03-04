@@ -1,6 +1,6 @@
 import { getLoggedUserData } from "../../main.js";
-import { generateClubActionButtons } from "../../utils/generateClubActionButtons.js";
-import { addClubButtonsListeners } from "../../utils/clubActions.js";
+
+import { generateClubActionButtons, addClubButtonsListeners } from "../../utils/clubActions.js";
 
 import { importTemplate } from "../../lib/importTemplate.js";
 

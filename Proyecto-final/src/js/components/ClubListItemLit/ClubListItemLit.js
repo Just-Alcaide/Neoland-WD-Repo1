@@ -1,6 +1,6 @@
 import { LitElement, html, unsafeHTML } from 'https://cdn.jsdelivr.net/gh/lit/dist@3/all/lit-all.min.js';
-import { generateClubActionButtons } from "../../utils/generateClubActionButtons.js";
-import { addClubButtonsListeners } from "../../utils/clubActions.js";
+
+import { generateClubActionButtons, addClubButtonsListeners } from "../../utils/clubActions.js";
 import { getLoggedUserData } from '../../utils/authService.js';
 
 import AppCSS from '../../../css/app.css' with { type: "css" };

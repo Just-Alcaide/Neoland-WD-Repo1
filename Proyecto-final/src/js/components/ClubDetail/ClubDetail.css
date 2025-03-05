@@ -1,1 +1,33 @@
-/* letMeCommit */
+#club-detail-name {
+    font-family: var(--font-serif);
+    font-size: 1.6rem;
+    color: var(--primary-color);
+    text-align: center;
+}
+
+#club-detail-description {
+    font-size: 1rem;
+    color: var(--secondary-color);
+    text-align: center;
+    max-width: 600px;
+    margin: 0 auto 1rem;
+}
+
+h4 {
+    font-family: var(--font-serif);
+    font-size: 1.2rem;
+    color: var(--primary-color);
+    margin-top: 1rem;
+}
+
+ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+#club-members-list {
+    background-color: var(--input-bg);
+    padding: 1rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0 0 0 / 10%);
+}

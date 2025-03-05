@@ -124,6 +124,10 @@ select {
     color: var(--primary-color);
 }
 
+input[type="radio"] {
+    width: auto;
+}
+
 input:focus,
 textarea:focus,
 select:focus {

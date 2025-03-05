@@ -1,1 +1,94 @@
-/* letMeCommit */
+:root {
+    --bg-color: #f5f3eb;
+    --primary-color: #5a463b;
+    --secondary-color: #6a5548;
+    --accent-color: #8b6f54;
+    --accent-hover: #705844;
+    --border-color: #d6ccc2;
+    --input-bg: #fcfbf7;
+    --font-serif: 'Merriweather', serif;
+    --font-sans: 'Open Sans', sans-serif;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: var(--bg-color);
+    font-family: var(--font-sans);
+    color: var(--primary-color);
+    line-height: 1.6;
+    padding: 20px;
+}
+
+h3, h4 {
+    font-family: var(--font-serif);
+    color: var(--primary-color);
+}
+
+#club-action-buttons {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 1rem;
+}
+
+button {
+    padding: 10px 14px;
+    font-size: 1rem;
+    font-weight: bold;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s ease-in-out;
+}
+
+button:hover {
+    transform: scale(1.05);
+}
+
+.join-club-button {
+    background-color: #4caf50;
+    color: white;
+}
+
+.join-club-button:hover {
+    background-color: #388e3c;
+}
+
+.leave-club-button {
+    background-color: #e57373;
+    color: white;
+}
+
+.leave-club-button:hover {
+    background-color: #c62828;
+}
+
+.edit-club-button {
+    background-color: #ffb74d;
+    color: white;
+}
+
+.edit-club-button:hover {
+    background-color: #f57c00;
+}
+
+.delete-club-button {
+    background-color: #d32f2f;
+    color: white;
+}
+
+.delete-club-button:hover {
+    background-color: #b71c1c;
+}
+
+@media screen and (width <= 768px) {
+    #club-action-buttons {
+        flex-direction: column;
+    }
+}

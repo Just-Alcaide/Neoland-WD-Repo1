@@ -18,15 +18,15 @@ export function generateClubActionButtons(club, loggedUser) {
     let userButtons = '';
 
     if (!club.members.includes(loggedUser._id)) {
-        userButtons += `<button class="joinClubButton" data-id="${club._id}" data-private="${club.private}">Unirse al Club</button>`;
+        userButtons += `<button class="join-club-button" data-id="${club._id}" data-private="${club.private}">Unirse al Club</button>`;
     }
     if (club.members.includes(loggedUser._id)) {
-        userButtons += `<button class="leaveClubButton" data-id="${club._id}">Salir del Club</button>`;
+        userButtons += `<button class="leave-club-button" data-id="${club._id}">Salir del Club</button>`;
     }
     if (club.admins.includes(loggedUser._id)) {
         userButtons += `
-            <button class="editClubButton" data-id="${club._id}">Editar Club</button>
-            <button class="deleteClubButton" data-id="${club._id}">Eliminar Club</button>
+            <button class="edit-club-button" data-id="${club._id}">Editar Club</button>
+            <button class="delete-club-button" data-id="${club._id}">Eliminar Club</button>
         `;
     }
 
@@ -39,19 +39,19 @@ export function generateClubActionButtons(club, loggedUser) {
  * @param {ShadowRoot | HTMLElement} container - The DOM element containing the club action buttons.
  */
 export function addClubButtonsListeners(container) {
-    container.querySelectorAll('.joinClubButton').forEach(button =>
+    container.querySelectorAll('.join-club-button').forEach(button =>
         button.addEventListener('click', (e) => handleJoinClub(/** @type {MouseEvent} */ (e), container))
     );
 
-    container.querySelectorAll('.leaveClubButton').forEach(button =>
+    container.querySelectorAll('.leave-club-button').forEach(button =>
         button.addEventListener('click', (e) => handleLeaveClub(/** @type {MouseEvent} */ (e), container))
     );
 
-    container.querySelectorAll('.editClubButton').forEach(button =>
+    container.querySelectorAll('.edit-club-button').forEach(button =>
         button.addEventListener('click', (e) => handleEditClub(/** @type {MouseEvent} */ (e), container))
     );
 
-    container.querySelectorAll('.deleteClubButton').forEach(button =>
+    container.querySelectorAll('.delete-club-button').forEach(button =>
         button.addEventListener('click', (e) => handleDeleteClub(/** @type {MouseEvent} */ (e), container))
     );
 }

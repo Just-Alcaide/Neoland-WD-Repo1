@@ -40,8 +40,8 @@ export const clubPageTemplate = `
                 <option value="movie">Club de Cine</option>
                 <option value="mixed">Club Mixto</option>
             </select>
-            <label>Privado<input type="radio" name="clubVisibility" value="private" required></label>
-            <label>Publico<input type="radio" name="clubVisibility" value="public" required></label>
+            <label><input type="radio" name="clubVisibility" value="private" required> Privado</label>
+            <label><input type="radio" name="clubVisibility" value="public" required> Publico</label>
             <div id="clubPasswordField" class="hidden">
             <label for="clubPassword">Contraseña:</label>
             <input type="password" name="clubPassword" id="clubPassword">

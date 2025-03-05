@@ -1,8 +1,7 @@
 // @ts-check
 
-//Patron IIFE 
-//Vamos a usar el singleton para los datos, no para una clase concreta
-import { Product } from "./Product.js"
+//Patron IIFE - Singleton
+/** @import { Product } from "../classes/Product.js" */
     /**
      * @typedef {Object} dataInstance
      * @property {Product[]=} Product

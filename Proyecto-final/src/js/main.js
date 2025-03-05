@@ -8,35 +8,22 @@
 /** @typedef {import('./components/ClubDetail/ClubDetail.js').ClubDetail} ClubDetail*/
 
 import  "./components/bundle.js";
-
 import {ProductFactory, PRODUCT_TYPE,} from "./classes/Product.js";
-
 import { getAPIData, API_PORT } from "./utils/apiService.js";
 import { handleLogin, getLoggedUserData, checkAuthStatus, } from "./utils/authService.js";
 import { filterClubs, createNewClub, deleteClub, joinClub, leaveClub, editClub } from "./utils/clubService.js";
 
-/**
- * import templates
- */
 import { clubPageTemplate, clubDetailPageTemplate, bookProposalTemplate, movieProposalTemplate  } from "../templates/dinamic-content.templates.js";
 
-/**
- *  DOM Content Loaded
- */
 
 document.addEventListener('DOMContentLoaded', onDomContentLoaded)
 
 
-//========EVENTS========//
+//========DOM EVENTS========//
 
 function onDomContentLoaded() {
     
-    /**
-     * check auth status
-     */
     checkAuthStatus()
-    
-
     
     // ==EVENT LISTENERS==//
 
@@ -56,7 +43,7 @@ function onDomContentLoaded() {
 }
 
 
-//=====USER=====//
+//=====AUTH EVENTS=====//
 
 /**
  * @param {User} apiUserData
@@ -110,55 +97,6 @@ function onSearchClubButtonClick(e) {
     searchClubs()
 }
 
-async function searchClubs() {
-    const searchInput = document.getElementById('clubSearchName')
-    if (!(searchInput instanceof HTMLInputElement)) {
-        console.error('Search input not found or is not an input element');
-        return;
-    }
-    const searchValue = searchInput.value.toLowerCase().trim();
-
-    const clubsSearchResultsContainer = document.getElementById('clubsSearchResultsContainer');
-    if (!searchValue) {
-        console.warn ('Search value is empty');
-        if (clubsSearchResultsContainer) {
-            clubsSearchResultsContainer.innerHTML = '';
-        }
-        return;
-    }
-
-    try {
-        const clubs = await getAPIData(`${location.protocol}//${location.hostname}${API_PORT}/api/filter/clubs/${searchValue}`, 'GET');
-
-        renderSearchResults(clubs);
-
-    } catch (error) {
-        console.log('Error searching clubs: ', error);
-    }
-}
-
-/**
- * 
- * @param {Club []} clubs 
- */
-function renderSearchResults(clubs) {
-
-    const clubsSearchResultsContainer = document.getElementById('clubsSearchResultsContainer');
-    if (!clubsSearchResultsContainer) return;
-
-    clubsSearchResultsContainer.innerHTML = '';
-
-    if (!clubs || clubs.length === 0) {
-        clubsSearchResultsContainer.innerHTML = 'No se encontraron clubs';
-    }
-
-    clubsSearchResultsContainer.innerHTML = clubs.map((club) => `
-        <club-list-item club='${JSON.stringify(club)}'></club-list-item>
-    `).join('');
-
-    initializeClubButtonsListeners(clubsSearchResultsContainer)
-}
-
 /**
  * on create club form submit
  * @param {SubmitEvent} e
@@ -210,88 +148,6 @@ async function onCreateClubFormSubmit(e) {
     }
 }
 
-
-//=====CLUB METHODS=====//
-
-/**
- * clean up new club form
- */
-function cleanUpNewClubForm() {
-    const clubNameInput = /** @type {HTMLInputElement} */ (document.getElementById('clubName'));
-    const clubDescriptionInput = /** @type {HTMLTextAreaElement} */ (document.getElementById('clubDescription'));
-    const clubVisibilityInputs = /** @type {NodeListOf<HTMLInputElement>} */ (document.querySelectorAll('input[name="clubVisibility"]'));
-
-    if (clubNameInput) clubNameInput.value = '';
-    if (clubDescriptionInput) clubDescriptionInput.value = '';
-    clubVisibilityInputs.forEach(radio => (radio.checked = false));
-}
-
-/**
- * update clubs list
- */
-async function updateClubsList() {
-    const clubsList = document.getElementById('clubsList');
-    if (!clubsList) {
-        console.warn("[updateClubsList] No clubsList element found in the DOM.");
-        return;
-    }
-
-    const userClubs = await filterClubs();
-
-    if (!userClubs || userClubs.length === 0) {
-        console.warn("[updateClubsList] No clubs found.");
-        clubsList.innerHTML = "<p>No se encontraron clubs</p>";
-        return;
-    }
-
-    clubsList.innerHTML = userClubs.map((club) => `
-        <club-list-item club='${JSON.stringify(club)}'></club-list-item>
-    `).join('');
-
-    initializeClubButtonsListeners(clubsList);
-}
-
-/**
- * @param {HTMLElement} container
- */
-function initializeClubButtonsListeners (container) {
-
-    container.removeEventListener('visit-club', async (event) => {
-        await onVisitClubClick(/** @type {CustomEvent} */ (event));
-    });
-    container.addEventListener('visit-club', async (event) => {
-        await onVisitClubClick(/** @type {CustomEvent} */ (event));
-    });
-
-    container.removeEventListener('join-club', async (event) => {
-        await onJoinClub(/** @type {CustomEvent} */ (event));
-    });
-    container.addEventListener('join-club', async (event) => {
-        await onJoinClub(/** @type {CustomEvent} */ (event));
-    });
-    
-    container.removeEventListener('leave-club',  async (event) => {
-        await onLeaveClub(/** @type {CustomEvent} */ (event));
-    });
-    container.addEventListener('leave-club', async (event) => {
-        await onLeaveClub(/** @type {CustomEvent} */ (event));
-    });
-
-    container.removeEventListener('edit-club', async (event) => {
-        await onEditClub(/** @type {CustomEvent} */ (event));
-    });
-    container.addEventListener('edit-club', async (event) => {
-        await onEditClub(/** @type {CustomEvent} */ (event));
-    });
-    
-    container.removeEventListener('delete-club', async (event) => {
-        await onDeleteClub(/** @type {CustomEvent} */ (event));
-    });
-    container.addEventListener('delete-club', async (event) => {
-        await onDeleteClub(/** @type {CustomEvent} */ (event));
-    });
-}
-
 /**
  * @param {CustomEvent} event
  */
@@ -335,6 +191,171 @@ async function onDeleteClub(event) {
     const { clubId } = /** @type {CustomEvent} */ (event).detail;
     await deleteClub(clubId);
     await loadClubsPage();
+}
+
+
+//=====CLUB METHODS=====//
+
+/**
+ * Loads and renders the clubs page.
+ */
+export async function loadClubsPage() {
+    const dynamicContent = document.getElementById('dynamic-content');
+    if (!dynamicContent) return;
+
+    dynamicContent.innerHTML = clubPageTemplate; 
+
+    const clubsList = document.getElementById('clubsList');
+    if (clubsList) {
+        const clubs = await filterClubs(); 
+        clubsList.innerHTML = clubs.map(club => `
+            <club-list-item club='${JSON.stringify(club)}'></club-list-item>
+        `).join('');
+
+        initializeClubButtonsListeners(clubsList);
+    }
+
+    const createClubForm = document.getElementById('create-club-form');
+    if (createClubForm) {
+        createClubForm.addEventListener('submit', onCreateClubFormSubmit);
+        if (getLoggedUserData()) createClubForm.classList.remove('hidden');
+    }
+
+    const clubNameFilter = document.getElementById('clubNameFilter');
+    clubNameFilter?.addEventListener('input', updateClubsList);
+
+    document.querySelectorAll('input[name="club-type-filter"]').forEach(radio => {
+        radio.addEventListener('change', updateClubsList);
+    });
+
+    
+    document.querySelectorAll('input[name="clubVisibility"]').forEach(input => {
+        const visibilityInput = /** @type {HTMLInputElement} */ (input);
+        visibilityInput.addEventListener('change', () => {
+            const clubPasswordField = /** @type {HTMLElement | null} */ (document.getElementById('clubPasswordField'));
+            if (clubPasswordField) {
+                clubPasswordField.classList.toggle('hidden', visibilityInput.value !== 'private');
+            }
+        });
+    });
+
+    const searchClubButton = document.getElementById('searchClubButton');
+    searchClubButton?.addEventListener('click', onSearchClubButtonClick);
+}
+
+/**
+ * update clubs list
+ */
+async function updateClubsList() {
+    const clubsList = document.getElementById('clubsList');
+    if (!clubsList) {
+        console.warn("[updateClubsList] No clubsList element found in the DOM.");
+        return;
+    }
+
+    const userClubs = await filterClubs();
+
+    if (!userClubs || userClubs.length === 0) {
+        console.warn("[updateClubsList] No clubs found.");
+        clubsList.innerHTML = "<p>No se encontraron clubs</p>";
+        return;
+    }
+
+    clubsList.innerHTML = userClubs.map((club) => `
+        <club-list-item club='${JSON.stringify(club)}'></club-list-item>
+    `).join('');
+
+    initializeClubButtonsListeners(clubsList);
+}
+
+async function searchClubs() {
+    const searchInput = document.getElementById('clubSearchName')
+    if (!(searchInput instanceof HTMLInputElement)) {
+        console.error('Search input not found or is not an input element');
+        return;
+    }
+    const searchValue = searchInput.value.toLowerCase().trim();
+
+    const clubsSearchResultsContainer = document.getElementById('clubsSearchResultsContainer');
+    if (!searchValue) {
+        console.warn ('Search value is empty');
+        if (clubsSearchResultsContainer) {
+            clubsSearchResultsContainer.innerHTML = '';
+        }
+        return;
+    }
+
+    try {
+        const clubs = await getAPIData(`${location.protocol}//${location.hostname}${API_PORT}/api/filter/clubs/${searchValue}`, 'GET');
+
+        renderSearchResults(clubs);
+
+    } catch (error) {
+        console.log('Error searching clubs: ', error);
+    }
+}
+
+/**
+ * 
+ * @param {Club []} clubs 
+ */
+function renderSearchResults(clubs) {
+
+    const clubsSearchResultsContainer = document.getElementById('clubsSearchResultsContainer');
+    if (!clubsSearchResultsContainer) return;
+
+    clubsSearchResultsContainer.innerHTML = '';
+
+    if (!clubs || clubs.length === 0) {
+        clubsSearchResultsContainer.innerHTML = 'No se encontraron clubs';
+    }
+
+    clubsSearchResultsContainer.innerHTML = clubs.map((club) => `
+        <club-list-item club='${JSON.stringify(club)}'></club-list-item>
+    `).join('');
+
+    initializeClubButtonsListeners(clubsSearchResultsContainer)
+}
+
+/**
+ * @param {HTMLElement} container
+ */
+function initializeClubButtonsListeners (container) {
+
+    container.removeEventListener('visit-club', async (event) => {
+        await onVisitClubClick(/** @type {CustomEvent} */ (event));
+    });
+    container.addEventListener('visit-club', async (event) => {
+        await onVisitClubClick(/** @type {CustomEvent} */ (event));
+    });
+
+    container.removeEventListener('join-club', async (event) => {
+        await onJoinClub(/** @type {CustomEvent} */ (event));
+    });
+    container.addEventListener('join-club', async (event) => {
+        await onJoinClub(/** @type {CustomEvent} */ (event));
+    });
+    
+    container.removeEventListener('leave-club',  async (event) => {
+        await onLeaveClub(/** @type {CustomEvent} */ (event));
+    });
+    container.addEventListener('leave-club', async (event) => {
+        await onLeaveClub(/** @type {CustomEvent} */ (event));
+    });
+
+    container.removeEventListener('edit-club', async (event) => {
+        await onEditClub(/** @type {CustomEvent} */ (event));
+    });
+    container.addEventListener('edit-club', async (event) => {
+        await onEditClub(/** @type {CustomEvent} */ (event));
+    });
+    
+    container.removeEventListener('delete-club', async (event) => {
+        await onDeleteClub(/** @type {CustomEvent} */ (event));
+    });
+    container.addEventListener('delete-club', async (event) => {
+        await onDeleteClub(/** @type {CustomEvent} */ (event));
+    });
 }
 
 /**
@@ -384,50 +405,213 @@ export async function visitClubPage(clubId) {
 }
 
 /**
- * Loads and renders the clubs page.
+ * clean up new club form
  */
-export async function loadClubsPage() {
-    const dynamicContent = document.getElementById('dynamic-content');
-    if (!dynamicContent) return;
+function cleanUpNewClubForm() {
+    const clubNameInput = /** @type {HTMLInputElement} */ (document.getElementById('clubName'));
+    const clubDescriptionInput = /** @type {HTMLTextAreaElement} */ (document.getElementById('clubDescription'));
+    const clubVisibilityInputs = /** @type {NodeListOf<HTMLInputElement>} */ (document.querySelectorAll('input[name="clubVisibility"]'));
 
-    dynamicContent.innerHTML = clubPageTemplate; 
+    if (clubNameInput) clubNameInput.value = '';
+    if (clubDescriptionInput) clubDescriptionInput.value = '';
+    clubVisibilityInputs.forEach(radio => (radio.checked = false));
+}
 
-    const clubsList = document.getElementById('clubsList');
-    if (clubsList) {
-        const clubs = await filterClubs(); 
-        clubsList.innerHTML = clubs.map(club => `
-            <club-list-item club='${JSON.stringify(club)}'></club-list-item>
-        `).join('');
 
-        initializeClubButtonsListeners(clubsList);
+//=====PROPOSAL EVENTS=====//
+
+/**
+ * 
+ * @param {MouseEvent} e 
+ */
+function onAddProposalButtonClick(e) {
+    e.preventDefault();
+
+    const addProposalTypeForm = document.getElementById('add-proposal-type-form');
+    if (!addProposalTypeForm) return;
+
+    /** @type {ClubDetail | null} */
+    const clubDetailComponent = document.querySelector('club-detail');
+    if (!clubDetailComponent) return;
+    const clubType = clubDetailComponent.club?.type;
+
+    if (clubType === "book") {
+        document.getElementById("bookProposal")?.parentElement?.classList.remove('hidden');
+    } else if (clubType === "movie") {
+        document.getElementById("movieProposal")?.parentElement?.classList.remove('hidden');
+    } else if (clubType === "mixed") {
+        document.getElementById("bookProposal")?.parentElement?.classList.remove('hidden');
+        document.getElementById("movieProposal")?.parentElement?.classList.remove('hidden');
     }
 
-    const createClubForm = document.getElementById('create-club-form');
-    if (createClubForm) {
-        createClubForm.addEventListener('submit', onCreateClubFormSubmit);
-        if (getLoggedUserData()) createClubForm.classList.remove('hidden');
+    if (addProposalTypeForm) {
+        addProposalTypeForm.classList.remove('hidden');
+
+        addProposalTypeForm.addEventListener('change', onProposalTypeChange);
     }
 
-    const clubNameFilter = document.getElementById('clubNameFilter');
-    clubNameFilter?.addEventListener('input', updateClubsList);
+    const addProposalButton = document.getElementById('add-proposal-button');
+    if (addProposalButton) {
+        addProposalButton.classList.add('hidden');
+    }
+}
 
-    document.querySelectorAll('input[name="club-type-filter"]').forEach(radio => {
-        radio.addEventListener('change', updateClubsList);
-    });
+/**
+ * @param {Event} e
+ */
+function onProposalTypeChange(e) {
+    e.preventDefault();
+    const target = /** @type {HTMLInputElement} */ (e.target);
+    const createNewProposalContainer = document.getElementById('create-new-proposal-container');
 
-    
-    document.querySelectorAll('input[name="clubVisibility"]').forEach(input => {
-        const visibilityInput = /** @type {HTMLInputElement} */ (input);
-        visibilityInput.addEventListener('change', () => {
-            const clubPasswordField = /** @type {HTMLElement | null} */ (document.getElementById('clubPasswordField'));
-            if (clubPasswordField) {
-                clubPasswordField.classList.toggle('hidden', visibilityInput.value !== 'private');
+    if (!createNewProposalContainer || target.name !== 'proposalType') return;
+
+    createNewProposalContainer.innerHTML = '';
+
+    let proposalFormElement;
+
+    if (target.value === 'bookProposal') {
+        proposalFormElement = document.createElement('form');
+        proposalFormElement.id = 'bookProposalForm';
+        proposalFormElement.innerHTML = bookProposalTemplate;
+        
+    } else if (target.value === 'movieProposal') {
+        proposalFormElement = document.createElement('form');
+        proposalFormElement.id = 'movieProposalForm';
+        proposalFormElement.innerHTML = movieProposalTemplate;
+    }
+
+    if (proposalFormElement) {
+        createNewProposalContainer.appendChild(proposalFormElement);
+        addProposalFormListener(proposalFormElement.id);
+    }
+}
+
+/**
+ * 
+ * @param {SubmitEvent} e 
+ */
+async function onCreateNewProposalSubmit(e) {
+    e.preventDefault();
+    const form = /** @type {HTMLFormElement} */ (e.target);
+    const formData = getDataFromProposalForm(form)
+
+    let productType;
+    if (form.id === 'bookProposalForm') {
+        productType = PRODUCT_TYPE.BOOK;
+    } else if (form.id === 'movieProposalForm') {
+        productType = PRODUCT_TYPE.MOVIE;
+    } else {
+        return;
+    }
+
+    const productData = {
+        name: String(formData.name),
+        year: Number(formData.year),
+        genre: String(formData.genre),
+        author: String(formData.author),
+        director: String(formData.director),
+        pages: Number(formData.pages),
+        minutes: Number(formData.minutes),
+    }
+
+    try {
+
+        const newProduct = await createNewProduct(productData, productType);
+
+        if (newProduct && newProduct._id) {
+            await createNewProposal(newProduct._id, productType);
+        } 
+
+        const clubDetailPage = document.getElementById('create-detail-page');
+        const clubId = clubDetailPage?.getAttribute('data-id');
+
+        if (clubId) {
+            const updatedClubData = await getAPIData(
+                `${location.protocol}//${location.hostname}${API_PORT}/api/read/clubs/${clubId}`
+            );
+        
+            if (updatedClubData) {
+                renderClubProposals(updatedClubData);
             }
-        });
-    });
+        }
 
-    const searchClubButton = document.getElementById('searchClubButton');
-    searchClubButton?.addEventListener('click', onSearchClubButtonClick);
+        form.reset();
+        document.getElementById('add-proposal-type-form')?.classList.add('hidden');
+
+        const createNewProposalContainer = document.getElementById('create-new-proposal-container');
+        if (createNewProposalContainer) createNewProposalContainer.innerHTML = '';
+
+        document.getElementById('add-proposal-button')?.classList.remove('hidden');
+
+        
+
+    } catch (error) {
+        console.log('Error: ', error);
+    } 
+}
+
+
+//=====PROPOSAL METHODS=====//
+
+/**
+ * 
+ * @param {string} formId 
+ */
+function addProposalFormListener(formId) {
+    
+    const proposalForm = document.getElementById(formId);
+    if (proposalForm) {
+        proposalForm.addEventListener('submit', onCreateNewProposalSubmit);
+    }
+}
+
+/**
+ * get data form proposal form
+ * @param {HTMLFormElement} form
+ */
+function getDataFromProposalForm(form) {
+    const formData = new FormData(form);
+    return Object.fromEntries(formData.entries());
+}
+
+/**
+ * @param {string} productId
+ * @param {string} productType
+ */
+async function createNewProposal(productId, productType) {
+    const loggedUser = getLoggedUserData();
+    const clubDetailPage = document.getElementById('create-detail-page');
+    const clubId = clubDetailPage?.getAttribute('data-id');
+
+    if (!loggedUser || !clubId) {
+        alert("Debes estar en un club para agregar una propuesta.");
+        return;
+    }
+
+    const newProposal = {
+        productId,
+        productType,
+        userId: loggedUser._id,
+        clubId,
+    };
+
+    try {
+        const response = await getAPIData(`${location.protocol}//${location.hostname}${API_PORT}/api/create/proposals`, 'POST', JSON.stringify(newProposal));
+
+        if(!response) {
+            throw new Error('No se pudo crear la propuesta.');
+        }
+
+        loggedUser.proposals.push(response._id);
+        sessionStorage.setItem('loggedUser', JSON.stringify(loggedUser));
+
+        alert('La propuesta se ha registrado correctamente.');
+        return response;
+
+    } catch (error) {
+        console.log('Error: ', error);
+    }
 }
 
 /**
@@ -558,7 +742,6 @@ async function voteForProposal(proposalId) {
     }
 }
 
-
 /**
  * 
  * @param {string} proposalId 
@@ -580,208 +763,6 @@ function updateVoteUI(proposalId) {
         voteButton.classList.add('hidden');
     }
 }
-
-//=====PROPOSAL EVENTS=====//
-
-/**
- * 
- * @param {MouseEvent} e 
- */
-function onAddProposalButtonClick(e) {
-    e.preventDefault();
-
-    const addProposalTypeForm = document.getElementById('add-proposal-type-form');
-    if (!addProposalTypeForm) return;
-
-    /** @type {ClubDetail | null} */
-    const clubDetailComponent = document.querySelector('club-detail');
-    if (!clubDetailComponent) return;
-    const clubType = clubDetailComponent.club?.type;
-
-    if (clubType === "book") {
-        document.getElementById("bookProposal")?.parentElement?.classList.remove('hidden');
-    } else if (clubType === "movie") {
-        document.getElementById("movieProposal")?.parentElement?.classList.remove('hidden');
-    } else if (clubType === "mixed") {
-        document.getElementById("bookProposal")?.parentElement?.classList.remove('hidden');
-        document.getElementById("movieProposal")?.parentElement?.classList.remove('hidden');
-    }
-
-    if (addProposalTypeForm) {
-        addProposalTypeForm.classList.remove('hidden');
-
-        addProposalTypeForm.addEventListener('change', onProposalTypeChange);
-    }
-
-    const addProposalButton = document.getElementById('add-proposal-button');
-    if (addProposalButton) {
-        addProposalButton.classList.add('hidden');
-    }
-}
-
-/**
- * @param {Event} e
- */
-function onProposalTypeChange(e) {
-    e.preventDefault();
-    const target = /** @type {HTMLInputElement} */ (e.target);
-    const createNewProposalContainer = document.getElementById('create-new-proposal-container');
-
-    if (!createNewProposalContainer || target.name !== 'proposalType') return;
-
-    createNewProposalContainer.innerHTML = '';
-
-    let proposalFormElement;
-
-    if (target.value === 'bookProposal') {
-        proposalFormElement = document.createElement('form');
-        proposalFormElement.id = 'bookProposalForm';
-        proposalFormElement.innerHTML = bookProposalTemplate;
-        
-    } else if (target.value === 'movieProposal') {
-        proposalFormElement = document.createElement('form');
-        proposalFormElement.id = 'movieProposalForm';
-        proposalFormElement.innerHTML = movieProposalTemplate;
-    }
-
-    if (proposalFormElement) {
-        createNewProposalContainer.appendChild(proposalFormElement);
-        addProposalFormListener(proposalFormElement.id);
-    }
-}
-
-/**
- * 
- * @param {string} formId 
- */
-function addProposalFormListener(formId) {
-    
-    const proposalForm = document.getElementById(formId);
-    if (proposalForm) {
-        proposalForm.addEventListener('submit', onCreateNewProposalSubmit);
-    }
-}
-
-/**
- * 
- * @param {SubmitEvent} e 
- */
-async function onCreateNewProposalSubmit(e) {
-    e.preventDefault();
-    const form = /** @type {HTMLFormElement} */ (e.target);
-    const formData = getDataFromProposalForm(form)
-
-    let productType;
-    if (form.id === 'bookProposalForm') {
-        productType = PRODUCT_TYPE.BOOK;
-    } else if (form.id === 'movieProposalForm') {
-        productType = PRODUCT_TYPE.MOVIE;
-    } else {
-        return;
-    }
-
-    const productData = {
-        name: String(formData.name),
-        year: Number(formData.year),
-        genre: String(formData.genre),
-        author: String(formData.author),
-        director: String(formData.director),
-        pages: Number(formData.pages),
-        minutes: Number(formData.minutes),
-    }
-
-    try {
-
-        const newProduct = await createNewProduct(productData, productType);
-
-        if (newProduct && newProduct._id) {
-            await createNewProposal(newProduct._id, productType);
-        } 
-
-        const clubDetailPage = document.getElementById('create-detail-page');
-        const clubId = clubDetailPage?.getAttribute('data-id');
-
-        if (clubId) {
-            const updatedClubData = await getAPIData(
-                `${location.protocol}//${location.hostname}${API_PORT}/api/read/clubs/${clubId}`
-            );
-        
-            if (updatedClubData) {
-                renderClubProposals(updatedClubData);
-            }
-        }
-
-        form.reset();
-        document.getElementById('add-proposal-type-form')?.classList.add('hidden');
-
-        const createNewProposalContainer = document.getElementById('create-new-proposal-container');
-        if (createNewProposalContainer) createNewProposalContainer.innerHTML = '';
-
-        document.getElementById('add-proposal-button')?.classList.remove('hidden');
-
-        
-
-    } catch (error) {
-        console.log('Error: ', error);
-    } 
-}
-
-/**
- * get data form proposal form
- * @param {HTMLFormElement} form
- */
-function getDataFromProposalForm(form) {
-    const formData = new FormData(form);
-    return Object.fromEntries(formData.entries());
-}
-
-//=====PROPOSAL METHODS=====//
-
-/**
- * @param {string} productId
- * @param {string} productType
- */
-
-async function createNewProposal(productId, productType) {
-    const loggedUser = getLoggedUserData();
-    const clubDetailPage = document.getElementById('create-detail-page');
-    const clubId = clubDetailPage?.getAttribute('data-id');
-
-    if (!loggedUser || !clubId) {
-        alert("Debes estar en un club para agregar una propuesta.");
-        return;
-    }
-
-    const newProposal = {
-        productId,
-        productType,
-        userId: loggedUser._id,
-        clubId,
-    };
-
-    try {
-        const response = await getAPIData(`${location.protocol}//${location.hostname}${API_PORT}/api/create/proposals`, 'POST', JSON.stringify(newProposal));
-
-
-        if(!response) {
-            throw new Error('No se pudo crear la propuesta.');
-        }
-
-        loggedUser.proposals.push(response._id);
-        sessionStorage.setItem('loggedUser', JSON.stringify(loggedUser));
-
-        alert('La propuesta se ha registrado correctamente.');
-        return response;
-
-    } catch (error) {
-        console.log('Error: ', error);
-    }
-}
-
-//=====PRODUCT EVENTS=====//
-
-
-
 
 //=====PRODUCT METHODS=====//
 

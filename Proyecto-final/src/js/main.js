@@ -14,6 +14,7 @@ import {ProductFactory, PRODUCT_TYPE,} from "./classes/Product.js";
 
 import { getAPIData, API_PORT } from "./utils/apiService.js";
 import { handleLogin, getLoggedUserData, checkAuthStatus, } from "./utils/authService.js";
+import { filterClubs, createNewClub } from "./utils/clubService.js";
 
 /**
  * import templates
@@ -165,84 +166,65 @@ function renderSearchResults(clubs) {
  */
 async function onCreateClubFormSubmit(e) {
     e.preventDefault();
-    await createNewClub();
-    cleanUpNewClubForm();
-    await updateClubsList();
+
+    const clubNameInput = /** @type {HTMLInputElement} */ (document.getElementById('clubName'));
+    const clubDescriptionInput = /** @type {HTMLTextAreaElement} */ (document.getElementById('clubDescription'));
+    const clubTypeSelect = /** @type {HTMLSelectElement} */ (document.getElementById('clubType'));
+    const clubVisibilityInput = /** @type {HTMLInputElement} */ (document.querySelector('input[name="clubVisibility"]:checked'));
+
+    if (!clubNameInput || !clubDescriptionInput || !clubTypeSelect || !clubVisibilityInput) {
+        alert('Todos los campos son obligatorios');
+        return;
+    }
+
+    const isPrivate = clubVisibilityInput.value === 'private';
+    let clubPassword = null;
+
+    if (isPrivate) {
+        const clubPasswordInput = /** @type {HTMLInputElement} */ (document.getElementById('clubPassword'));
+        if (!clubPasswordInput?.value) {
+            alert('Debes ingresar una contraseña para crear un club privado');
+            return;
+        }
+        clubPassword = clubPasswordInput.value;
+    }
+
+    const newClub = {
+        _id: null,
+        name: clubNameInput.value,
+        description: clubDescriptionInput.value,
+        type: clubTypeSelect.value,
+        private: isPrivate,
+        password: clubPassword,
+        admins: [],
+        members: [],
+        proposals: [],
+        productCurrent: null,
+        deadlineCurrent: null,
+    };
+
+    const createdClub = await createNewClub(newClub);
+
+    if (createdClub) {
+        cleanUpNewClubForm();
+        await updateClubsList();
+    }
 }
 
 
 //=====CLUB METHODS=====//
 
 /**
- * create new club
- */
-async function createNewClub() {
-    const clubName = /** @type {HTMLInputElement} */ (document.getElementById('clubName')).value;
-    const clubDescription = /** @type {HTMLTextAreaElement} */ (document.getElementById('clubDescription')).value;
-    const clubType = /**@type {HTMLSelectElement} */ (document.getElementById('clubType')).value;
-    const clubVisibility = /** @type {HTMLInputElement} */ (document.querySelector('input[name="clubVisibility"]:checked')).value;
-    const isPrivate = clubVisibility === 'private';
-    let clubPassword = null;
-    if (isPrivate){
-        clubPassword = /** @type {HTMLInputElement} */ (document.getElementById('clubPassword')).value;
-        if (!clubPassword) {
-            alert('Debes ingresar una contraseña para crear un club privado');
-            return
-        }
-    }
-    
-
-    const loggedUser = getLoggedUserData();
-    if (!loggedUser) {
-        alert('Debes iniciar sesión para crear un club');
-        return;
-    }
-
-    const userId = loggedUser._id;
-
-    const newClub = {
-        name: clubName,
-        description: clubDescription,
-        type: clubType,
-        private: isPrivate,
-        password: isPrivate ? clubPassword : null,
-        admins: [loggedUser._id],
-        members: [loggedUser._id],
-        proposals: [],
-        productCurrent: null,
-        deadlineCurrent: null,
-    };
-
-    const payload = JSON.stringify({...newClub, userId});
-
-    try {
-        const apiClubData = await getAPIData(`${location.protocol}//${location.hostname}${API_PORT}/api/create/clubs`, 'POST',  payload);
-
-        if (!apiClubData) {
-            throw new Error('Error al crear el club');
-        }
-
-        loggedUser.clubs.push(apiClubData._id);
-        sessionStorage.setItem('loggedUser', JSON.stringify(loggedUser));
-        store.user.update(loggedUser);
-        store.saveState();
-
-    } catch (error) {
-        console.log('Error: ', error);
-    }
-}
-
-/**
  * clean up new club form
  */
 function cleanUpNewClubForm() {
-    const clubName = /** @type {HTMLInputElement} */ (document.getElementById('clubName'))
-    const clubDescription = /** @type {HTMLTextAreaElement} */ (document.getElementById('clubDescription'))
-    const clubVisibility = /** @type {NodeListOf<HTMLInputElement>} */ (document.querySelectorAll('input[name="clubVisibility"]'))
+    const clubNameInput = /** @type {HTMLInputElement} */ (document.getElementById('clubName'));
+    const clubDescriptionInput = /** @type {HTMLTextAreaElement} */ (document.getElementById('clubDescription'));
+    const clubVisibilityInputs = /** @type {NodeListOf<HTMLInputElement>} */ (document.querySelectorAll('input[name="clubVisibility"]'));
 
-    clubName.value = ''
-    clubDescription.value = ''
-    clubVisibility.forEach((radio) => radio.checked = false)
+    if (clubNameInput) clubNameInput.value = '';
+    if (clubDescriptionInput) clubDescriptionInput.value = '';
+    clubVisibilityInputs.forEach(radio => (radio.checked = false));
 }
 
 /**
@@ -250,42 +232,21 @@ function cleanUpNewClubForm() {
  */
 async function updateClubsList() {
     const clubsList = document.getElementById('clubsList');
+    if (!clubsList) return;
+
     const loggedUser = getLoggedUserData();
+    const clubs = await filterClubs();
 
-    try {
-        /** @type {HTMLInputElement | null} */
-        const selectedTypeRadio = document.querySelector('input[name="club-type-filter"]:checked');
-        const selectedTypeFilter = selectedTypeRadio ? selectedTypeRadio.value : 'all';
+    const userClubs = clubs.filter((/** @type {Club} */ club) => {
+        if (!loggedUser) return !club.private;
+        return !club.private || club.members.includes(loggedUser._id);
+    });
 
-        const clubNameFilter = document.getElementById('clubNameFilter');
-        const filterValue = clubNameFilter instanceof HTMLInputElement 
-        ? clubNameFilter.value.toLowerCase().trim() 
-        : '';
+    clubsList.innerHTML = userClubs.map((/** @type {Club} */ club) => `
+        <club-list-item club='${JSON.stringify(club)}'></club-list-item>
+    `).join('');
 
-        const apiClubsData = await getAPIData(`${location.protocol}//${location.hostname}${API_PORT}/api/read/clubs`, 'POST', JSON.stringify({type: selectedTypeFilter !== "all" ? selectedTypeFilter : undefined}));
-        
-        const filteredClubs = apiClubsData.filter((/** @type {Club} */ club) => 
-            club.name.toLowerCase().includes(filterValue)
-        );
-
-        const userClubs = filteredClubs.filter((/** @type {Club} */ club) => {
-            if (!loggedUser) {
-                return !club.private;
-            } else { 
-                return !club.private || club.members.includes(loggedUser._id);
-            }
-        });
-
-        if (clubsList) {
-            clubsList.innerHTML = userClubs.map((/** @type {Club} */ club) => `
-                    <club-list-item club='${JSON.stringify(club)}'></club-list-item>
-                `).join('');
-
-            initializeClubButtonsListeners(clubsList)
-        }
-    } catch (error) {
-        console.log('Error: ', error);
-    }
+    initializeClubButtonsListeners(clubsList);
 }
 
 /**

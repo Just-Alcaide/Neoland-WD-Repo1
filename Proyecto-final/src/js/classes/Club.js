@@ -2,7 +2,7 @@
 
 /**
  * @typedef {Object} clubData
- * @property {string} _id
+ * @property {string} [_id]
  * @property {string} name
  * @property {string} description
  * @property {string} type
@@ -32,7 +32,7 @@ export class Club {
      * @param {clubData} clubData 
      */
     constructor (clubData) {
-        this._id = clubData._id
+        this._id = clubData._id || null
         this.name = clubData.name
         this.description = clubData.description
         this.type = clubData.type

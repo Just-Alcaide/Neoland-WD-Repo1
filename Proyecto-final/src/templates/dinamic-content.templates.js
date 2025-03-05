@@ -64,8 +64,8 @@ export const clubDetailPageTemplate = (/** @type {Club} */ apiClubData)  =>  `
         <button id="add-proposal-button" class="hidden">Agregar Propuesta</button>
 
         <form id="add-proposal-type-form" class="hidden">
-            <label class="hidden"><input type="radio" name="proposalType" id="bookProposal" value="bookProposal">Propuesta de Libro</label>
-            <label class="hidden"><input type="radio" name="proposalType" id="movieProposal" value="movieProposal">Propuesta de Película</label>
+            <label class="hidden"><input type="radio" name="proposalType" id="bookProposal" value="bookProposal"> Propuesta de Libro</label>
+            <label class="hidden"><input type="radio" name="proposalType" id="movieProposal" value="movieProposal"> Propuesta de Película</label>
         </form>
         <section id="create-new-proposal-container"></section>
 

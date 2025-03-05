@@ -13,7 +13,7 @@ import {ProductFactory, PRODUCT_TYPE,} from "./classes/Product.js";
 
 import { getAPIData, API_PORT } from "./utils/apiService.js";
 import { handleLogin, getLoggedUserData, checkAuthStatus, } from "./utils/authService.js";
-import { filterClubs, createNewClub, deleteClub, joinClub, leaveClub, editClub  } from "./utils/clubService.js";
+import { filterClubs, createNewClub, deleteClub, joinClub, leaveClub, editClub } from "./utils/clubService.js";
 
 /**
  * import templates
@@ -231,17 +231,20 @@ function cleanUpNewClubForm() {
  */
 async function updateClubsList() {
     const clubsList = document.getElementById('clubsList');
-    if (!clubsList) return;
+    if (!clubsList) {
+        console.warn("[updateClubsList] No clubsList element found in the DOM.");
+        return;
+    }
 
-    const loggedUser = getLoggedUserData();
-    const clubs = await filterClubs();
+    const userClubs = await filterClubs();
 
-    const userClubs = clubs.filter((/** @type {Club} */ club) => {
-        if (!loggedUser) return !club.private;
-        return !club.private || club.members.includes(loggedUser._id);
-    });
+    if (!userClubs || userClubs.length === 0) {
+        console.warn("[updateClubsList] No clubs found.");
+        clubsList.innerHTML = "<p>No se encontraron clubs</p>";
+        return;
+    }
 
-    clubsList.innerHTML = userClubs.map((/** @type {Club} */ club) => `
+    clubsList.innerHTML = userClubs.map((club) => `
         <club-list-item club='${JSON.stringify(club)}'></club-list-item>
     `).join('');
 
@@ -356,42 +359,51 @@ export async function visitClubPage(clubId) {
     }
 }
 
+/**
+ * Loads and renders the clubs page.
+ */
 export async function loadClubsPage() {
     const dynamicContent = document.getElementById('dynamic-content');
-    if (dynamicContent) {
-        dynamicContent.innerHTML = clubPageTemplate;
-        await updateClubsList();
+    if (!dynamicContent) return;
 
-        const loggedUser = getLoggedUserData();
-        const createClubForm = document.getElementById('create-club-form');
-        createClubForm?.addEventListener('submit', onCreateClubFormSubmit);
-        if (loggedUser && createClubForm) {
-            createClubForm.classList.remove('hidden');
-        }
+    dynamicContent.innerHTML = clubPageTemplate; 
 
-        const clubNameFilter = document.getElementById('clubNameFilter');
-        if (clubNameFilter) {
-            clubNameFilter.addEventListener('input', updateClubsList);
-        }
+    const clubsList = document.getElementById('clubsList');
+    if (clubsList) {
+        const clubs = await filterClubs(); 
+        clubsList.innerHTML = clubs.map(club => `
+            <club-list-item club='${JSON.stringify(club)}'></club-list-item>
+        `).join('');
 
-        const filterRadios = document.querySelectorAll('input[name="club-type-filter"]');
-        
-        filterRadios.forEach(radio => {
-            radio.addEventListener('change', updateClubsList);
-        });
-
-        document.querySelectorAll('input[name="clubVisibility"]').forEach(radio => {
-            const input = /** @type {HTMLInputElement} */ (radio);
-            input.addEventListener('change', () => {
-                const clubPasswordField = document.getElementById('clubPasswordField');
-                clubPasswordField?.classList.toggle('hidden', input.value !== 'private');
-            })
-        })
-
-        
-        const searchClubButton = document.getElementById('searchClubButton');
-        searchClubButton?.addEventListener('click', onSearchClubButtonClick);        
+        initializeClubButtonsListeners(clubsList);
     }
+
+    const createClubForm = document.getElementById('create-club-form');
+    if (createClubForm) {
+        createClubForm.addEventListener('submit', onCreateClubFormSubmit);
+        if (getLoggedUserData()) createClubForm.classList.remove('hidden');
+    }
+
+    const clubNameFilter = document.getElementById('clubNameFilter');
+    clubNameFilter?.addEventListener('input', updateClubsList);
+
+    document.querySelectorAll('input[name="club-type-filter"]').forEach(radio => {
+        radio.addEventListener('change', updateClubsList);
+    });
+
+    
+    document.querySelectorAll('input[name="clubVisibility"]').forEach(input => {
+        const visibilityInput = /** @type {HTMLInputElement} */ (input);
+        visibilityInput.addEventListener('change', () => {
+            const clubPasswordField = /** @type {HTMLElement | null} */ (document.getElementById('clubPasswordField'));
+            if (clubPasswordField) {
+                clubPasswordField.classList.toggle('hidden', visibilityInput.value !== 'private');
+            }
+        });
+    });
+
+    const searchClubButton = document.getElementById('searchClubButton');
+    searchClubButton?.addEventListener('click', onSearchClubButtonClick);
 }
 
 /**

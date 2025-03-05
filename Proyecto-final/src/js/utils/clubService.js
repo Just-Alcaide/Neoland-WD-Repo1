@@ -52,18 +52,17 @@ export async function createNewClub(clubData) {
 }
 
 /**
- * Fetches a filtered list of clubs from the database.
+ * Fetches club data from the API.
  *
  * Steps:
  * 1. Reads the selected club type filter.
  * 2. Reads the club name search input.
  * 3. Sends a request to retrieve all clubs matching the filter.
- * 4. Filters clubs based on the search input.
- * 5. Returns the filtered list.
+ * 4. Returns the fetched data.
  *
  * @returns {Promise<Club[]>} A list of clubs matching the filter criteria.
  */
-export async function filterClubs() {
+export async function fetchClubData() {
     try {
         /** @type {HTMLInputElement | null} */
         const selectedTypeRadio = document.querySelector('input[name="club-type-filter"]:checked');
@@ -84,13 +83,37 @@ export async function filterClubs() {
             throw new Error("No se pudieron obtener los clubes.");
         }
 
-        return apiClubsData.filter((/** @type {Club} */ club) => club.name.toLowerCase().includes(filterValue));
+        const filteredClubs = apiClubsData.filter((/** @type {{ name: string; }} */ club) =>
+            club.name.toLowerCase().includes(filterValue)
+        );
+
+        return filteredClubs;
     } catch (error) {
-        console.error('Error obteniendo los clubes: ', error);
+        console.error('Error obteniendo los clubes:', error);
         return [];
     }
 }
 
+/**
+ * Filters clubs based on user authentication and visibility.
+ *
+ * Steps:
+ * 1. Calls fetchClubData() to retrieve clubs from the API.
+ * 2. Filters clubs based on whether the user is logged in or not.
+ * 3. Returns the filtered club list.
+ *
+ * @returns {Promise<Club[]>} A list of clubs accessible to the user.
+ */
+export async function filterClubs() {
+    const loggedUser = getLoggedUserData();
+    const clubs = await fetchClubData();
+    const userClubs = clubs.filter((club) => {
+        if (!loggedUser) return !club.private;
+        return !club.private || club.members.includes(loggedUser._id);
+    });
+
+    return userClubs;
+}
 
 /**
  * Joins a club.

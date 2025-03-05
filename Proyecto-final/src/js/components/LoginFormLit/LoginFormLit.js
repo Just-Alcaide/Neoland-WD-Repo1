@@ -32,7 +32,7 @@ export class LoginFormLit extends LitElement {
                 <input type="email" id="loginEmail" name="loginEmail" required>
                 <label for="loginPassword">Contraseña: </label>
                 <input type="password" id="loginPassword" name="loginPassword" required>
-                <button id="loginButton" type="submit">Iniciar Sesión</button>
+                <button id="login-button" type="submit">Iniciar Sesión</button>
             </form>
         `;
     }

@@ -14,7 +14,7 @@ export class RegisterForm extends HTMLElement {
         
         this._setUpContent();
 
-        const form = this.shadowRoot.getElementById("registerForm");
+        const form = this.shadowRoot.getElementById("register-form");
         form.addEventListener("submit", this._onFormSubmit.bind(this));
     }
 
@@ -33,7 +33,7 @@ export class RegisterForm extends HTMLElement {
 
     _setUpContent() {
         this.shadowRoot.innerHTML = `
-        <form id="registerForm">
+        <form id="register-form">
             <h4>Registrar Nuevo Usuario: </h4>
             <label for="registerName">Nombre: </label>
             <input type="text" id="registerName" name="registerName" required>

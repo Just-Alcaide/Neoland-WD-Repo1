@@ -46,16 +46,16 @@ export class ClubDetail extends HTMLElement {
     async _setUpContent() {
 
         this.shadowRoot.innerHTML = `    
-        <h3 id=clubDetailName></h3>
-        <p id="clubDetailDescription"></p>
+        <h3 id=club-detail-name></h3>
+        <p id="club-detail-description"></p>
 
         <h4>Tipo de Club:</h4>
         <p id="clubDetailType"></p>
 
         <h4>Miembros del Club:</h4>
-        <ul id="clubMembersList"></ul>
+        <ul id="club-members-list"></ul>
 
-        <div id="clubActionButtonsContainer"></div>`;
+        <div id="club-action-buttons"></div>`;
  
 
         this._renderClubDetails();
@@ -67,8 +67,8 @@ export class ClubDetail extends HTMLElement {
 
         const clubData = this.club;
 
-        this.shadowRoot.getElementById('clubDetailName').textContent = clubData.name;
-        this.shadowRoot.getElementById('clubDetailDescription').textContent = clubData.description
+        this.shadowRoot.getElementById('club-detail-name').textContent = clubData.name;
+        this.shadowRoot.getElementById('club-detail-description').textContent = clubData.description
 
         let clubTypeText = "";
         switch (clubData.type) {
@@ -90,7 +90,7 @@ export class ClubDetail extends HTMLElement {
 
     async _renderClubMembers() {
         const clubData = this.club;
-        const membersList = this.shadowRoot.getElementById('clubMembersList');
+        const membersList = this.shadowRoot.getElementById('club-members-list');
 
         if (!membersList) {
             return;
@@ -112,7 +112,7 @@ export class ClubDetail extends HTMLElement {
         const clubData = this.club;
         const loggedUser = getLoggedUserData();
 
-        const actionsContainer = this.shadowRoot.getElementById('clubActionButtonsContainer');
+        const actionsContainer = this.shadowRoot.getElementById('club-action-buttons');
 
         if (!loggedUser || !actionsContainer) {
             return;

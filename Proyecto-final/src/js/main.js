@@ -3,7 +3,7 @@
 /** @import {Club} from "./classes/Club.js"; */
 /** @import {User} from "./classes/User.js"; */
 
-/** @typedef {import('./components/LoginForm/LoginForm.js').LoginForm} LoginForm */
+/** @typedef {import('./components/LoginFormLit/LoginFormLit.js').LoginFormLit} LoginFormLit */
 /** @typedef {import('./components/RegisterForm/RegisterForm.js').RegisterForm} RegisterForm */
 /** @typedef {import('./components/ClubDetail/ClubDetail.js').ClubDetail} ClubDetail*/
 
@@ -65,7 +65,7 @@ function onDomContentLoaded() {
 async function onLoginComponentSubmit(apiUserData) {
     await handleLogin(apiUserData)
 
-    const loginWrapper = /** @type {LoginForm | null} */ (document.getElementById('loginWrapper'))
+    const loginWrapper = /** @type {LoginFormLit | null} */ (document.getElementById('loginWrapper'))
     loginWrapper?.cleanUpLoginForm();
 
     checkAuthStatus()

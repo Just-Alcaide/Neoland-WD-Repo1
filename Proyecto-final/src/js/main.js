@@ -1,18 +1,24 @@
 // @ts-check
 
+// import classes
 /** @import {Club} from "./classes/Club.js"; */
 /** @import {User} from "./classes/User.js"; */
+import {ProductFactory, PRODUCT_TYPE,} from "./classes/Product.js";
 
+// type definitions
 /** @typedef {import('./components/LoginFormLit/LoginFormLit.js').LoginFormLit} LoginFormLit */
 /** @typedef {import('./components/RegisterForm/RegisterForm.js').RegisterForm} RegisterForm */
 /** @typedef {import('./components/ClubDetail/ClubDetail.js').ClubDetail} ClubDetail*/
 
+// import components 
 import  "./components/bundle.js";
-import {ProductFactory, PRODUCT_TYPE,} from "./classes/Product.js";
+
+// import utils
 import { getAPIData, API_PORT } from "./utils/apiService.js";
 import { handleLogin, getLoggedUserData, checkAuthStatus, } from "./utils/authService.js";
 import { filterClubs, createNewClub, deleteClub, joinClub, leaveClub, editClub } from "./utils/clubService.js";
 
+// import templates
 import { clubPageTemplate, clubDetailPageTemplate, bookProposalTemplate, movieProposalTemplate  } from "../templates/dinamic-content.templates.js";
 
 
@@ -22,7 +28,7 @@ document.addEventListener('DOMContentLoaded', onDomContentLoaded)
 //========DOM EVENTS========//
 
 function onDomContentLoaded() {
-    
+    // check auth
     checkAuthStatus()
     
     // ==EVENT LISTENERS==//
@@ -45,9 +51,18 @@ function onDomContentLoaded() {
 
 //=====AUTH EVENTS=====//
 
+
 /**
- * @param {User} apiUserData
- * @returns void
+ * Handles the login form submission event by processing the user data.
+ * 
+ * @param {User} apiUserData - The user data obtained from the API upon successful authentication.
+ * @returns {Promise<void>}
+ * 
+ * This function performs the following tasks:
+ * 1. Calls handleLogin to process the login with the provided user data.
+ * 2. Cleans up the login form using the LoginFormLit component.
+ * 3. Checks the authentication status of the user.
+ * 4. Updates the list of clubs available to the user.
  */
 async function onLoginComponentSubmit(apiUserData) {
     await handleLogin(apiUserData)
@@ -59,9 +74,18 @@ async function onLoginComponentSubmit(apiUserData) {
     await updateClubsList()
 }
 
+
 /**
- * @param {User} apiUserData
- * @returns void
+ * Handles the register form submission event by processing the user data.
+ * 
+ * @param {User} apiUserData - The user data obtained from the API upon successful authentication.
+ * @returns {Promise<void>}
+ * 
+ * This function performs the following tasks:
+ * 1. Calls handleLogin to process the login with the provided user data.
+ * 2. Cleans up the register form using the RegisterForm component.
+ * 3. Checks the authentication status of the user.
+ * 4. Updates the list of clubs available to the user.
  */
 async function onRegisterComponentSubmit(apiUserData) {
     await handleLogin(apiUserData)
@@ -76,9 +100,11 @@ async function onRegisterComponentSubmit(apiUserData) {
 
 //=====CLUB EVENTS=====//
 
+
 /**
- * show club template
- * @param {MouseEvent} e 
+ * Handles the event when the user clicks on the "Clubs" link in the navbar.
+ * This function loads the clubs page by calling the loadClubsPage function.
+ * @param {MouseEvent} e - The event object.
  */
 async function onClubsPageLinkClick(e) {
     e.preventDefault();
@@ -88,18 +114,24 @@ async function onClubsPageLinkClick(e) {
     }
 }
 
+
 /**
- * 
- * @param {MouseEvent} e 
+ * Handles the search club button click event.
+ * Calls the searchClubs function to perform the search.
+ * @param {MouseEvent} e - The event object.
  */
 function onSearchClubButtonClick(e) {
     e.preventDefault();
     searchClubs()
 }
 
+
 /**
- * on create club form submit
- * @param {SubmitEvent} e
+ * Handles the create club form submission event.
+ * If all the required fields are filled, creates a new club using the provided data.
+ * If the club is private, it prompts the user for a password before creating the club.
+ * If the club is created successfully, it cleans up the new club form and updates the list of clubs.
+ * @param {SubmitEvent} e - The form submission event.
  */
 async function onCreateClubFormSubmit(e) {
     e.preventDefault();
@@ -148,16 +180,23 @@ async function onCreateClubFormSubmit(e) {
     }
 }
 
+
 /**
- * @param {CustomEvent} event
+ * Handles the visit club button click event.
+ * Visits the club page with the provided club ID.
+ * @param {CustomEvent} event - The custom event with the club ID as detail.
  */
 async function onVisitClubClick(event) {
     const {clubId} = /** @type {CustomEvent} */ (event).detail;
     await visitClubPage(clubId);
 }
 
+
 /**
- * @param {CustomEvent} event
+ * Handles the join club button click event.
+ * Joins the club with the provided club ID and password.
+ * If the join is successful, it visits the club page with the provided club ID.
+ * @param {CustomEvent} event - The custom event with the club ID and password as detail.
  */
 async function onJoinClub(event) {
     const { clubId, password } = /** @type {CustomEvent} */ (event).detail;
@@ -166,8 +205,12 @@ async function onJoinClub(event) {
 
 }
 
+
 /**
- * @param {CustomEvent} event
+ * Handles the leave club event.
+ * Utilizes the club ID from the event detail to leave the club.
+ * After leaving the club, it reloads the clubs page.
+ * @param {CustomEvent} event - The custom event containing the club ID in its detail.
  */
 async function onLeaveClub(event) {
     const { clubId } = /** @type {CustomEvent} */ (event).detail;
@@ -175,8 +218,12 @@ async function onLeaveClub(event) {
     await loadClubsPage();
 }
 
+
 /**
- * @param {CustomEvent} event
+ * Handles the edit club button click event.
+ * Opens the edit club dialog with the provided club ID.
+ * After saving changes, it reloads the clubs page.
+ * @param {CustomEvent} event - The custom event containing the club ID in its detail.
  */
 async function onEditClub(event) {
     const { clubId } = /** @type {CustomEvent} */ (event).detail;
@@ -184,8 +231,11 @@ async function onEditClub(event) {
     await loadClubsPage();
 }
 
+
 /**
- * @param {CustomEvent} event
+ * Handles the delete club event.
+ * Deletes the club with the provided club ID and reloads the clubs page.
+ * @param {CustomEvent} event - The custom event containing the club ID in its detail.
  */
 async function onDeleteClub(event) {
     const { clubId } = /** @type {CustomEvent} */ (event).detail;
@@ -196,8 +246,11 @@ async function onDeleteClub(event) {
 
 //=====CLUB METHODS=====//
 
+
 /**
- * Loads and renders the clubs page.
+ * Loads the clubs page content, including the list of clubs and the create club form.
+ * Also sets up event listeners for the club list item buttons, the create club form, and the club name filter.
+ * @returns {Promise<void>}
  */
 export async function loadClubsPage() {
     const dynamicContent = document.getElementById('dynamic-content');
@@ -243,8 +296,10 @@ export async function loadClubsPage() {
     searchClubButton?.addEventListener('click', onSearchClubButtonClick);
 }
 
+
 /**
- * update clubs list
+ * Updates the list of clubs in the clubs page with the filtered clubs.
+ * @returns {Promise<void>}
  */
 async function updateClubsList() {
     const clubsList = document.getElementById('clubsList');
@@ -268,6 +323,10 @@ async function updateClubsList() {
     initializeClubButtonsListeners(clubsList);
 }
 
+/**
+ * Searches for clubs by name.
+ * @returns {Promise<void>}
+ */
 async function searchClubs() {
     const searchInput = document.getElementById('clubSearchName')
     if (!(searchInput instanceof HTMLInputElement)) {
@@ -295,9 +354,10 @@ async function searchClubs() {
     }
 }
 
+
 /**
- * 
- * @param {Club []} clubs 
+ * Renders the search results in the clubs page.
+ * @param {Club[]} clubs - The list of clubs to render.
  */
 function renderSearchResults(clubs) {
 
@@ -317,8 +377,16 @@ function renderSearchResults(clubs) {
     initializeClubButtonsListeners(clubsSearchResultsContainer)
 }
 
+
 /**
- * @param {HTMLElement} container
+ * Initializes event listeners for club buttons within the given container.
+ * Listens for custom events:
+ * - 'visit-club' to navigate to the club detail page.
+ * - 'join-club' to join the club.
+ * - 'leave-club' to leave the club.
+ * - 'edit-club' to edit the club.
+ * - 'delete-club' to delete the club.
+ * @param {ShadowRoot | HTMLElement} container - The container element containing the club buttons.
  */
 function initializeClubButtonsListeners (container) {
 
@@ -358,9 +426,12 @@ function initializeClubButtonsListeners (container) {
     });
 }
 
+
 /**
- * visit club page
- * @param {string} clubId
+ * Loads the club detail page with the provided club ID.
+ * It fetches the club data from the API, renders the club detail component, and initializes the club buttons listeners.
+ * Also, it checks if the logged user is a member of the club and if so, it shows the add proposal button.
+ * @param {string} clubId - The ID of the club to be loaded.
  */
 export async function visitClubPage(clubId) {
     const dynamicContent = document.getElementById('dynamic-content');
@@ -404,8 +475,11 @@ export async function visitClubPage(clubId) {
     }
 }
 
+
 /**
- * clean up new club form
+ * Resets the create club form inputs to their default state.
+ * Clears the values of the club name and description inputs and
+ * unchecks all club visibility radio buttons.
  */
 function cleanUpNewClubForm() {
     const clubNameInput = /** @type {HTMLInputElement} */ (document.getElementById('clubName'));
@@ -420,9 +494,13 @@ function cleanUpNewClubForm() {
 
 //=====PROPOSAL EVENTS=====//
 
+
 /**
- * 
- * @param {MouseEvent} e 
+ * Handles the add proposal button click event.
+ * Determines the club type, and reveals the appropriate proposal form(s) based on the club type.
+ * Hides the add proposal button and shows the proposal type form, 
+ * adding an event listener to handle proposal type changes.
+ * @param {MouseEvent} e - The click event.
  */
 function onAddProposalButtonClick(e) {
     e.preventDefault();
@@ -456,8 +534,16 @@ function onAddProposalButtonClick(e) {
     }
 }
 
+
 /**
- * @param {Event} e
+ * Handles the change event of the proposal type radio buttons.
+ * Gets the target radio button element and the container element that will hold
+ * the proposal form, and clears the container element's innerHTML.
+ * Depending on the selected proposal type, it creates a new form
+ * element with the appropriate template and appends it to the
+ * container element. Finally, it adds an event listener to the
+ * newly created form element to handle its submission.
+ * @param {Event} e - The change event.
  */
 function onProposalTypeChange(e) {
     e.preventDefault();
@@ -487,9 +573,13 @@ function onProposalTypeChange(e) {
     }
 }
 
+
 /**
- * 
- * @param {SubmitEvent} e 
+ * Handles the form submission event of the new proposal form.
+ * Gets the form data from the form, and creates a new product with the given data.
+ * Then, creates a new proposal with the new product and the current club.
+ * Finally, resets the form and updates the list of proposals of the current club.
+ * @param {SubmitEvent} e - The form submission event.
  */
 async function onCreateNewProposalSubmit(e) {
     e.preventDefault();
@@ -554,9 +644,11 @@ async function onCreateNewProposalSubmit(e) {
 
 //=====PROPOSAL METHODS=====//
 
+
 /**
- * 
- * @param {string} formId 
+ * Adds an event listener to a form element with the given id.
+ * The event listener is set to call onCreateNewProposalSubmit when the form is submitted.
+ * @param {string} formId The id of the form element to add the event listener to.
  */
 function addProposalFormListener(formId) {
     
@@ -566,18 +658,21 @@ function addProposalFormListener(formId) {
     }
 }
 
+
 /**
- * get data form proposal form
- * @param {HTMLFormElement} form
+ * Gets the data from a form and returns it as an object with the form's key-value pairs.
+ * @param {HTMLFormElement} form - The form element to get the data from.
  */
 function getDataFromProposalForm(form) {
     const formData = new FormData(form);
     return Object.fromEntries(formData.entries());
 }
 
+
 /**
- * @param {string} productId
- * @param {string} productType
+ * Creates a new proposal in the database.
+ * @param {string} productId - The id of the product (book or movie) to be proposed.
+ * @param {string} productType - The type of the product (book or movie) to be proposed.
  */
 async function createNewProposal(productId, productType) {
     const loggedUser = getLoggedUserData();
@@ -633,9 +728,11 @@ async function createNewProposal(productId, productType) {
  * @property {number} [productData.pages]
  * @property {number} [productData.minutes]
  */
+
 /**
- * render club proposals
- * @param {Club} club 
+ * Loads the proposals of the club with the given id and renders them in the <ul> element with the id 'club-proposals-list'.
+ * It fetches the proposals data from the API, renders the proposals list items, and adds event listeners to the toggle proposal details and vote buttons.
+ * @param {{ _id: string, proposals: string[] }} club - The club data.
  */
 async function renderClubProposals(club) {
     const proposalsList = document.getElementById('club-proposals-list');
@@ -713,8 +810,14 @@ async function renderClubProposals(club) {
     }
 }
 
+
+
 /**
- * @param {string} proposalId - id de la propuesta
+ * Casts a vote for a proposal.
+ * Checks if the user is logged in, then sends a request to create a vote for the proposal
+ * with the specified ID. If successful, updates the UI to reflect the new vote count and
+ * stores the updated vote information in the session storage.
+ * @param {string} proposalId - The ID of the proposal to vote for.
  */
 async function voteForProposal(proposalId) {
     const loggedUser = getLoggedUserData();
@@ -742,9 +845,13 @@ async function voteForProposal(proposalId) {
     }
 }
 
+
 /**
+ * Updates the vote count in the UI for the specified proposal.
+ * Finds the vote button and the associated proposal item, increments the vote count,
+ * disables and hides the vote button.
  * 
- * @param {string} proposalId 
+ * @param {string} proposalId - The ID of the proposal whose vote count is to be updated.
  */
 function updateVoteUI(proposalId) {
     const voteButton = document.querySelector(`.voteProposalButton[data-id="${proposalId}"]`);
@@ -777,10 +884,11 @@ function updateVoteUI(proposalId) {
  * @prop {number} [pages]
  * @prop {number} [minutes]
  */
+
 /**
- * create new product
- * @param {ProductData} productData 
- * @param {string} productType 
+ * Creates a new product of the specified type and sends a request to the server to store it.
+ * @param {ProductData} productData - The data of the product to be created.
+ * @param {string} productType - The type of the product to be created.
  */
 function createNewProduct(productData, productType) {
     return new Promise((resolve, reject) => {

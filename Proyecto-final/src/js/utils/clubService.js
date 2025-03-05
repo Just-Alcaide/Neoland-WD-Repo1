@@ -1,12 +1,10 @@
 //@ts-check
 
-import { loadClubsPage, visitClubPage } from "../main.js";
 import { getAPIData, API_PORT } from "./apiService.js";
 import { getLoggedUserData } from "./authService.js";
 
 /** @typedef {import("../classes/Club.js").Club} Club */
 /** @typedef {import("../classes/User.js").User} User */
-
 
 
 /**
@@ -123,7 +121,6 @@ export async function filterClubs() {
  * 2. Sends a request to join the specified club.
  * 3. If successful, adds the club to the user's list.
  * 4. Updates session storage.
- * 5. Redirects the user to the club page.
  *
  * @param {string} clubId - The ID of the club.
  * @param {string | null} [password] - The club password, if required.
@@ -156,7 +153,6 @@ export async function joinClub(clubId, password = null) {
         }
 
         sessionStorage.setItem('loggedUser', JSON.stringify(loggedUser));
-        await visitClubPage(clubId);
 
     } catch (error) {
         console.error("Error al unirse al club:", error);
@@ -173,7 +169,6 @@ export async function joinClub(clubId, password = null) {
  * 2. Sends a request to remove the user from the club.
  * 3. Removes the club from the user's list.
  * 4. Updates session storage.
- * 5. Refreshes the club list.
  *
  * @param {string} clubId - The ID of the club.
  * @returns {Promise<void>}
@@ -193,7 +188,6 @@ export async function leaveClub(clubId) {
         loggedUser.clubs = loggedUser.clubs.filter(id => id !== clubId);
         sessionStorage.setItem('loggedUser', JSON.stringify(loggedUser));
 
-        await loadClubsPage();
     } catch (error) {
         console.log('Error al salir del club: ', error);
     }
@@ -297,7 +291,6 @@ export async function editClub(clubId) {
  * 1. Retrieves input values from the edit dialog.
  * 2. Sends an API request to update the club details.
  * 3. Closes the edit dialog if successful.
- * 4. Refreshes the club list to reflect changes.
  *
  * @param {string} clubId - The ID of the club being updated.
  * @returns {Promise<void>}
@@ -322,7 +315,6 @@ async function saveClubChanges(clubId) {
         alert('Club actualizado correctamente');
         const editClubDialog = document.getElementById('edit-club-dialog');
         if (editClubDialog instanceof HTMLDialogElement) editClubDialog.close();
-        await loadClubsPage();
     }
 }
 
@@ -354,7 +346,6 @@ async function assignAdmin(clubId, userId) {
  * 3. Sends a request to delete the club.
  * 4. Removes the club from the user's list.
  * 5. Updates session storage.
- * 6. Refreshes the club list.
  *
  * @param {string} clubId - The ID of the club.
  * @returns {Promise<void>}
@@ -375,7 +366,6 @@ export async function deleteClub(clubId) {
         loggedUser.clubs = loggedUser.clubs.filter(id => id !== clubId);
         sessionStorage.setItem('loggedUser', JSON.stringify(loggedUser));
 
-        await loadClubsPage();
     } catch (error) {
         console.log('Error al eliminar el club: ', error);
     }

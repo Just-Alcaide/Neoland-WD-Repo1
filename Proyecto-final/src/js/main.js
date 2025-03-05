@@ -256,63 +256,87 @@ async function updateClubsList() {
  */
 function initializeClubButtonsListeners (container) {
 
-    container.removeEventListener('visit-club', /** @type {EventListener} */ (onVisitClubClick));
-    container.addEventListener('visit-club', /** @type {EventListener} */ (onVisitClubClick));
+    container.removeEventListener('visit-club', async (event) => {
+        await onVisitClubClick(/** @type {CustomEvent} */ (event));
+    });
+    container.addEventListener('visit-club', async (event) => {
+        await onVisitClubClick(/** @type {CustomEvent} */ (event));
+    });
 
-    container.removeEventListener('join-club', /** @type {EventListener} */ (onJoinClub));
-    container.addEventListener('join-club', /** @type {EventListener} */ (onJoinClub));
+    container.removeEventListener('join-club', async (event) => {
+        await onJoinClub(/** @type {CustomEvent} */ (event));
+    });
+    container.addEventListener('join-club', async (event) => {
+        await onJoinClub(/** @type {CustomEvent} */ (event));
+    });
+    
+    container.removeEventListener('leave-club',  async (event) => {
+        await onLeaveClub(/** @type {CustomEvent} */ (event));
+    });
+    container.addEventListener('leave-club', async (event) => {
+        await onLeaveClub(/** @type {CustomEvent} */ (event));
+    });
 
-    container.removeEventListener('leave-club', /** @type {EventListener} */ (onLeaveClub));
-    container.addEventListener('leave-club', /** @type {EventListener} */ (onLeaveClub));
-
-    container.removeEventListener('edit-club', /** @type {EventListener} */ (onEditClub));
-    container.addEventListener('edit-club', /** @type {EventListener} */ (onEditClub));
-
-    container.removeEventListener('delete-club', /** @type {EventListener} */ (onDeleteClub));
-    container.addEventListener('delete-club', /** @type {EventListener} */ (onDeleteClub));
+    container.removeEventListener('edit-club', async (event) => {
+        await onEditClub(/** @type {CustomEvent} */ (event));
+    });
+    container.addEventListener('edit-club', async (event) => {
+        await onEditClub(/** @type {CustomEvent} */ (event));
+    });
+    
+    container.removeEventListener('delete-club', async (event) => {
+        await onDeleteClub(/** @type {CustomEvent} */ (event));
+    });
+    container.addEventListener('delete-club', async (event) => {
+        await onDeleteClub(/** @type {CustomEvent} */ (event));
+    });
 }
 
 /**
  * @param {CustomEvent} event
  */
-function onVisitClubClick(event) {
+async function onVisitClubClick(event) {
     const {clubId} = /** @type {CustomEvent} */ (event).detail;
-    visitClubPage(clubId);
+    await visitClubPage(clubId);
 }
 
 /**
  * @param {CustomEvent} event
  */
-function onJoinClub(event) {
+async function onJoinClub(event) {
     const { clubId, password } = /** @type {CustomEvent} */ (event).detail;
-    joinClub(clubId, password);
+    await joinClub(clubId, password);
+    await visitClubPage(clubId);
+
 }
 
 /**
  * @param {CustomEvent} event
  */
-function onLeaveClub(event) {
+async function onLeaveClub(event) {
     const { clubId } = /** @type {CustomEvent} */ (event).detail;
-    leaveClub(clubId);
+    await leaveClub(clubId);
+    await loadClubsPage();
 }
 
 /**
  * @param {CustomEvent} event
  */
-function onEditClub(event) {
+async function onEditClub(event) {
     const { clubId } = /** @type {CustomEvent} */ (event).detail;
-    editClub(clubId);
+    await editClub(clubId);
+    await loadClubsPage();
 }
 
 /**
  * @param {CustomEvent} event
  */
-function onDeleteClub(event) {
+async function onDeleteClub(event) {
     const { clubId } = /** @type {CustomEvent} */ (event).detail;
-    deleteClub(clubId);
+    await deleteClub(clubId);
+    await loadClubsPage();
 }
 
-//TODO: REVISAR CON LAS PROPOSALS
 /**
  * visit club page
  * @param {string} clubId

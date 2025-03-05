@@ -9,12 +9,11 @@
 
 import  "./components/bundle.js";
 
-import {store} from "./store/redux.js";
 import {ProductFactory, PRODUCT_TYPE,} from "./classes/Product.js";
 
 import { getAPIData, API_PORT } from "./utils/apiService.js";
 import { handleLogin, getLoggedUserData, checkAuthStatus, } from "./utils/authService.js";
-import { filterClubs, createNewClub } from "./utils/clubService.js";
+import { filterClubs, createNewClub, deleteClub, joinClub, leaveClub, editClub  } from "./utils/clubService.js";
 
 /**
  * import templates
@@ -315,7 +314,7 @@ function onDeleteClub(event) {
  * visit club page
  * @param {string} clubId
  */
-async function visitClubPage(clubId) {
+export async function visitClubPage(clubId) {
     const dynamicContent = document.getElementById('dynamic-content');
     if (!dynamicContent) {
         return;
@@ -357,7 +356,7 @@ async function visitClubPage(clubId) {
     }
 }
 
-async function loadClubsPage() {
+export async function loadClubsPage() {
     const dynamicContent = document.getElementById('dynamic-content');
     if (dynamicContent) {
         dynamicContent.innerHTML = clubPageTemplate;
@@ -543,222 +542,6 @@ function updateVoteUI(proposalId) {
             voteButton.disabled = true;
         }
         voteButton.classList.add('hidden');
-    }
-}
-
-/**
- * @param {string} clubId
- * @param {string | null} [password]
- */
-async function joinClub(clubId, password = null) {
-    const loggedUser = getLoggedUserData();
-    if (!loggedUser) {
-        alert('Debes iniciar sesión para unirte a un club');
-        return;
-    }
-
-    try {
-        const requestData = JSON.stringify({ userId: loggedUser._id, password });
-
-        const response = await getAPIData(
-            `${location.protocol}//${location.hostname}${API_PORT}/api/join/clubs/${clubId}`, 
-            'PUT', 
-            requestData
-        );
-
-        if (!response || !response.acknowledged) {
-            console.warn("Respuesta de la API no válida:", response);
-            alert("No se pudo unir al club.");
-            return;
-        }
-
-        if (!loggedUser.clubs.includes(clubId)) {
-            loggedUser.clubs.push(clubId);
-        }
-
-        sessionStorage.setItem('loggedUser', JSON.stringify(loggedUser));
-        store.user.update(loggedUser);
-        store.saveState();
-        await visitClubPage(clubId);
-
-    } catch (error) {
-        console.error("Error al unirse al club:", error);
-        alert("Hubo un error al intentar unirse al club.");
-    }
-}
-
-/**
- * leave club
- * @param {string} clubId 
- */
-async function leaveClub(clubId) {
-    const loggedUser = getLoggedUserData();
-    if (!loggedUser) {
-        alert('Debes iniciar sesión para salir de un club');
-        return;
-    }
-
-    try {
-        const updateData = JSON.stringify({ userId: loggedUser._id });
-
-        await getAPIData(`${location.protocol}//${location.hostname}${API_PORT}/api/leave/clubs/${clubId}`, 'PUT', updateData);
-
-        
-        loggedUser.clubs = loggedUser.clubs.filter((/** @type {string} */ id) => id !== clubId);
-        sessionStorage.setItem('loggedUser', JSON.stringify(loggedUser));
-        store.user.update(loggedUser);
-        store.saveState();
-        await loadClubsPage();
-
-        } catch (error) {
-        console.log('Error: ', error);
-    }
-}
-
-/**
- * edit club
- * @param {string} clubId 
- */
-async function editClub(clubId) {
-    const club = await getAPIData(`${location.protocol}//${location.hostname}${API_PORT}/api/read/clubs/${clubId}`);
-
-    const membersData = await getAPIData(`${location.protocol}//${location.hostname}${API_PORT}/api/read/users`, 'POST', JSON.stringify({ids: club.members}));
-
-
-    let dialog = document.getElementById('edit-club-dialog');
-    if (!dialog) {
-        dialog = document.createElement('dialog');
-        dialog.id = 'edit-club-dialog';
-        dialog.innerHTML = `
-            <form method="dialog">
-                <h2>Editar Club</h2>
-                <label>Nombre:</label>
-                <input type="text" id="editClubName" value="${club.name}" required>
-                <label>Descripción:</label>
-                <textarea id="editClubDescription">${club.description}</textarea>
-                
-                <h3>Nombrar nuevos administradores</h3>
-                <ul id="nonAdminsList">
-                    ${membersData
-                        .filter((/** @type {User} */ member) => !club.admins.includes(member._id))
-                        .map((/** @type {User} */ member) => `<li>${member.name} <button class="assignAdminButton" data-user-id="${member._id}">Nombrar Admin</button></li>`)
-                        .join("")}
-                </ul>
-
-                <button type="submit" id="saveClubChanges">Guardar cambios</button>
-                <button type="button" id="closeDialog">Cancelar</button>
-            </form>
-        `;
-        document.body.appendChild(dialog);
-    }
-
-    document.querySelectorAll(".assignAdminButton").forEach((button) => {
-        /** @type {HTMLButtonElement} */
-        const assignAdminButton = /** @type {HTMLButtonElement} */ (button);
-    
-        assignAdminButton.onclick = async (event) => {
-            const target = event.target;
-    
-            if (!(target instanceof HTMLElement)) {
-                console.error("Error: event.target no es un HTMLElement.");
-                return;
-            }
-    
-            const userId = target.dataset.userId || "";
-    
-            if (!userId.trim()) {
-                console.error("Error: userId no es válido.");
-                return;
-            }
-    
-            await assignAdmin(clubId, userId);
-        };
-    });
-
-    if (dialog instanceof HTMLDialogElement) dialog.showModal();
-
-    const saveButton = document.getElementById("saveClubChanges");
-    if (saveButton) {
-        saveButton.onclick = () => saveClubChanges(clubId);  
-    } 
-    
-    const closeDialog = document.getElementById("closeDialog");
-    if (closeDialog && dialog instanceof HTMLDialogElement) {
-        closeDialog.onclick = () => dialog.close();
-    } 
-}
-
-/**
- * 
- * @param {String} clubId 
- */
-async function saveClubChanges(clubId) {
-
-    const editClubName = document.getElementById('editClubName')
-
-    const editClubDescription = document.getElementById('editClubDescription')
-
-    if (editClubName instanceof HTMLInputElement && editClubDescription instanceof HTMLInputElement) {
-        
-        const updatedClub = {
-            name: editClubName.value,
-            description: editClubDescription.value, 
-        };
-
-        const response = await getAPIData(`${location.protocol}//${location.hostname}${API_PORT}/api/update/clubs/${clubId}`, 'PUT', JSON.stringify(updatedClub));
-
-        if(!response){
-            alert('Hubo un error al actualizar el club');
-            return;
-        }
-
-        alert('Club actualizado correctamente');
-
-        const editClubDialog = document.getElementById('edit-club-dialog');
-        if (editClubDialog instanceof HTMLDialogElement) editClubDialog.close();
-        await loadClubsPage();
-    }
-}
-
-
-
-/**
- * @param {string} clubId - The ID of the club.
- * @param {string} userId - The ID of the user to be assigned as admin.
- */
-
-async function assignAdmin(clubId, userId) {
-    const payload = JSON.stringify({ userId });
-    await getAPIData(`${location.protocol}//${location.hostname}${API_PORT}/api/update/clubs/${clubId}/admins`, 'PUT', payload);
-
-    alert('Admin asignado correctamente');
-}
-
-/**
- * delete club
- * @param {string} clubId
- */
-async function deleteClub(clubId) {
-    const loggedUser = getLoggedUserData();
-
-    if (!loggedUser) {
-        alert('Debes iniciar sesión para borrar un club');
-        return;
-    }
-
-    if (!confirm("¿Estás seguro de eliminar este club?")) return;
-
-    try {
-        await getAPIData(`${location.protocol}//${location.hostname}${API_PORT}/api/delete/clubs/${clubId}/${loggedUser._id}`, 'DELETE');
-
-        loggedUser.clubs = loggedUser.clubs.filter((/** @type {string} */ id) => id !== clubId);
-        sessionStorage.setItem('loggedUser', JSON.stringify(loggedUser));
-        store.user.update(loggedUser);
-        store.saveState();
-        await loadClubsPage();
-
-    } catch (error) {
-        console.log('Error: ', error);
     }
 }
 

@@ -355,6 +355,7 @@ async function leaveClub(clubId, userId) {
  * @returns {Promise<string>} The ID of the deleted club.
  */
 async function deleteClub(clubId, userId) {
+    console.log('db deleteClub', clubId);
     const client = new MongoClient(URI)
     const SophiaSocialDB = client.db('SophiaSocial');
 
@@ -396,7 +397,7 @@ async function deleteClub(clubId, userId) {
     );
 
     const clubDeleteResult = await clubsCollection.deleteOne({ _id: new ObjectId(String(clubId)) });
-
+    console.log('db deleteClub', clubDeleteResult);
     return clubDeleteResult;
 }
 

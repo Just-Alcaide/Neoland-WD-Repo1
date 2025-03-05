@@ -293,30 +293,60 @@ async function updateClubsList() {
  */
 function initializeClubButtonsListeners (container) {
 
-    container.addEventListener("visit-club", async (event) => {
-        const {clubId} = /** @type {CustomEvent} */ (event).detail;
-        await visitClubPage((clubId));
-    });
+    container.removeEventListener('visit-club', /** @type {EventListener} */ (onVisitClubClick));
+    container.addEventListener('visit-club', /** @type {EventListener} */ (onVisitClubClick));
 
-    container.addEventListener("join-club", async (event) => {
-        const {clubId, password} = /** @type {CustomEvent} */ (event).detail;
-        await joinClub(clubId, password)
-    });
+    container.removeEventListener('join-club', /** @type {EventListener} */ (onJoinClub));
+    container.addEventListener('join-club', /** @type {EventListener} */ (onJoinClub));
 
-    container.addEventListener("leave-club", async (event) => {
-        const {clubId} = /** @type {CustomEvent} */ (event).detail;
-        await leaveClub(clubId);
-    });
+    container.removeEventListener('leave-club', /** @type {EventListener} */ (onLeaveClub));
+    container.addEventListener('leave-club', /** @type {EventListener} */ (onLeaveClub));
 
-    container.addEventListener("edit-club", (event) => {
-        const {clubId} = /** @type {CustomEvent} */ (event).detail;
-        editClub(clubId)
-    });
+    container.removeEventListener('edit-club', /** @type {EventListener} */ (onEditClub));
+    container.addEventListener('edit-club', /** @type {EventListener} */ (onEditClub));
 
-    container.addEventListener("delete-club", async (event) => {
-        const {clubId} = /** @type {CustomEvent} */ (event).detail;
-        await deleteClub(clubId)
-    });
+    container.removeEventListener('delete-club', /** @type {EventListener} */ (onDeleteClub));
+    container.addEventListener('delete-club', /** @type {EventListener} */ (onDeleteClub));
+}
+
+/**
+ * @param {CustomEvent} event
+ */
+function onVisitClubClick(event) {
+    const {clubId} = /** @type {CustomEvent} */ (event).detail;
+    visitClubPage(clubId);
+}
+
+/**
+ * @param {CustomEvent} event
+ */
+function onJoinClub(event) {
+    const { clubId, password } = /** @type {CustomEvent} */ (event).detail;
+    joinClub(clubId, password);
+}
+
+/**
+ * @param {CustomEvent} event
+ */
+function onLeaveClub(event) {
+    const { clubId } = /** @type {CustomEvent} */ (event).detail;
+    leaveClub(clubId);
+}
+
+/**
+ * @param {CustomEvent} event
+ */
+function onEditClub(event) {
+    const { clubId } = /** @type {CustomEvent} */ (event).detail;
+    editClub(clubId);
+}
+
+/**
+ * @param {CustomEvent} event
+ */
+function onDeleteClub(event) {
+    const { clubId } = /** @type {CustomEvent} */ (event).detail;
+    deleteClub(clubId);
 }
 
 //TODO: REVISAR CON LAS PROPOSALS

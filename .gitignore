@@ -2,3 +2,4 @@ _hidden
 node_modules
 out
 dist
+.env

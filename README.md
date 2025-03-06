@@ -273,8 +273,6 @@ vote = {
 ``proposalId`` vincula el voto a cada propuesta  
 ``userId`` asegura que cada usuario solo puede emitir un único voto a una propuesta
 
----
-
 ### Sumario de Relaciones
 
 * Cada Usuario ``users`` puede:  
@@ -300,8 +298,6 @@ Tener múltiples propuestas asociadas en distintos clubs ``clubs``
 El usuario que emite el voto ``users``  
 La propuesta que se vota ``proposals``
 
----
-
 ## Testeo
 
 Utilizamos [Jest] como herramienta de testeo. Para poder ejecutar los test los hacemos por medio del comando:
@@ -322,3 +318,25 @@ Integramos [lint-staged] para ejecutar las validaciones antes de  ejecutar el co
 echo PRE-COMMIT GIT HOOK
 npx lint-staged
 ```
+
+## Agradecimientos
+
+Aunque este proyecto haya sido un reto personal, nunca he estado solo durante el camino; y no habría sido posible sin el apoyo y el conocimiento compartido a lo largo del Bootcamp.  
+Quiero agradecer a **Neoland** y su equipo por la formación y la dedicación.
+
+En especial, al profesor [Alvaro Isorna](https://github.com/isorna) por su ilimitada paciencia.
+
+Agradecer también a mis compañeros de curso por su apoyo y feedback. Muchas gracias a:
+
+* [Carlos de Petronila](https://github.com/CXarlosss)
+* [Julen García](https://github.com/Jotanore)
+* [Javier Ribas](https://github.com/Javiribs)
+* [Bryan Herrera](https://github.com/bryanprestige)
+
+y en especial, muchas gracias al que ha sido un segundo profesor más que un compañero más:
+
+* [Jose Ramón Carralero](https://github.com/JRamonCarralero)
+
+También destacar a toda la comunidad de dessarrolladores, cuyo conocimiento disponible en documentación, foros y recursos abiertos ha sido clave para la resolución de problemas.
+
+Este proyecto ha sido un gran desafío y una oportunidad de crecimiento. Agradezco a todos los que, de una manera u otra, han contribuido a hacerlo posible.

@@ -304,7 +304,6 @@ export async function loadClubsPage() {
 async function updateClubsList() {
     const clubsList = document.getElementById('clubsList');
     if (!clubsList) {
-        console.warn("[updateClubsList] No clubsList element found in the DOM.");
         return;
     }
 

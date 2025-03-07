@@ -119,7 +119,10 @@ export function deleteAccountForm() {
         }
     })
     
-    document.getElementById('deleteUserButton')?.addEventListener('click', deleteUser);
+    document.getElementById('deleteUserButton')?.addEventListener('click', (event) => {
+        event.preventDefault();
+        deleteUser();
+    });
 }
 
 /**
@@ -140,6 +143,7 @@ export async function deleteUser() {
 
     const deleteUserEmail = /** @type {HTMLInputElement} */ (document.getElementById('deleteUserEmail')).value
     const deleteUserPassword = /** @type {HTMLInputElement} */ (document.getElementById('deleteUserPassword')).value
+    console.log('deleteUser', deleteUserEmail, deleteUserPassword);
 
     try {
         const validationData = JSON.stringify({email: deleteUserEmail, password: deleteUserPassword});
